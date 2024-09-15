@@ -16,8 +16,9 @@ def verifica_sessao():
     else:
         return False
 
+
 def conecta_database():
-    conexao = sql.connect("youtech.db")
+    conexao = sql.connect("database.db")
     conexao.row_factory = sql.Row
     return conexao
 
@@ -40,15 +41,28 @@ def index():
         login = False
     return render_template("home.html", chamados=chamados, login=login, title=title)
 
+@app.route("/cadastro")
+def cadastros():
+    if verifica_sessao():
+        login = True
+    else:
+        login = False
+    if verifica_sessao():
+        title = "Cadastro"
+        return render_template("cadastro.html", title=title, login=login)
+    else:
+        return redirect("/login")
+    
+
 @app.route("/cadchamados")
-def cadchamados():
+def cadchamado():
     if verifica_sessao():
         login = True
     else:
         login = False
     if verifica_sessao():
         title = "Cadastro de Chamados"
-        return render_template("cadastro.html", title=title, login=login)
+        return render_template("cadchamados.html", title=title, login=login)
     else:
         return redirect("/login")
 
@@ -124,25 +138,85 @@ def upload():
     else:
         return 'Nenhum arquivo enviado.'
 
-@app.route("/cadastro", methods=["post"])
-def cadastro():
+@app.route("/cadastro_equipamento", methods=["post"])
+def cadastro_equipamento():
     if verifica_sessao():
-        cargo_chamado = request.form['cargo_chamado']
-        local_chamado = request.form['local_chamado']
-        descricao_chamado = request.form['descricao_chamado']
-        img_chamado = request.files['img_chamado']
-        id_foto = str(uuid.uuid4().hex)
-        filename = id_foto + cargo_chamado + '.png'
-        img_chamado.save("static/img/chamados/" + filename)
+        nome_produto = request.form['nome_produto']
+        destinado_para = request.form['destinado_para']
+        quantidade = request.form['quantidade']
+        data_chegada = request.form['data_chegada']
+        revisao_programada = request.form['revisao_programada']
+        
         conexao = conecta_database()
-        conexao.execute('INSERT INTO chamados (cargo_chamado, local_chamado, descricao_chamado, img_chamado) VALUES (?,?,?,?)', 
-                        (cargo_chamado, local_chamado, descricao_chamado, filename))
+        conexao.execute('INSERT INTO equipamentos (nome_produto, destinado_para, quantidade, data_chegada, revisao_programada) VALUES (?,?,?,?,?)', 
+                        (nome_produto, destinado_para, quantidade, data_chegada, revisao_programada))
+        conexao.commit()
+        conexao.close()
+        return redirect("/adm")
+    else:
+        return redirect("/login")
+    
+
+@app.route("/cadastro_funcionario", methods=["post"])
+def cadastro_funcionario():
+    if verifica_sessao():
+        nome_completo = request.form['nome_completo']
+        cargo = request.form['cargo']
+        data_nascimento = request.form['data_nascimento']
+        email = request.form['email']
+        numero = request.form['numero']
+        
+        conexao = conecta_database()
+        conexao.execute('INSERT INTO funcionarios (nome_completo, cargo, data_nascimento, email, numero) VALUES (?,?,?,?,?)', 
+                        (nome_completo, cargo, data_nascimento, email, numero))
         conexao.commit()
         conexao.close()
         return redirect("/adm")
     else:
         return redirect("/login")
 
+
+
+@app.route("/cadastro_sala", methods=["post"])
+def cadastro_sala():
+    if verifica_sessao():
+        nome_sala = request.form['nome_sala']
+        numero_sala = request.form['numero_sala']
+        bloco = request.form['bloco']
+        
+        conexao = conecta_database()
+        conexao.execute('INSERT INTO salas (nome_sala, numero_sala, bloco) VALUES (?,?,?)', 
+                        (nome_sala, numero_sala, bloco))
+        conexao.commit()
+        conexao.close()
+        return redirect("/adm")
+    else:
+        return redirect("/login")
+
+
+@app.route("/cadastro_chamado", methods=["post"])
+def cadastro_chamado():
+    if verifica_sessao():  # Certifique-se de que esta função está definida corretamente
+        cargo_chamado = request.form['cargo_chamado']
+        local_chamado = request.form['local_chamado']
+        descricao_chamado = request.form['descricao_chamado']
+        img_chamado = request.files['img_chamado']
+        
+        # Gerar um nome único para o arquivo de imagem
+        id_foto = str(uuid.uuid4().hex)
+        filename = id_foto + ".png"
+        img_chamado.save("static/img/chamados/" + filename)
+        
+        # Inserir dados na tabela
+        conexao = conecta_database()
+        conexao.execute('INSERT INTO chamados (cargo_chamado, local_chamado, descricao_chamado, img_chamado) VALUES (?,?,?,?)',
+                        (cargo_chamado, local_chamado, descricao_chamado, filename))
+        conexao.commit()
+        conexao.close()
+        return redirect("/adm")
+    else:
+        return redirect("/login")
+    hj
 @app.route("/adm")
 def adm():
     if verifica_sessao():

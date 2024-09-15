@@ -34,7 +34,7 @@
       <div class="card mx-auto" id="formEquipamento" style="max-width: 600px; background-color: #fff; margin-bottom: 40px;">
         <div class="card-body">
           <h5 class="card-title text-center">Cadastro de Equipamentos</h5>
-          <form action="/cadastro" method="post">
+          <form action="/cadastro_equipamento" method="post">
             <div class="row">
               <!-- Nome do produto -->
               <div class="col-md-8 mb-3">
@@ -163,27 +163,35 @@
 
   <script>
     function toggleForm() {
-      var selectedSetor = document.getElementById('setores').value;
-      var formEquipamento = document.getElementById('formEquipamento');
-      var formFuncionario = document.getElementById('formFuncionario');
-      var formSalas = document.getElementById('formSalas');
-      
-      formEquipamento.style.display = 'none';
-      formFuncionario.style.display = 'none';
-      formSalas.style.display = 'none';
+    var selectedSetor = document.getElementById('setores').value;
+    var formEquipamento = document.getElementById('formEquipamento');
+    var formFuncionario = document.getElementById('formFuncionario');
+    var formSalas = document.getElementById('formSalas');
+    
+    formEquipamento.style.display = 'none';
+    formFuncionario.style.display = 'none';
+    formSalas.style.display = 'none';
 
-      if (selectedSetor === 'equipamento') {
-        formEquipamento.style.display = 'block';
-      } else if (selectedSetor === 'funcionario') {
-        formFuncionario.style.display = 'block';
-      } else if (selectedSetor === 'salas') {
-        formSalas.style.display = 'block';
-      }
+    if (selectedSetor === 'equipamento') {
+      formEquipamento.style.display = 'block';
+    } else if (selectedSetor === 'funcionario') {
+      formFuncionario.style.display = 'block';
+    } else if (selectedSetor === 'salas') {
+      formSalas.style.display = 'block';
     }
+  }
 
-    window.onload = function() {
+  window.onload = function() {
+    var formType = sessionStorage.getItem('formType');
+    if (formType) {
+      document.getElementById('setores').value = formType;
       toggleForm();
-    };
+      sessionStorage.removeItem('formType'); // Clear the formType from sessionStorage
+    } else {
+      toggleForm(); // Ensure the correct form is shown on page load
+    }
+  };
   </script>
+  
 
 {% endblock %}
