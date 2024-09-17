@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, redirect, session
-import sqlite3 as sql
+import mysql.connector
 import uuid, os
 
 app = Flask(__name__)
@@ -11,21 +11,22 @@ senha = "rh"
 login = False
 
 def verifica_sessao():
-    if "login" in session and session["login"]:
-        return True
-    else:
-        return False
-
+    return "login" in session and session["login"]
 
 def conecta_database():
-    conexao = sql.connect("database.db")
-    conexao.row_factory = sql.Row
+    conexao = mysql.connector.connect(
+        host='localhost',
+        user='root', 
+        password='senai',
+        database='tcc'
+    )
     return conexao
 
 def iniciar_db():
     conexao = conecta_database()
+    cursor = conexao.cursor()
     with app.open_resource('esquema.sql', mode='r') as comandos:
-        conexao.cursor().executescript(comandos.read())
+        cursor.execute(comandos.read(), multi=True)
     conexao.commit()
     conexao.close()
 
@@ -33,34 +34,26 @@ def iniciar_db():
 def index():
     iniciar_db()
     conexao = conecta_database()
-    chamados = conexao.execute('SELECT * FROM chamados ORDER BY id_chamado DESC').fetchall()
+    cursor = conexao.cursor(dictionary=True)
+    cursor.execute('SELECT * FROM chamados ORDER BY id_chamado DESC')
+    chamados = cursor.fetchall()
     title = "Fale Conosco"
-    if verifica_sessao():
-        login = True
-    else:
-        login = False
+    login = verifica_sessao()
     return render_template("home.html", chamados=chamados, login=login, title=title)
 
 @app.route("/cadastro")
 def cadastros():
-    if verifica_sessao():
-        login = True
-    else:
-        login = False
-    if verifica_sessao():
+    login = verifica_sessao()
+    if login:
         title = "Cadastro"
         return render_template("cadastro.html", title=title, login=login)
     else:
         return redirect("/login")
-    
 
 @app.route("/cadchamados")
 def cadchamado():
-    if verifica_sessao():
-        login = True
-    else:
-        login = False
-    if verifica_sessao():
+    login = verifica_sessao()
+    if login:
         title = "Cadastro de Chamados"
         return render_template("cadchamados.html", title=title, login=login)
     else:
@@ -69,56 +62,41 @@ def cadchamado():
 @app.route('/somos')
 def somos():
     title = "Sobre"
-    if verifica_sessao():
-        login = True
-    else:
-        login = False
+    login = verifica_sessao()
     return render_template("somos.html", title=title, login=login)
 
 @app.route('/politica')
 def politica():
     title = "Privacidade"
-    if verifica_sessao():
-        login = True
-    else:
-        login = False
+    login = verifica_sessao()
     return render_template("privacidade.html", title=title, login=login)
 
 @app.route('/curriculo')
 def curriculo():
     title = "Currículo"
-    if verifica_sessao():
-        login = True
-    else:
-        login = False
+    login = verifica_sessao()
     return render_template("curriculo.html", title=title, login=login)
 
 @app.route('/termo')
 def termo():
     title = "Termo De Uso"
-    if verifica_sessao():
-        login = True
-    else:
-        login = False
+    login = verifica_sessao()
     return render_template("termo.html", title=title, login=login)
 
 @app.route('/troca')
 def troca():
     title = "Trocas e Devoluções"
-    if verifica_sessao():
-        login = True
-    else:
-        login = False
+    login = verifica_sessao()
     return render_template("troca.html", title=title, login=login)
 
-@app.route("/vermais/<id_chamado>")
+@app.route("/vermais/<int:id_chamado>")
 def sobre(id_chamado):
-    id_chamado = int(id_chamado)
     conexao = conecta_database()
-    chamado = conexao.execute("SELECT * FROM chamados WHERE id_chamado = ?", (id_chamado,)).fetchall()
+    cursor = conexao.cursor(dictionary=True)
+    cursor.execute("SELECT * FROM chamados WHERE id_chamado = %s", (id_chamado,))
+    chamado = cursor.fetchall()
     conexao.close()
     title = "Ver Mais"
-    print(chamado)
     return render_template("vermais.html", title=title, chamado=chamado)
 
 @app.route("/upload", methods=["POST"])
@@ -128,17 +106,18 @@ def upload():
         id_pdf = str(uuid.uuid4().hex)
         filename = id_pdf + cargo_chamado + '.pdf'
         conexao = conecta_database()
-        conexao.execute("SELECT * FROM chamados WHERE id_chamado = ?", (cargo_chamado,)).fetchall()
+        cursor = conexao.cursor(dictionary=True)
+        cursor.execute("SELECT * FROM chamados WHERE id_chamado = %s", (cargo_chamado,))
         pdf_chamado = request.files['pdf_file']
         if pdf_chamado.filename == '':
             return 'Nenhum arquivo selecionado.'
         else:
-            pdf_chamado.save(r"static/upload/" + filename)
+            pdf_chamado.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
             return 'Arquivo enviado com sucesso!'
     else:
         return 'Nenhum arquivo enviado.'
 
-@app.route("/cadastro_equipamento", methods=["post"])
+@app.route("/cadastro_equipamento", methods=["POST"])
 def cadastro_equipamento():
     if verifica_sessao():
         nome_produto = request.form['nome_produto']
@@ -148,16 +127,16 @@ def cadastro_equipamento():
         revisao_programada = request.form['revisao_programada']
         
         conexao = conecta_database()
-        conexao.execute('INSERT INTO equipamentos (nome_produto, destinado_para, quantidade, data_chegada, revisao_programada) VALUES (?,?,?,?,?)', 
-                        (nome_produto, destinado_para, quantidade, data_chegada, revisao_programada))
+        cursor = conexao.cursor()
+        cursor.execute('INSERT INTO equipamentos (nome_produto, destinado_para, quantidade, data_chegada, revisao_programada) VALUES (%s, %s, %s, %s, %s)', 
+                       (nome_produto, destinado_para, quantidade, data_chegada, revisao_programada))
         conexao.commit()
         conexao.close()
         return redirect("/adm")
     else:
         return redirect("/login")
-    
 
-@app.route("/cadastro_funcionario", methods=["post"])
+@app.route("/cadastro_funcionario", methods=["POST"])
 def cadastro_funcionario():
     if verifica_sessao():
         nome_completo = request.form['nome_completo']
@@ -167,17 +146,16 @@ def cadastro_funcionario():
         numero = request.form['numero']
         
         conexao = conecta_database()
-        conexao.execute('INSERT INTO funcionarios (nome_completo, cargo, data_nascimento, email, numero) VALUES (?,?,?,?,?)', 
-                        (nome_completo, cargo, data_nascimento, email, numero))
+        cursor = conexao.cursor()
+        cursor.execute('INSERT INTO funcionarios (nome_completo, cargo, data_nascimento, email, numero) VALUES (%s, %s, %s, %s, %s)', 
+                       (nome_completo, cargo, data_nascimento, email, numero))
         conexao.commit()
         conexao.close()
         return redirect("/adm")
     else:
         return redirect("/login")
 
-
-
-@app.route("/cadastro_sala", methods=["post"])
+@app.route("/cadastro_sala", methods=["POST"])
 def cadastro_sala():
     if verifica_sessao():
         nome_sala = request.form['nome_sala']
@@ -185,18 +163,18 @@ def cadastro_sala():
         bloco = request.form['bloco']
         
         conexao = conecta_database()
-        conexao.execute('INSERT INTO salas (nome_sala, numero_sala, bloco) VALUES (?,?,?)', 
-                        (nome_sala, numero_sala, bloco))
+        cursor = conexao.cursor()
+        cursor.execute('INSERT INTO salas (nome_sala, numero_sala, bloco) VALUES (%s, %s, %s)', 
+                       (nome_sala, numero_sala, bloco))
         conexao.commit()
         conexao.close()
         return redirect("/adm")
     else:
         return redirect("/login")
 
-
-@app.route("/cadastro_chamado", methods=["post"])
+@app.route("/cadastro_chamado", methods=["POST"])
 def cadastro_chamado():
-    if verifica_sessao():  # Certifique-se de que esta função está definida corretamente
+    if verifica_sessao():
         cargo_chamado = request.form['cargo_chamado']
         local_chamado = request.form['local_chamado']
         descricao_chamado = request.form['descricao_chamado']
@@ -205,43 +183,66 @@ def cadastro_chamado():
         # Gerar um nome único para o arquivo de imagem
         id_foto = str(uuid.uuid4().hex)
         filename = id_foto + ".png"
-        img_chamado.save("static/img/chamados/" + filename)
+        img_chamado.save(os.path.join("static/img/chamados/", filename))
         
         # Inserir dados na tabela
         conexao = conecta_database()
-        conexao.execute('INSERT INTO chamados (cargo_chamado, local_chamado, descricao_chamado, img_chamado) VALUES (?,?,?,?)',
-                        (cargo_chamado, local_chamado, descricao_chamado, filename))
+        cursor = conexao.cursor()
+        cursor.execute('INSERT INTO chamados (cargo_chamado, local_chamado, descricao_chamado, img_chamado) VALUES (%s, %s, %s, %s)', 
+                       (cargo_chamado, local_chamado, descricao_chamado, filename))
         conexao.commit()
         conexao.close()
         return redirect("/adm")
     else:
         return redirect("/login")
-    hj
+
 @app.route("/adm")
 def adm():
     if verifica_sessao():
-        login = True
-    else:
-        login = False
-    if verifica_sessao():
         iniciar_db()
         conexao = conecta_database()
-        chamados = conexao.execute('SELECT * FROM chamados ORDER BY id_chamado DESC').fetchall()
+        cursor = conexao.cursor(dictionary=True)
+        
+        # Buscar chamados
+        cursor.execute('SELECT * FROM chamados ORDER BY id_chamado DESC')
+        chamados = cursor.fetchall()
+        
+        # Buscar equipamentos
+        cursor.execute('SELECT * FROM equipamentos')
+        equipamentos = cursor.fetchall()
+        equipamentos_dict = {e['id_equipamento']: e for e in equipamentos}
+        
+        # Buscar salas
+        cursor.execute('SELECT * FROM salas')
+        salas = cursor.fetchall()
+        salas_dict = {s['id_sala']: s for s in salas}
+        
         conexao.close()
+        
         title = "Administração"
-        return render_template("adm.html", chamados=chamados, title=title, login=login)
+        login = verifica_sessao()
+        return render_template(
+            "adm.html",
+            chamados=chamados,
+            equipamentos=equipamentos_dict,
+            salas=salas_dict,
+            title=title,
+            login=login
+        )
     else:
         return redirect("/login")
 
-@app.route("/excluir/<id_chamado>")
+
+@app.route("/excluir/<int:id_chamado>")
 def excluir(id_chamado):
     if verifica_sessao():
-        id_chamado = int(id_chamado)
         conexao = conecta_database()
-        chamado = conexao.execute('SELECT img_chamado FROM chamados WHERE id_chamado = ?', (id_chamado,)).fetchone()
-        filename_old = chamado[0]
-        os.remove("static/img/chamados/" + filename_old)
-        conexao.execute('DELETE FROM chamados WHERE id_chamado = ?', (id_chamado,))
+        cursor = conexao.cursor(dictionary=True)
+        cursor.execute('SELECT img_chamado FROM chamados WHERE id_chamado = %s', (id_chamado,))
+        chamado = cursor.fetchone()
+        if chamado:
+            os.remove(os.path.join("static/img/chamados/", chamado['img_chamado']))
+        cursor.execute('DELETE FROM chamados WHERE id_chamado = %s', (id_chamado,))
         conexao.commit()
         conexao.close()
         return redirect('/adm')
@@ -249,72 +250,25 @@ def excluir(id_chamado):
         return redirect("/login")
 
 @app.route('/login')
-def login():
+def login_page():
     title = "Login"
     return render_template("login.html", title=title)
 
-@app.route("/acesso", methods=['post'])
+@app.route("/acesso", methods=['POST'])
 def acesso():
     global usuario, senha
     usuario_informado = request.form["usuario"]
     senha_informada = request.form["senha"]
     if usuario == usuario_informado and senha == senha_informada:
         session["login"] = True
-        return redirect('/adm')
-    else:
-        return render_template("login.html", msg="Usuário/Senha estão incorretos!")
-
-@app.route("/logout")
-def logout():
-    global login
-    login = False
-    session.clear()
-    return redirect("/")
-
-@app.route("/editchamados/<id_chamado>")
-def editar(id_chamado):
-    if verifica_sessao():
-        iniciar_db()
-        conexao = conecta_database()
-        chamados = conexao.execute('SELECT * FROM chamados WHERE id_chamado = ?', (id_chamado,)).fetchall()
-        conexao.close()
-        title = "Edição dos Chamados"
-        return render_template("editchamados.html", chamados=chamados, title=title)
+        return redirect("/adm")
     else:
         return redirect("/login")
 
-@app.route("/editarchamados", methods=['POST'])
-def editpost():
-    id_chamado = request.form['id_chamado']
-    cargo_chamado = request.form['cargo_chamado']
-    requisitos_chamado = request.form['requisitos_chamado']
-    salario_chamado = request.form['salario_chamado']
-    local_chamado = request.form['local_chamado']
-    tipo_chamado = request.form['tipo_chamado']
-    img_chamado = request.files['img_chamado']
-    email_chamado = request.form['email_chamado']
-    conexao = conecta_database()
-    cursor = conexao.cursor()
-    cursor.execute('SELECT img_chamado FROM chamados WHERE id_chamado = ?', (id_chamado,))
-    result = cursor.fetchone()
-    imagem_antiga = result[0] if result else None
-    conexao.close()
-    if img_chamado:
-        id_foto = str(uuid.uuid4().hex)
-        filename = id_foto + cargo_chamado + '.png'
-        img_chamado.save("static/img/chamados/" + filename)
-        if imagem_antiga:
-            os.remove(os.path.join("static/img/chamados", imagem_antiga))
-    else:
-        filename = imagem_antiga
-    conexao = conecta_database()
-    conexao.execute(
-        'UPDATE chamados SET cargo_chamado = ?, requisitos_chamado = ?, salario_chamado = ?, local_chamado = ?, img_chamado = ?, email_chamado = ?, tipo_chamado = ? WHERE id_chamado = ?',
-        (cargo_chamado, requisitos_chamado, salario_chamado, local_chamado, filename, email_chamado, tipo_chamado, id_chamado)
-    )
-    conexao.commit()
-    conexao.close()
-    return redirect("/adm")
+@app.route("/logout")
+def logout():
+    session.pop("login")
+    return redirect("/login")
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     app.run(debug=True)
