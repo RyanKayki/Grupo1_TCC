@@ -1,0 +1,164 @@
+{% extends 'modelAdm.html' %}
+{% block conteudo %}
+
+<p class="fw-bold text-center p-4 fs-5" style="color: #225656;">Administração</p>
+
+<main class="container-fluid">
+  <div class="row m-5">
+    <!-- Meus Chamados -->
+    <div class="col-md-3 col-lg-3 col-xl-2">
+      <div class="card h-100" style="width: 18rem;">
+        <div class="card-body">
+          <h5 class="card-title">Meus Chamados</h5>
+          <ul class="list-group">
+            {% for chamado in chamados %}
+            <li class="list-group-item">
+              <span>{{ chamado.descChamado }}</span>
+              <br>
+              <small class="text-muted">
+                {% if chamado.idItem %}
+                  Equipamento: {{ chamado.item.nomeItem }}
+                {% elif chamado.idLocal %}
+                  Sala: {{ chamado.local.nomeLocal }}
+                {% endif %}
+              </small>
+              <span class="badge {% if chamado.status.nomeStatus == 'Aberto' %} bg-danger {% else %} bg-success {% endif %} float-end">
+                {{ chamado.status.nomeStatus }}
+              </span>
+            </li>
+            {% endfor %}
+          </ul>
+          <button class="mt-3">
+              Ver Mais
+              <div class="arrow-wrapper">
+                <div class="arrow"></div>
+              </div>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Chamados Overview -->
+    <div class="col-md-6 col-lg-7 col-xl-8">
+      <div class="row text-center">
+        <div class="col">
+          <div class="card p-3 mb-3">
+            <h6>Chamados Recentes</h6>
+          </div>
+        </div>
+        <div class="col">
+          <div class="card p-3 mb-3">
+            <h6>Chamados por Sala</h6>
+          </div>
+        </div>
+        <div class="col">
+          <div class="card p-3 mb-3">
+            <h6>Chamado por Item</h6>
+          </div>
+        </div>
+      </div>
+      <div class="row text-center mt-4">
+        <div class="col">
+          <div class="card p-3">
+            <h6>Não Respondidos</h6>
+            <span class="badge bg-danger">{{ chamados|selectattr("status.nomeStatus", "equalto", "Não Respondido")|list|length }}</span>
+          </div>
+        </div>
+        <div class="col">
+          <div class="card p-3">
+            <h6>Respondidos</h6>
+            <span class="badge bg-success">{{ chamados|selectattr("status.nomeStatus", "equalto", "Respondido")|list|length }}</span>
+          </div>
+        </div>
+        <div class="col">
+          <div class="card p-3">
+            <h6>Concluídos</h6>
+            <span class="badge bg-primary">{{ chamados|selectattr("status.nomeStatus", "equalto", "Concluído")|list|length }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ações Rápidas -->
+    <div class="col-md-3 col-lg-2 col-xl-2">
+        <div class="list-group">
+          <a href="/cadchamados" class="list-group-item list-group-item-action" style="cursor: pointer;">Novo Chamado</a>
+          <a onclick="storeFormTypeAndRedirect('funcionario')" class="list-group-item list-group-item-action" style="cursor: pointer;">Cadastrar Usuário</a>
+          <a onclick="storeFormTypeAndRedirect('equipamento')" class="list-group-item list-group-item-action" style="cursor: pointer;">Cadastrar Item</a>
+          <a onclick="storeFormTypeAndRedirect('local')" class="list-group-item list-group-item-action" style="cursor: pointer;">Cadastrar Local</a>
+        </div>
+      </div>
+
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+<script>
+    function storeFormTypeAndRedirect(formType) {
+      sessionStorage.setItem('formType', formType);
+      window.location.href = '/cadastro';
+    }
+</script>
+
+<style>
+  button {
+    --primary-color: #29474b;
+    --secondary-color: #fff;
+    --hover-color: #29474b99;
+    --arrow-width: 10px;
+    --arrow-stroke: 2px;
+    box-sizing: border-box;
+    border: 0;
+    border-radius: 20px;
+    color: var(--secondary-color);
+    background: var(--primary-color);
+    display: flex;
+    transition: 0.2s background;
+    align-items: center;
+    gap: 0.6em;
+    font-weight: bold;
+    margin-left: auto;
+  }
+
+  button .arrow-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  button .arrow {
+    margin-top: 1px;
+    width: var(--arrow-width);
+    background: var(--primary-color);
+    height: var(--arrow-stroke);
+    position: relative;
+    transition: 0.2s;
+  }
+
+  button .arrow::before {
+    content: "";
+    box-sizing: border-box;
+    position: absolute;
+    border: solid var(--secondary-color);
+    border-width: 0 var(--arrow-stroke) var(--arrow-stroke) 0;
+    display: inline-block;
+    top: -3px;
+    right: 3px;
+    transition: 0.2s;
+    padding: 3px;
+    transform: rotate(-45deg);
+  }
+
+  button:hover {
+    background-color: var(--hover-color);
+  }
+
+  button:hover .arrow {
+    background: var(--secondary-color);
+  }
+
+  button:hover .arrow:before {
+    right: 0;
+  }
+</style>
+
+{% endblock %}
