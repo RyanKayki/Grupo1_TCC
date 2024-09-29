@@ -11,12 +11,14 @@ app.secret_key = "TCC"
 app.config['UPLOAD_FOLDER'] = "static/uploads"  # Certifique-se de que essa pasta existe
 
 # Função de conexão ao banco de dados
+#DB CLOUD
 def conecta_database():
     conexao = mysql.connector.connect(
-        host='localhost',
-        user='root',
-        password='senai',
-        database='tcc'
+        host='autorack.proxy.rlwy.net',  # Host do Railway
+        user='root',                     # Usuário do banco de dados
+        password='duRCJjOrOmbvGxbqoPDuiDzpqRreqLTD',  # Senha do banco de dados
+        database='tcc',              # Nome do banco de dados fornecido pelo Railway
+        port='35429'                     # Porta do banco de dados no Railway
     )
     return conexao
 

@@ -7,13 +7,14 @@ app.secret_key = "Rhzin"
 # Definindo o blueprint
 session_blueprint = Blueprint("session", __name__, template_folder="templates")
 
+#DB CLOUD
 def conecta_database():
-    # Conexão ao banco de dados
     conexao = mysql.connector.connect(
-        host='localhost',
-        user='root',
-        password='senai',
-        database='tcc'
+        host='autorack.proxy.rlwy.net',  # Host do Railway
+        user='root',                     # Usuário do banco de dados
+        password='duRCJjOrOmbvGxbqoPDuiDzpqRreqLTD',  # Senha do banco de dados
+        database='tcc',              # Nome do banco de dados fornecido pelo Railway
+        port='35429'                     # Porta do banco de dados no Railway
     )
     return conexao
 
@@ -26,7 +27,7 @@ def index():
     # Rota inicial que redireciona baseado no cargo do usuário
     conexao = conecta_database()
     cursor = conexao.cursor(dictionary=True)
-    cursor.execute('SELECT * FROM Usuario')
+    cursor.execute('SELECT * FROM usuario')
     conexao.close()
 
     login = verifica_sessao()
@@ -57,7 +58,7 @@ def acesso():
 
     conexao = conecta_database()
     cursor = conexao.cursor(dictionary=True)
-    cursor.execute('SELECT * FROM Usuario WHERE nomeUsuario = %s', (usuario_informado,))
+    cursor.execute('SELECT * FROM usuario WHERE nomeUsuario = %s', (usuario_informado,))
     usuario = cursor.fetchone()
     cursor.close()  # Fechando o cursor
     conexao.close()
