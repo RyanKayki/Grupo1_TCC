@@ -10,11 +10,11 @@ session_blueprint = Blueprint("session", __name__, template_folder="templates")
 #DB CLOUD
 def conecta_database():
     conexao = mysql.connector.connect(
-        host='autorack.proxy.rlwy.net',  # Host do Railway
+        host='localhost',  # Host do Railway
         user='root',                     # Usuário do banco de dados
-        password='duRCJjOrOmbvGxbqoPDuiDzpqRreqLTD',  # Senha do banco de dados
+        password='senai',  # Senha do banco de dados
         database='tcc',              # Nome do banco de dados fornecido pelo Railway
-        port='35429'                     # Porta do banco de dados no Railway
+        port='3306'                     # Porta do banco de dados no Railway
     )
     return conexao
 
@@ -64,13 +64,18 @@ def acesso():
     conexao.close()
 
     if usuario is None:
-        # Usuário não cadastrado
-        flash("Usuário não cadastrado", "usuario")  # Categorizar a mensagem como 'usuario'
+    # Usuário não cadastrado
+        flash("Usuário não cadastrado", "usuario")
         return redirect("/login")
-    
+
+    if not senha_informada:
+    # Se a senha não for informada
+        flash("Informe a senha", "senha")
+        return redirect("/login")
+
     if usuario['senhaUsuario'] != senha_informada:
-        # Senha incorreta
-        flash("Senha incorreta", "senha")  # Categorizar a mensagem como 'senha'
+    # Senha incorreta
+        flash("Senha incorreta", "senha")
         return redirect("/login")
 
     # Se as credenciais estiverem corretas
