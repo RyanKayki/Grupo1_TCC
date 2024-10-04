@@ -140,6 +140,25 @@ def sobre(idChamado):
     return render_template("vermais.html", title=title, chamado=chamado)
 
 
+# Rota para cadItem
+@adm_blueprint.route("/cadItem")
+def cadastroItem():
+    title = "CADASTRO ITEM"
+    return render_template("cadItem.html", title=title)
+
+# Rota para cadUsuario
+@adm_blueprint.route("/cadUsuario")
+def cadastroUsuario():
+    title = "CADASTRO USUÁRIO"
+    return render_template("cadUsuario.html", title=title)
+
+# Rota para cadLocal
+@adm_blueprint.route("/cadLocal")
+def cadastroLocal():
+    title = "CADASTRO LOCAL"
+    return render_template("cadLocal.html", title=title)
+
+
 @adm_blueprint.route("/excluir/<int:idChamado>")
 def excluir(idChamado):
     # Rota para excluir um chamado
