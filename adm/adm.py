@@ -16,21 +16,19 @@ def adm():
             conexao = conecta_database()
             cursor = conexao.cursor(dictionary=True)
 
-            cursor.execute('SELECT * FROM chamado ORDER BY idChamado DESC')
-            chamado = cursor.fetchall()
+            query = """
+    SELECT c.descChamado, c.dataChamado, u.nomeUsuario, l.nomeLocal, i.nomeItem, c.imgChamado, s.nomeStatus
+    FROM chamado c
+    JOIN usuario u ON c.idUsuario = u.idUsuario
+    JOIN local l ON c.idLocal = l.idLocal
+    JOIN item i ON c.idItem = i.idItem
+    JOIN status s ON c.idStatus = s.idStatus
+    """
+            cursor.execute(query)
+            chamados = cursor.fetchall()
+            print(chamados)
 
-            cursor.execute('SELECT * FROM item')
-            item = cursor.fetchall()
-            item_dict = {e['idItem']: e for e in item}
-
-            cursor.execute('SELECT * FROM local')
-            local = cursor.fetchall()
-            local_dict = {s['idLocal']: s for s in local}
-
-            return render_template("adm.html", chamado=chamado, item=item_dict, local=local_dict, title="Administração", login=True)
-        except Exception as e:
-            print(f"Erro: {e}")
-            return redirect("/error")  # redirecionar para uma página de erro
+            return render_template("adm.html", chamados=chamados, title="Administração", login=True)  # redirecionar para uma página de erro
         finally:
             conexao.close()
     else:
