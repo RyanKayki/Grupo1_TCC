@@ -17,13 +17,13 @@
               <br>
               <small class="text-muted">
                 {% if chamado.idItem %}
-                  Equipamento: {{ chamado.item.nomeItem }}
+                  Equipamento: {{ chamado.nomeItem }}
                 {% elif chamado.idLocal %}
-                  Sala: {{ chamado.local.nomeLocal }}
+                  Sala: {{ chamado.nomeLocal }}
                 {% endif %}
               </small>
-              <span class="badge {% if chamado.status.nomeStatus == 'Aberto' %} bg-danger {% else %} bg-success {% endif %} float-end">
-                {{ chamado.status.nomeStatus }}
+              <span class="badge {% if chamado.nomeStatus == 'Não Respondido' %} bg-danger {% elif chamado.nomeStatus == 'Respondido' %} bg-success {% else %} bg-primary {% endif %} float-end">
+                {{ chamado.nomeStatus }}
               </span>
             </li>
             {% endfor %}
@@ -61,19 +61,19 @@
         <div class="col">
           <div class="card p-3">
             <h6>Não Respondidos</h6>
-            <span class="badge bg-danger">{{ chamados|selectattr("status.nomeStatus", "equalto", "Não Respondido")|list|length }}</span>
+            <span class="badge bg-danger">{{ chamados|selectattr("nomeStatus", "equalto", "Não Respondido")|list|length }}</span>
           </div>
         </div>
         <div class="col">
           <div class="card p-3">
             <h6>Respondidos</h6>
-            <span class="badge bg-success">{{ chamados|selectattr("status.nomeStatus", "equalto", "Respondido")|list|length }}</span>
+            <span class="badge bg-success">{{ chamados|selectattr("nomeStatus", "equalto", "Respondido")|list|length }}</span>
           </div>
         </div>
         <div class="col">
           <div class="card p-3">
             <h6>Concluídos</h6>
-            <span class="badge bg-primary">{{ chamados|selectattr("status.nomeStatus", "equalto", "Concluído")|list|length }}</span>
+            <span class="badge bg-primary">{{ chamados|selectattr("nomeStatus", "equalto", "Concluído")|list|length }}</span>
           </div>
         </div>
       </div>
