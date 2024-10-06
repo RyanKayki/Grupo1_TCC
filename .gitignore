@@ -1,2 +1,3 @@
+/path/to/cache/
+*.cache
 __pycache__/
-*.py[cod]
