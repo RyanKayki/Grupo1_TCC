@@ -37,10 +37,8 @@ def index():
             return redirect("/adm")
         elif cargo == "Manutenção":
             return redirect("/tecHome")
-        elif cargo == "Funcionário":
-            return redirect("/funcHome")
         else:
-            return redirect("/login")
+            return redirect("/funcHome")
     else:
         return redirect("/login")
 
