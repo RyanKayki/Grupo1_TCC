@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="shortcut icon" href="/static/img/app/icon.ico" type="image/x-icon">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.min.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+  <title>Tio Carlos :: {{title}}</title>
+
+  <style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+  
+    body {
+        font-family: 'Arial', sans-serif;
+        background-color: #f1f5f9; /* Cor de fundo padrão */
+        padding: 20px;
+        transition: background-color 0.3s; /* Transição suave */
+        overflow: hidden; /* Evitar rolagem desnecessária */
+    }
+  
+    .footer {
+        display: flex;
+        justify-content: space-around; /* Espaçar os botões uniformemente */
+        padding: 10px;
+        position: fixed;
+        bottom: 0;
+        width: 100%;
+        background-color: #f1f5f9; /* Cor do rodapé */
+        transition: background-color 0.3s; /* Transição suave para o rodapé */
+    }
+  
+    .action-btn {
+        background: none;
+        border: none;
+        cursor: pointer;
+        color: #225656;
+        transition: color 0.3s; /* Transição suave para a cor do botão */
+    }
+  
+    .button-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 70px; /* Largura da caixa */
+        height: 70px; /* Altura da caixa */
+        border-radius: 12px;
+        border: 1px solid transparent; /* Borda padrão */
+        transition: background-color 0.3s, border-color 0.3s; /* Transição suave */
+    }
+  
+    .dark-mode {
+        background-color: #333; /* Cor da caixa em modo escuro */
+        border-color: #e9efef; /* Cor da borda em modo escuro */
+    }
+  
+    .active-icon {
+        color: #e9efef; /* Cor quando ativo */
+    }
+  
+    .badge {
+        margin-top: 24px;
+    }
+  
+    /* Define o tamanho dos ícones */
+    .action-btn i {
+        font-size: 3.0rem; /* Aumenta o tamanho dos ícones */
+    }
+  </style>
+  
+</head>
+<body class="d-flex" style="min-height: 100vh; background-color: #F7FCFC;">
+  <main class="flex-fill">
+    {% block conteudo %}
+    {% endblock %}
+  </main>
+  <footer class="footer">
+    <div class="button-container">
+      <a href="/tecHome">
+        <button class="action-btn"><i class="bi bi-clipboard2-x"></i></button>
+      </a>
+    </div>
+    <div class="button-container">
+      <a href="/tecTask">
+        <button class="action-btn"><i class="bi bi-clipboard2-check"></i></button>
+      </a>
+    </div>
+  </footer>
+  
+
+  <script>
+    // Função para alternar a classe do ícone e o modo de fundo
+    function toggleBackground(container) {
+      const icon = container.querySelector('i');
+      icon.classList.toggle('active-icon'); // Alterna a classe do ícone
+
+      // Alterna a classe da caixa em volta do botão
+      container.classList.toggle('dark-mode');
+
+      // Altera as cores dos ícones dos botões com base no estado
+      const buttons = document.querySelectorAll('.button-container');
+      buttons.forEach(btn => {
+        const btnIcon = btn.querySelector('i');
+        btnIcon.style.color = btn.classList.contains('dark-mode') ? '#e9efef' : '#225656'; // Muda a cor do ícone
+      });
+    }
+  </script>
+</body>
+</html>

@@ -17,16 +17,15 @@ def adm():
             cursor = conexao.cursor(dictionary=True)
 
             query = """
-    SELECT c.descChamado, c.dataChamado, u.nomeUsuario, l.nomeLocal, i.nomeItem, c.imgChamado, s.nomeStatus
-    FROM chamado c
-    JOIN usuario u ON c.idUsuario = u.idUsuario
-    JOIN local l ON c.idLocal = l.idLocal
-    JOIN item i ON c.idItem = i.idItem
-    JOIN status s ON c.idStatus = s.idStatus
-    """
+                SELECT c.descChamado, c.dataChamado, u.nomeUsuario, l.nomeLocal, i.nomeItem, c.imgChamado, s.nomeStatus
+                FROM chamado c
+                JOIN usuario u ON c.idUsuario = u.idUsuario
+                JOIN local l ON c.idLocal = l.idLocal
+                JOIN item i ON c.idItem = i.idItem
+                JOIN status s ON c.idStatus = s.idStatus
+                """
             cursor.execute(query)
             chamados = cursor.fetchall()
-            print(chamados)
 
             return render_template("adm.html", chamados=chamados, title="Administração", login=True)  # redirecionar para uma página de erro
         finally:
@@ -142,19 +141,19 @@ def sobre(idChamado):
 @adm_blueprint.route("/cadItem")
 def cadastroItem():
     title = "CADASTRO ITEM"
-    return render_template("cadItem.html", title=title)
+    return render_template("cadItem.html", title=title, login=True)
 
 # Rota para cadUsuario
 @adm_blueprint.route("/cadUsuario")
 def cadastroUsuario():
     title = "CADASTRO USUÁRIO"
-    return render_template("cadUsuario.html", title=title)
+    return render_template("cadUsuario.html", title=title, login=True)
 
 # Rota para cadLocal
 @adm_blueprint.route("/cadLocal")
 def cadastroLocal():
     title = "CADASTRO LOCAL"
-    return render_template("cadLocal.html", title=title)
+    return render_template("cadLocal.html", title=title, login=True)
 
 
 @adm_blueprint.route("/excluir/<int:idChamado>")
