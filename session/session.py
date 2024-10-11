@@ -102,13 +102,11 @@ def acesso():
 
     # Redirecionando com base no cargo
     if cargo == "Administração":
-        return redirect("/adm")
+            return redirect("/adm")
     elif cargo == "Manutenção":
         return redirect("/tecHome")
-    elif cargo == "Funcionário":
-        return redirect("/funcHome")
     else:
-        return redirect("/login")
+        return redirect("/funcHome")
 
 
 # Rota para recuperação de senha
