@@ -11,7 +11,7 @@
         <li class="list-group-item ps-3 border m-2 pt-1">
           <!-- Link para a página de detalhes do chamado -->
           <a href="{{ url_for('tec.tec_more', idChamado=chamado.idItem) }}" class="verMais">
-            <span class="descricao">{{ chamado.descChamado }}</span>
+            <span class="item">{{ chamado.nomeItem }}</span>
           <br>
           <p class="nome">Aberto por: {{ chamado.nomeUsuario }} ({{ chamado.cargoUsuario }})</p>
           <small class="text-muted fs-6">
@@ -44,7 +44,7 @@
         margin-bottom: 20px;
     }
 
-    .descricao {
+    .item {
         font-size: 26px;
         color: #225656;
         margin-bottom: 2px;
@@ -52,22 +52,11 @@
     .verMais {
         text-decoration: none;
     }
-
-    .descricao-link {
-        text-decoration: none;
-        color: #225656;
-    }
-
-    .descricao-link:hover {
-        text-decoration: underline;
-    }
-
     .nome {
         font-size: 17px;
         color: #225656;
         margin-bottom: 0;
     }
-
     .card {
         display: flex;
         align-items: center;

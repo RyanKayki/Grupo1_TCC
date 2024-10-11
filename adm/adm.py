@@ -33,71 +33,9 @@ def adm():
     else:
         return redirect("/login")
 
-@adm_blueprint.route("/cadastro", methods=['GET', 'POST'])
-def cadastro():
-    conn = conecta_database()
-    cursor = conn.cursor()
-
-    if request.method == 'POST':
-        tipo = request.form.get('tipo')
-
-        try:
-            if tipo == 'item':
-                nome_produto = request.form['nome_produto']
-                destinado_para = request.form['destinado_para']
-                quantidade = request.form['quantidade']
-                data_chegada = request.form['data_chegada']
-                revisao_programada = request.form['revisao_programada']
-
-                comandoSQL = f"INSERT INTO Produto (nome, destinado_para, quantidade, data_chegada, revisao_programada) VALUES ('{nome_produto}', '{destinado_para}', {quantidade}, '{data_chegada}', '{revisao_programada}')"
-                cursor.execute(comandoSQL)
-
-            elif tipo == 'funcionario':
-                nome_completo = request.form['nome_completo']
-                cargo = request.form['cargo']
-                data_nascimento = request.form['data_nascimento']
-                email = request.form['email']
-                numero = request.form['numero']
-
-                comandoSQL = f"INSERT INTO Funcionario (nome_completo, cargo, data_nascimento, email, numero) VALUES ('{nome_completo}', '{cargo}', '{data_nascimento}', '{email}', '{numero}')"
-                cursor.execute(comandoSQL)
-
-            elif tipo == 'salas':
-                nome_sala = request.form['nome_sala']
-                numero_sala = request.form['numero_sala']
-                bloco = request.form['bloco']
-
-                comandoSQL = f"INSERT INTO Salas (nome_sala, numero_sala, bloco) VALUES ('{nome_sala}', '{numero_sala}', '{bloco}')"
-                cursor.execute(comandoSQL)
-
-            conn.commit()
-            flash('Cadastro realizado com sucesso!', 'success')
-
-        except Exception as e:
-            conn.rollback()
-            flash(f'Ocorreu um erro: {str(e)}', 'danger')
-        finally:
-            cursor.close()
-            conn.close()
-            return render_template('cadastro.html')
-
-    # GET request: recupera os cargos
-    try:
-        cursor.execute("SELECT DISTINCT cargoUsuario FROM usuario")  # Substitua pelo nome correto da tabela
-        cargos = cursor.fetchall()
-    except Exception as e:
-        cargos = []
-        flash(f'Ocorreu um erro ao recuperar os cargos: {str(e)}', 'danger')
-    finally:
-        cursor.close()
-        conn.close()
-
-    return render_template('cadastro.html', cargos=cargos)
-
-
 
 # Rota para cadastro de chamado
-@adm_blueprint.route("/cadchamados")
+@adm_blueprint.route("/cadchamados", methods=['GET', 'POST'])
 def cadchamados():
     login = verifica_sessao()
     if login:
@@ -105,23 +43,41 @@ def cadchamados():
             conexao = conecta_database()
             cursor = conexao.cursor(dictionary=True)
 
-            # Obtenha as salas
-            cursor.execute('SELECT * FROM local')
-            salas = cursor.fetchall()
+            if request.method == 'POST':
+                # Obter os dados do formulário
+                area = request.form.get('area')
+                local = request.form.get('local')
+                item = request.form.get('item')
+                descricao = request.form.get('descricao')
+                imagem = request.files.get('imagem')  # Para imagem enviada
+                
+                # Lógica para salvar os dados no banco de dados
+                cursor.execute("""
+                    INSERT INTO Chamado (descChamado, imgChamado, idItem, idLocal, idUsuario, idStatus, dataChamado) 
+                    VALUES (%s, %s, %s, %s, %s, 1, NOW())  -- Assumindo que o status inicial é '1'
+                """, (descricao, imagem.filename if imagem else None, item, local, login['idUsuario']))
 
-            # Obtenha os equipamentos
+                conexao.commit()
+                flash('Chamado cadastrado com sucesso!', 'success')
+                return redirect('/cadchamados')
+
+            # Obtenção dos dados para o formulário
+            cursor.execute('SELECT * FROM local')
+            locais = cursor.fetchall()
+
             cursor.execute('SELECT * FROM item')
-            equipamentos = cursor.fetchall()
+            itens = cursor.fetchall()
+
+            cursor.execute("SELECT idArea, nomeArea FROM Area")
+            areas = cursor.fetchall()
 
             title = "Cadastro de chamado"
-            return render_template("cadchamados.html", title=title, login=login, salas=salas, equipamentos=equipamentos)
-        except Exception as e:
-            print(f"Erro: {e}")
-            return redirect("/error")  # redirecionar para uma página de erro
+            return render_template("cadchamados.html", title=title, login=login, locais=locais, itens=itens, areas=areas)
         finally:
             conexao.close()
     else:
         return redirect("/login")
+
 
 
 
