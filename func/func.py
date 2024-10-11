@@ -15,3 +15,9 @@ def func_home():
 def cadastro_funcionario_json():
     # Implementar lógica de cadastro de funcionário aqui
     pass
+
+# Rota do perfil do funcionário
+@func_blueprint.route("/Perfil_funcionario", methods=['POST'])
+def perfil_func():
+    # Implementar lógica da tela de perfil
+    pass

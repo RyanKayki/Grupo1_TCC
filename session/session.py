@@ -59,29 +59,48 @@ def acesso():
     cursor.execute('SELECT * FROM usuario WHERE nomeUsuario = %s', (usuario_informado,))
     usuario = cursor.fetchone()
     cursor.close()  # Fechando o cursor
-    conexao.close()
 
     if usuario is None:
-    # Usuário não cadastrado
+        # Usuário não cadastrado
         flash("Usuário não cadastrado", "usuario")
         return redirect("/login")
 
     if not senha_informada:
-    # Se a senha não for informada
+        # Se a senha não for informada
         flash("Informe a senha", "senha")
         return redirect("/login")
 
     if usuario['senhaUsuario'] != senha_informada:
-    # Senha incorreta
+        # Senha incorreta
         flash("Senha incorreta", "senha")
         return redirect("/login")
 
     # Se as credenciais estiverem corretas
+    cursor = conexao.cursor(dictionary=True)
     session["login"] = True
     session["usuario"] = usuario_informado
-    session["cargo"] = usuario['cargoUsuario']
+    print(usuario_informado)
+    # Query para pegar o nome do cargo
+    query = """
+    SELECT c.nomeCargo
+    FROM Cargo c
+    JOIN usuario u ON c.idCargo = u.idCargo
+    WHERE u.nomeUsuario = %s
+"""
 
+    cursor.execute(query, (usuario_informado,))
+    nomeCargo = cursor.fetchall()
+
+    if nomeCargo:
+        session["cargo"] = nomeCargo['nomeCargo']  # Salvando o nome do cargo corretamente na sessão
+    else:
+        session["cargo"] = None
     cargo = session['cargo']
+    print(cargo)
+    cursor.close()  # Fechando o cursor
+    conexao.close()
+
+    # Redirecionando com base no cargo
     if cargo == "Administração":
         return redirect("/adm")
     elif cargo == "Manutenção":
@@ -90,6 +109,7 @@ def acesso():
         return redirect("/funcHome")
     else:
         return redirect("/login")
+
 
 # Rota para recuperação de senha
 @session_blueprint.route('/recupsenha')

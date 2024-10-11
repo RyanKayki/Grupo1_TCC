@@ -32,7 +32,7 @@
             padding: 30px;
             text-align: center;
             display: flex;
-            justify-content: center;
+            justify-content: space-between;
             align-items: center;
             position: relative;
         }
@@ -45,9 +45,22 @@
             text-decoration: none;
         }
 
-        .title {
+        .title-container {
+            flex-grow: 1;
+            display: flex;
+            justify-content: center;
+        }
+
+        .main-title {
             color: #fff;
-            font-size: 25px;
+            font-size: 30px;
+            text-align: center;
+        }
+
+        .logo {
+            max-height: 50px;
+            max-width: 50px;
+            border-radius: 50%;
         }
 
         .form-container {
@@ -104,16 +117,30 @@
         .submit-button:hover {
             background-color: #1a4242;
         }
+
+        .new-chamado h1 {
+            font-size: 32px;
+            color: #225656;
+            margin-bottom: 80%;
+            margin-top: 20px;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <header class="header">
             <a href="#" class="back-button">&#8592;</a>
-            <h1 class="title">Novo chamado</h1>
+            <div class="title-container">
+                <h1 class="main-title">Tio Carlos Concerta</h1>
+            </div>
+            <img src="static/IMG/logo_branca.png" alt="Logo" class="logo">
         </header>
 
         <div class="form-container">
+            <div class="new-chamado">
+                <h1>Novo chamado</h1>
+            </div>
+            
             <div class="photo-upload">
                 <label for="photoInput" class="photo-label">
                     <img src="placeholder.png" alt="Adicionar uma foto">
