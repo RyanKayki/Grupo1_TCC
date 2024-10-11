@@ -92,11 +92,11 @@ def acesso():
     nomeCargo = cursor.fetchall()
 
     if nomeCargo:
-        session["cargo"] = nomeCargo['nomeCargo']  # Salvando o nome do cargo corretamente na sessão
+        print(nomeCargo[0]["nomeCargo"])
+        session["cargo"] = nomeCargo[0]["nomeCargo"]  # Salvando o nome do cargo corretamente na sessão
     else:
         session["cargo"] = None
     cargo = session['cargo']
-    print(cargo)
     cursor.close()  # Fechando o cursor
     conexao.close()
 
