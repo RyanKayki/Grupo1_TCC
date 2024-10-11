@@ -12,7 +12,7 @@ def conecta_database():
     conexao = mysql.connector.connect(
         host='localhost',  # Host do Railway
         user='root',                     # Usuário do banco de dados
-        password='senai',  # Senha do banco de dados
+        password='senai',  # Senha do banco de dado
         database='tcc',              # Nome do banco de dados fornecido pelo Railway
         port='3306'                     # Porta do banco de dados no Railway
     )
