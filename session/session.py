@@ -64,13 +64,18 @@ def acesso():
     conexao.close()
 
     if usuario is None:
-        # Usuário não cadastrado
-        flash("Usuário não cadastrado", "usuario")  # Categorizar a mensagem como 'usuario'
+    # Usuário não cadastrado
+        flash("Usuário não cadastrado", "usuario")
         return redirect("/login")
-    
+
+    if not senha_informada:
+    # Se a senha não for informada
+        flash("Informe a senha", "senha")
+        return redirect("/login")
+
     if usuario['senhaUsuario'] != senha_informada:
-        # Senha incorreta
-        flash("Senha incorreta", "senha")  # Categorizar a mensagem como 'senha'
+    # Senha incorreta
+        flash("Senha incorreta", "senha")
         return redirect("/login")
 
     # Se as credenciais estiverem corretas
