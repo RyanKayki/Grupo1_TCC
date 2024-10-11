@@ -1,90 +1,97 @@
 {% extends 'modelFunc.html' %}
 {% block conteudo %}
 <main class="container-fluid">
-  <div class="row justify-content-center align-items-center" style="height: 100vh;">
+    <!-- Loop pelos chamados -->
+    <div class="card-body">
+      <ul class="list-group list-group-flush">
+        {% for chamado in chamados %}
+        <li class="list-group-item ps-3 border m-2 pt-1">
+          <!-- Link para a página de detalhes do chamado -->
+          <a href="{{ url_for('tec.tec_more', idChamado=chamado.idItem) }}" class="verMais">
+            <span class="item">{{ chamado.descChamado }}</span>
+          <br>
+          <small class="text-muted fs-6">
+            Local: {{ chamado.nomeLocal }}
+          </small>
+          <span class="badge 
+            {% if chamado.nomeStatus == 'Não Respondido' %} bg-danger
+            {% elif chamado.nomeStatus == 'Concluído' %} bg-success
+            {% else %} bg-primary
+            {% endif %} 
+            float-end">
+            {{ chamado.nomeStatus }}
+          </span>
+        </a>
+        </li>
+        {% endfor %}
 
-    <div class="col-12 col-md-6 col-lg-4 text-center d-flex align-items-center flex-column">
-      <h1 style="color: #FFFFFF margin">Tio Carlos Conserta</h1>
-      <div style="display: flex; justify-content: center; padding-top: 20px;">
-        <img src="/static/img/app/logo.png" alt="Tio Carlos Conserta" class="img-fluid" style="max-width: 200px; height: auto;">
+
+
+        <div class="chamado-grupo">
+          <div class="chamado-card">
+              <img src="{{ url_for('tec.serve_image', filename=chamado.imgChamado) }}" class="chamado-imagem">
+              <div class="chamado-conteudo">
+                  <span class="item">{{ chamado.nomeItem }}</span>
+                  <p class="local">Local: {{ chamado.nomeLocal }}</p>
+              </div>
+          </div>
       </div>
 
-      <div class="login-box mt-4">
-        <form>
-          <p style="color: #1D4D4a;"><strong>Recuperar senha</strong></p>
-          <div class="form-group">
-            <input type="text" class="form-control" placeholder="Insira o código..." required>
-          </div>
-          <div class="mt-3">
-            <a href="#" class="link-primary">Reenviar código...</a>
-          </div>
-          <div class="mt-4">
-            <button type="submit" class="btn btn-primary">Verificar código</button>
-          </div>
-        </form>
-      </div>
+
+
+      </ul>
     </div>
-  </div>
 </main>
 
 <style>
-
-  body, html {
-    height: 100%;
-    margin: 0;
+  .container {
+      max-width: 400px;
+      margin: auto;
   }
 
-  main {
-    background-color: #225656;
-  }
-  
-  .login-box {
-    width: 100%;
-    max-width: 300px;
-    background-color: #E8E8E8;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+  h1 {
+      font-size: 42px;
+      color: #225656;
+      margin-bottom: 20px;
   }
 
-  .form-control {
-    background-color: #F0F0F0;
-    border: none;
-    border-radius: 5px;
-    padding: 10px;
+  .item {
+      font-size: 26px;
+      color: #225656;
+      margin-bottom: 2px;
+  }
+  .verMais {
+      text-decoration: none;
   }
 
-  .btn-primary {
-    background-color: #29574b;
-    border: none;
-    width: 100%;
-    padding: 10px;
-    border-radius: 5px;
-    color: #FFFFFF;
-    font-weight: bold;
+
+  .nome {
+      font-size: 17px;
+      color: #225656;
+      margin-bottom: 0;
   }
 
-  .btn-primary:hover {
-    background-color: #1D4D4A;
+  .card {
+      display: flex;
+      align-items: center;
+      background-color: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      margin-bottom: 15px;
+      padding: 12px;
+      transition: background-color 0.3s;
   }
-
-  a {
-    color: #1D4D4A;
-    text-decoration: none;
+  .list-group-item {
+    background-color: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: background-color 0.3s;
   }
-
-  a:hover {
-    text-decoration: underline;
-  }
-
-  @media (max-width: 576px) {
-    h1 {
-      font-size: 1.8rem;
-    }
-    .login-box {
-      padding: 15px;
-    }
+  .badge {
+      margin-top: 24px;
+      font-size: 15px;
   }
 </style>
+
 
 {% endblock %}
