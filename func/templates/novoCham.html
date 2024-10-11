@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Novo Chamado</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #fff;
+            color: #000;
+        }
+
+        .container {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header {
+            background-color: #225656;
+            width: 100%;
+            padding: 30px;
+            text-align: center;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+        }
+
+        .back-button {
+            position: absolute;
+            left: 15px;
+            font-size: 24px;
+            color: #fff;
+            text-decoration: none;
+        }
+
+        .title-container {
+            flex-grow: 1;
+            display: flex;
+            justify-content: center;
+        }
+
+        .main-title {
+            color: #fff;
+            font-size: 30px;
+            text-align: center;
+        }
+
+        .logo {
+            max-height: 50px;
+            max-width: 50px;
+            border-radius: 50%;
+        }
+
+        .form-container {
+            width: 90%;
+            max-width: 400px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 20px;
+        }
+
+        .photo-upload {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .photo-label img {
+            max-width: 500px;
+            max-height: 500px;
+            border-radius: 10px;
+            border: 2px dashed #225656;
+            object-fit: cover;
+        }
+
+        .photo-input {
+            display: none;
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            border: 2px solid #22565600;
+            background-color: #22565621;
+            font-size: 16px;
+            color: #000;
+        }
+
+        .submit-button {
+            width: 100%;
+            padding: 15px;
+            background-color: #225656;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-bottom: 10%;
+        }
+
+        .submit-button:hover {
+            background-color: #1a4242;
+        }
+
+        .new-chamado h1 {
+            font-size: 32px;
+            color: #225656;
+            margin-bottom: 80%;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <a href="#" class="back-button">&#8592;</a>
+            <div class="title-container">
+                <h1 class="main-title">Tio Carlos Concerta</h1>
+            </div>
+            <img src="static/IMG/logo_branca.png" alt="Logo" class="logo">
+        </header>
+
+        <div class="form-container">
+            <div class="new-chamado">
+                <h1>Novo chamado</h1>
+            </div>
+            
+            <div class="photo-upload">
+                <label for="photoInput" class="photo-label">
+                    <img src="placeholder.png" alt="Adicionar uma foto">
+                </label>
+                <input type="file" id="photoInput" class="photo-input" accept="image/*">
+            </div>
+
+            <select class="input-field">
+                <option>Filtrar área</option>
+                <option>Bloco 1</option>
+                <option>Bloco 2</option>
+                <option>Área externa</option>
+                <option>Quadra</option>
+            </select>
+
+            <select class="input-field">
+                <option>Local do problema</option>
+                <option>Local 1</option>
+                <option>Local 2</option>
+            </select>
+
+            <select class="input-field">
+                <option>Itens</option>
+                <option>Item 1</option>
+                <option>Item 2</option>
+            </select>
+
+            <textarea class="input-field" placeholder="Descrição..."></textarea>
+
+            <button class="submit-button">Enviar chamado</button>
+        </div>
+    </div>
+</body>
+</html>

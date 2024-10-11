@@ -5,7 +5,7 @@ app = Flask(__name__)
 app.secret_key = "Rhzin"
 
 # Definindo o blueprint
-session_blueprint = Blueprint("session", __name__, template_folder="templates")
+session_blueprint = Blueprint("session", __name__, template_folder="templates", static_folder='src')
 
 #DB CLOUD
 def conecta_database():
@@ -36,11 +36,9 @@ def index():
         if cargo == "Administração":
             return redirect("/adm")
         elif cargo == "Manutenção":
-            return redirect("/TecHome")
-        elif cargo == "Funcionário":
-            return redirect("/FuncHome")
+            return redirect("/tecHome")
         else:
-            return redirect("/login")
+            return redirect("/funcHome")
     else:
         return redirect("/login")
 
@@ -87,9 +85,9 @@ def acesso():
     if cargo == "Administração":
         return redirect("/adm")
     elif cargo == "Manutenção":
-        return redirect("/TecHome")
+        return redirect("/tecHome")
     elif cargo == "Funcionário":
-        return redirect("/FuncHome")
+        return redirect("/funcHome")
     else:
         return redirect("/login")
 

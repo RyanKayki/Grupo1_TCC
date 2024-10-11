@@ -1,0 +1,109 @@
+{% extends 'modelTec.html' %}
+{% block conteudo %}
+
+  <div class="container">
+    <a href="/tecHome" class="back-button">&#8592;</a>
+    <div class="image-container">
+        <img src="{{ url_for('tec.serve_image', filename=chamado.imgChamado) }}" alt="{{ chamado.tituloChamado }}" class="bulb-image">
+    </div>
+
+    <!-- Detalhes da manutenção -->
+    <div class="details-container">
+      <h2 class="title">{{ chamado.tituloChamado }}</h2>
+      <p class="descricao">{{ chamado.descChamado }}</p>
+      <p class="local">Sala: {{ chamado.nomeLocal }}</p>
+    </div>
+
+    <!-- Botões logo abaixo do conteúdo -->
+    <div class="bottom-buttons">
+      <div class="add-response">
+        <button class="btn-add">
+          <span>Adicionar Resposta</span>
+          <i class="plus-icon">+</i>
+        </button>
+      </div>
+
+      <div class="finalizar">
+        <button class="btn-finalizar">FINALIZAR</button>
+      </div>
+    </div>
+  </div>
+
+  <style>
+    .container {
+        max-width: 400px;
+        margin: auto;
+        padding: 20px;
+    }
+
+    .back-button {
+        font-size: 24px;
+        color: #225656;
+        text-decoration: none;
+    }
+
+    .image-container {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 20px;
+    }
+
+    .bulb-image {
+        width: 200px;
+        height: auto;
+        border-radius: 10px;
+        border: 2px solid #225656;
+    }
+
+    .details-container {
+        text-align: center;
+    }
+
+    .title {
+        font-size: 28px;
+        color: #225656;
+        margin-bottom: 10px;
+    }
+
+    .descricao {
+        font-size: 24px;
+        color: #225656;
+        margin-bottom: 5px;
+    }
+
+    .local {
+        font-size: 19px;
+        color: #777;
+    }
+
+    .bottom-buttons {
+        margin-top: 50%; /* Controla a distância dos botões em relação ao conteúdo acima */
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .btn-add, .btn-finalizar {
+        background-color: #225656;
+        color: white;
+        border: none;
+        border-radius: 10px;
+        padding: 10px 20px;
+        font-size: 16px;
+        cursor: pointer;
+    }
+
+    .btn-add {
+        display: flex;
+        align-items: center;
+    }
+
+    .plus-icon {
+        font-size: 24px;
+        margin-left: 10px;
+    }
+  </style>
+
+{% endblock %}
