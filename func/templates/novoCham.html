@@ -60,7 +60,6 @@
         .logo {
             max-height: 50px;
             max-width: 50px;
-            border-radius: 50%;
         }
 
         .form-container {
@@ -79,12 +78,28 @@
             margin-bottom: 20px;
         }
 
+        .photo-label {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background-color: #E8F1F2;
+            padding: 20px;
+            width: 150px;
+            height: 150px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+        }
+
         .photo-label img {
-            max-width: 500px;
-            max-height: 500px;
-            border-radius: 10px;
-            border: 2px dashed #225656;
-            object-fit: cover;
+            width: 130%;
+            height: 130%;
+        }
+
+        .photo-label span {
+            margin-top: 10px;
+            font-size: 14px;
+            color: #000;
         }
 
         .photo-input {
@@ -105,7 +120,7 @@
         .submit-button {
             width: 100%;
             padding: 15px;
-            background-color: #225656;
+            background-color: #22564a;
             color: #fff;
             border: none;
             border-radius: 8px;
@@ -118,11 +133,15 @@
             background-color: #1a4242;
         }
 
-        .new-chamado h1 {
-            font-size: 32px;
-            color: #225656;
-            margin-bottom: 80%;
+        .new-chamado {
             margin-top: 20px;
+            text-align: center;
+        }
+
+        .new-chamado h1 {
+            font-size: 24px;
+            color: #225656;
+            margin-bottom: 10px;
         }
     </style>
 </head>
@@ -133,7 +152,7 @@
             <div class="title-container">
                 <h1 class="main-title">Tio Carlos Concerta</h1>
             </div>
-            <img src="static/IMG/logo_branca.png" alt="Logo" class="logo">
+            <img src="../../static/IMG/app/logo_branca.png" alt="Logo" class="logo">
         </header>
 
         <div class="form-container">
@@ -143,7 +162,7 @@
             
             <div class="photo-upload">
                 <label for="photoInput" class="photo-label">
-                    <img src="placeholder.png" alt="Adicionar uma foto">
+                    <img src="../../src/img/ImagemIcom.png" alt="Adicionar imagem">
                 </label>
                 <input type="file" id="photoInput" class="photo-input" accept="image/*">
             </div>

@@ -40,42 +40,38 @@
         <!-- Formulário de Chamados -->
         <div class="card mx-auto" id="formFuncionario" style="max-width: 600px; background-color: #fff; margin-bottom: 40px;">
             <div class="card-body">
-               
-                <form action="/cadastro" method="post">
-                    <input type="hidden" name="tipo" value="funcionario"> <!-- Campo oculto para indicar o tipo -->
-
-                    <div class="row mb-3">
-                        <div class="col-md-6 mb-3">
-                            <label for="area" class="form-label">Área:</label>
-                            <select class="form-select" id="area" name="area" required>
-                                <option selected>Escolha...</option>
-                                {% for area in areas %}
-                                <option value="{{ area }}">{{ area }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-
-                        <div class="col-md-6 mb-3">
-                            <label for="local" class="form-label">Local:</label>
-                            <select class="form-select" id="local" name="local" required>
-                                <option selected>Escolha...</option>
-                                {% for local in locais %}
-                                <option value="{{ local }}">{{ local }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
+                <form action="/cadchamados" method="post">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="area" class="form-label">Área:</label>
+                        <select class="form-select" id="area" name="area" required>
+                            <option selected>Escolha...</option>
+                            {% for area in areas %}
+                            <option value="{{ area.idArea }}">{{ area.nomeArea }}</option>
+                            {% endfor %}
+                        </select>
                     </div>
-
+                    
+                    <div class="col-md-6 mb-3">
+                        <label for="local" class="form-label">Local:</label>
+                        <select class="form-select" id="local" name="local" required>
+                            <option selected>Escolha...</option>
+                            {% for local in locais %}
+                            <option value="{{ local.idLocal }}">{{ local.nomeLocal }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
                     <div class="col-md-8 mb-3 w-100">
                         <label for="item" class="form-label">Item:</label>
                         <select class="form-select" id="item" name="item" required>
                             <option selected>Escolha...</option>
                             {% for item in itens %}
-                            <option value="{{ item }}">{{ item }}</option>
+                            <option value="{{ item.idItem }}">{{ item.nomeItem }}</option>
                             {% endfor %}
                         </select>
                     </div>
-
+                    
                     <div class="col-md-8 mb-3 w-100">
                         <label for="descricao" class="form-label">Descrição:</label>
                         <textarea class="form-control" id="descricao" name="descricao" required></textarea>
@@ -105,12 +101,11 @@
         var setorSelect = document.getElementById('setorSelect');
         var options = '';
 
-        if (porSelect === 'sala') {
-            setorLabel.innerText = 'Sala:';
-            options = `{% for sala in salas %}<option value="{{ sala.idLocal }}">{{ sala.nomeLocal }}</option>{% endfor %}`;
+        if (porSelect === 'local') {
+            options = `{% for local in locais %}<option value="{{ local.idLocal }}">{{ local.nomeLocal }}</option>{% endfor %}`;
         } else {
-            setorLabel.innerText = 'Equipamento:';
-            options = `{% for equipamento in equipamentos %}<option value="{{ equipamento.idItem }}">{{ equipamento.nomeItem }}</option>{% endfor %}`;
+            setorLabel.innerText = 'item:';
+            options = `{% for item in itens %}<option value="{{ item.idItem }}">{{ item.nomeItem }}</option>{% endfor %}`;
         }
         setorSelect.innerHTML = options;
     }
