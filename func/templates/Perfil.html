@@ -79,21 +79,9 @@
             width: 20px;
             
         }
-
-
         @media (max-width: 768px) {
-            .container {
-                width: 90%; 
-                padding: 20px; 
-            }
-            .profile-info .profile-field {
-                flex: 0 0 100%; 
-            }
             header h1 {
-                font-size: 20px; 
-            }
-            h2 {
-                font-size: 24px; 
+                font-size: 18px; 
             }
             .profile-field {
                 font-size: 16px; 
@@ -103,14 +91,19 @@
         @media (max-width: 480px) {
             header {
                 flex-direction: column;
-                text-align: center; 
+                text-align: center;
             }
             header h1 {
-                font-size: 18px; 
+                font-size: 16px;
             }
             .profile-picture img {
-                width: 10px;
-                height: 10px; 
+                width: 80px;
+                height: 80px; 
+            }
+            .profile-field {
+                font-size: 14px;
+                padding: 10px;
+                margin: 5px 10px;
             }
         }
     </style>
