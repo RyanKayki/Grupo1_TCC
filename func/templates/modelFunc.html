@@ -15,27 +15,26 @@
   <header style="background-color: #225656;">
     <nav class="navbar" data-bs-theme="dark">
       <div class="container-fluid">
-        <a class="navbar-brand text-light" href="#">Tio Carlos Conserta</a>
         <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar" aria-controls="offcanvasNavbar" aria-label="Toggle navigation">
           <span class="navbar-toggler-icon"></span>
         </button>
-        <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasNavbar" aria-labelledby="offcanvasNavbarLabel" style="background-color:#225656">
+        <div class="offcanvas offcanvas-start" tabindex="-1" id="offcanvasNavbar" aria-labelledby="offcanvasNavbarLabel" style="background-color:#225656">
           <div class="offcanvas-header">
-            <h5 class="offcanvas-title text-light" id="offcanvasNavbarLabel">Menu</h5>
+            <h1 class="offcanvas-title text-light" id="offcanvasNavbarLabel">Menu</h1>
             <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
           </div>
           <div class="offcanvas-body">
-            <ul class="navbar-nav me-auto mb-2 mb-lg-0 fs-6">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0 fs-1">
               {% if login %}
-              <li class="nav-item semi-bold row">
+              <li class="nav-item semi-bold row mb-4">
                 <div class="rounded-circle col-2 d-flex align-items-center" style="width: 64px; height: 64px; background-image: url('../../static/IMG/users/Adillindo.jpg'); background-size: cover; background-position: center;"></div>  
                 <a class="nav-link text-light col-10 d-flex align-items-center ps-2" aria-current="page" href="/">Perfil</a>
               </li>
-              <li class="nav-item semi-bold">
-                  <a class="nav-link text-light" aria-current="page" href="/cadastro">Novo Chamado</a>
+              <li class="nav-item semi-bold mb-4">
+                  <a class="nav-link text-light" aria-current="page" href="/cadastro"><i class="bi bi-house-door-fill me-2"></i> Novo Chamado</a>
               </li>
-              <li class="nav-item semi-bold">
-                  <a class="nav-link text-light" aria-current="page" href="/logout">Sair</a>
+              <li class="nav-item semi-bold mb-4">
+                  <a class="nav-link text-light" aria-current="page" href="/logout"><i class="bi bi-box-arrow-right me-2"></i> Sair</a>
               </li>
               {% else %}
               <li class="nav-item semi-bold">
@@ -45,6 +44,8 @@
           </ul>
           </div>
         </div>
+        <h1 class="navbar-brand text-light">Tio Carlos Conserta</h1>
+        <a class="navbar-brand" href="#"><img src="../../static/IMG/app/logo_branca.png" alt="Logo" width="50px"></a>
       </div>
     </nav>
 </header>
