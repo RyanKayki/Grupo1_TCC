@@ -7,43 +7,44 @@
 
     <!-- Verifica se há chamados finalizados -->
     {% if chamados %}
-        <!-- Criando uma lista para armazenar chamados por data -->
-        {% set chamados_por_data = [] %}
+    {% set chamados_por_data = [] %}
+    
+    {% for chamado in chamados %}
+        {% set data_chamado = chamado.concChamado %}
         
-        <!-- Loop para agrupar chamados por data -->
-        {% for chamado in chamados %}
-            {% set data_chamado = chamado.dataChamado | data_formatada %}
+        <!-- Verifica se data_chamado não é None antes de formatar -->
+        {% if data_chamado %}
+            {% set data_formatada = data_chamado | data_formatada %}
+        {% else %}
+            {% set data_formatada = 'Data não disponível' %}
+        {% endif %}
 
-            <!-- Verifica se a data já foi adicionada à lista -->
-            {% if loop.index == 1 or chamados[loop.index - 2].dataChamado | data_formatada != data_chamado %}
-                <div class="data-container">
-                    <p class="data">{{ data_chamado }}</p>
-                    <div class="linha-separacao"></div> 
-                </div>
-            {% endif %}
-            
-            <div class="chamado-grupo">
-                {% set placeholder_image = url_for('tec.serve_image', filename='ImagemIcon.png') %}
-                <div class="chamado-card">
-                    <!-- Acessando o ID do chamado para abrir na página "Ver Mais" -->
-                    
-                        <!-- Puxando a imagem do banco de dados -->
-                    <img
-                        src="{{ url_for('tec.serve_image', filename=chamado.imgChamado) }}" 
-                        class="chamado-imagem"
-                        onerror="this.onerror=null; this.src='{{ placeholder_image }}';">
-                    <a href="{{ url_for('tec.tec_more', idChamado=chamado.idChamado) }}" class="verMais">   
-                        <div class="chamado-conteudo">
-                            <span class="descricao">{{ chamado.nomeItem }}</span>
-                            <p class="local">Local: {{ chamado.nomeLocal }}</p>
-                        </div>
-                    </a>
-                </div>
+        {% if loop.index == 1 or chamados[loop.index - 2].concChamado | data_formatada != data_formatada %}
+            <div class="data-container">
+                <p class="data">{{ data_formatada }}</p>
+                <div class="linha-separacao"></div> 
             </div>
-        {% endfor %}
-    {% else %}
-        <p class="sem-chamados">Nenhum chamado finalizado até o momento.</p>
-    {% endif %}
+        {% endif %}
+
+        <div class="chamado-grupo">
+            {% set placeholder_image = url_for('tec.serve_image', filename='ImagemIcon.png') %}
+            <div class="chamado-card">
+                <img
+                    src="{{ url_for('tec.serve_image', filename=chamado.imgChamado) }}" 
+                    class="chamado-imagem"
+                    onerror="this.onerror=null; this.src='{{ placeholder_image }}';">
+                <a href="{{ url_for('tec.tec_more', idChamado=chamado.idChamado) }}" class="verMais">   
+                    <div class="chamado-conteudo">
+                        <span class="descricao">{{ chamado.nomeItem }}</span>
+                        <p class="local">Local: {{ chamado.nomeLocal }}</p>
+                    </div>
+                </a>
+            </div>
+        </div>
+    {% endfor %}
+{% else %}
+    <p class="sem-chamados">Nenhum chamado finalizado até o momento.</p>
+{% endif %}
 </div>
 
 <style>
