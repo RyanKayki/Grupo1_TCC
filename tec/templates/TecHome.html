@@ -3,19 +3,26 @@
 {% block conteudo %}
 
 <div class="container">
-    <h1 style="font-family: Cousine; font-weight: 700;">Manutenções</h1>
+    <h1 style="font-family: Poppins; font-weight: 700;">Manutenções</h1>
 
     <!-- Verifica se existem chamados -->
     {% if chamados %}
         <div class="card-body">
+            {% set placeholder_image = url_for('tec.serve_image', filename='ImagemIcon.png') %}
             <ul class="list-group list-group-flush" style="font-family: Poppins">
                 {% for chamado in chamados %}
-                <li class="list-group-item ps-3 border m-2 pt-1">
-                    <!-- Link para a página de detalhes do chamado -->
-                    <a href="{{ url_for('tec.tec_more', idChamado=chamado.idChamado) }}" class="verMais">
-                        <span class="item">{{ chamado.nomeItem }}</span>
+                <li class="list-group-item ps-3 rounded m-2 pt-1">
+                    <div class="chamado-card">
+                        <img
+                            src="{{ url_for('tec.serve_image', filename=chamado.imgChamado) }}" 
+                            class="chamado-imagem"
+                            onerror="this.onerror=null; this.src='{{ placeholder_image }}';">
+                        <!-- Link para a página de detalhes do chamado -->
+                        <a href="{{ url_for('tec.tec_more', idChamado=chamado.idChamado) }}" class="verMais">
+                            <div class="chamado-conteudo">
+                                <span class="item fw-bold">{{ chamado.nomeItem }}</span>
                         <br>
-                        <p class="nome">Aberto por: {{ chamado.nomeUsuario }} ({{ chamado.nomeCargo }})</p>
+                        <p class="nome fw-bold">{{ chamado.nomeUsuario }} ({{ chamado.nomeCargo }})</p>
                         <small class="text-muted fs-6">
                             Local: {{ chamado.nomeLocal }}
                         </small>
@@ -27,7 +34,9 @@
                             float-end mb-1">
                             {{ chamado.nomeStatus }}
                         </span>
-                    </a>
+                            </div>
+                        </a>
+                    </div>
                 </li>
                 {% endfor %}
             </ul>
@@ -86,6 +95,15 @@
       margin-top: 24px;
       font-size: 15px;
   }
+
+  .chamado-imagem {
+    width: 70px; /* Mantém a largura fixa */
+    height: 70px; /* Define uma altura fixa para manter a proporção */
+    background-color: #E0E0E0;
+    border-radius: 8px;
+    margin-right: 15px; /* Espaço entre imagem e texto */
+    object-fit: contain; /* Ajusta a imagem para caber na caixa sem cortar */
+    }
 </style>
 
 {% endblock %}
