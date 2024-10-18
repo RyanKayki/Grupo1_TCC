@@ -1,90 +1,135 @@
-{% extends 'modelo.html' %}
+{% extends 'modelFunc.html' %}
 {% block conteudo %}
-<main class="container-fluid">
-  <div class="row justify-content-center align-items-center" style="height: 100vh;">
+<div class="container">
 
-    <div class="col-12 col-md-6 col-lg-4 text-center d-flex align-items-center flex-column">
-      <h1 style="color: #FFFFFF margin">Tio Carlos Conserta</h1>
-      <div style="display: flex; justify-content: center; padding-top: 20px;">
-        <img src="../static/img/logo.png" alt="Tio Carlos Conserta" class="img-fluid" style="max-width: 200px; height: auto;">
-      </div>
+  <!-- Verifica se há chamados finalizados -->
+  {% if chamados %}
+  
+  <!-- Loop para agrupar chamados por data -->
+  {% for chamado in chamados %}
 
-      <div class="login-box mt-4">
-        <form>
-          <p style="color: #1D4D4a;"><strong>Recuperar senha</strong></p>
-          <div class="form-group">
-            <input type="text" class="form-control" placeholder="Insira o código..." required>
+      
+      <div class="chamado-grupo">
+          <div class="chamado-card">
+              <img src="{{ url_for('tec.serve_image', filename=chamado.imgChamado) }}" class="chamado-imagem">
+              <div class="chamado-conteudo">
+                  <span class="descricao">{{ chamado.nomeItem }}</span>
+                  <p class="local">Local: {{ chamado.nomeLocal }}</p>
+              </div>
           </div>
-          <div class="mt-3">
-            <a href="#" class="link-primary">Reenviar código...</a>
-          </div>
-          <div class="mt-4">
-            <button type="submit" class="btn btn-primary">Verificar código</button>
-          </div>
-        </form>
       </div>
-    </div>
-  </div>
-</main>
+  {% endfor %}
+  
+  {% else %}
+  <p class="sem-chamados">Nenhum chamado finalizado até o momento.</p>
+  {% endif %}
+</div>
+
 
 <style>
-
-  body, html {
-    height: 100%;
-    margin: 0;
+  .container {
+      max-width: 360px;
+      margin: auto;
+      border-radius: 10px;
   }
 
-  main {
-    background-color: #225656;
-  }
-  
-  .login-box {
-    width: 100%;
-    max-width: 300px;
-    background-color: #E8E8E8;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+  .titulo {
+  font-size: 39px;
+  color: #225656;
+  margin-bottom: 20px;
+  font-weight: bold;
   }
 
-  .form-control {
-    background-color: #F0F0F0;
-    border: none;
-    border-radius: 5px;
-    padding: 10px;
+  .recuo {
+      display: inline-block;
+      text-indent: 20px; 
   }
 
-  .btn-primary {
-    background-color: #29574b;
-    border: none;
-    width: 100%;
-    padding: 10px;
-    border-radius: 5px;
-    color: #FFFFFF;
-    font-weight: bold;
+  .data-container {
+      display: flex;
+      align-items: center;
+      margin-top: 20px; 
   }
 
-  .btn-primary:hover {
-    background-color: #1D4D4A;
+  .data {
+      font-size: 18px; /* Aumenta o tamanho da fonte */
+      color: #333; /* Deixa o texto mais escuro */
+      margin-right: 10px; /* Um pouco mais de espaço */
+      font-weight: bold; /* Torna o texto mais destacado */
   }
 
-  a {
-    color: #1D4D4A;
-    text-decoration: none;
+  .linha-separacao {
+      flex-grow: 1; 
+      border-top: 2px solid #000; /* Linha mais espessa e mais escura */
+      padding-bottom: 13px;
   }
 
-  a:hover {
-    text-decoration: underline;
+  .chamado-card {
+      display: flex;
+      align-items: center;
+      background-color: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      margin-bottom: 15px;
+      padding: 12px;
+      transition: background-color 0.3s;
   }
 
-  @media (max-width: 576px) {
-    h1 {
-      font-size: 1.8rem;
-    }
-    .login-box {
-      padding: 15px;
-    }
+  .chamado-imagem {
+  width: 70px; /* Mantém a largura fixa */
+  height: 70px; /* Define uma altura fixa para manter a proporção */
+  background-color: #E0E0E0;
+  border-radius: 8px;
+  margin-right: 15px;
+  object-fit: contain; /* Ajusta a imagem para caber na caixa sem cortar */
+}
+
+
+
+  .descricao {
+      font-size: 26px;
+      color: #225656;
+      margin-bottom: 2px;
+  }
+
+  .local {
+      font-size: 18px;
+      color: #777;
+      padding-top: 2px;
+  }
+
+  .sem-chamados {
+      text-align: center;
+      font-size: 16px;
+      color: #225656;
+      margin-top: 50%;
+  }
+
+  .action-bar {
+      display: flex;
+      justify-content: space-around;
+      margin-top: 20px;
+      padding-bottom: 20px;
+  }
+
+  .botao-cancelar, .botao-concluir {
+      background-color: #E5F0EF;
+      border: none;
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 24px;
+      color: #225656;
+      cursor: pointer;
+  }
+
+  .botao-cancelar:hover, .botao-concluir:hover {
+      background-color: #cde1e0;
   }
 </style>
+
 
 {% endblock %}

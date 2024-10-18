@@ -1,0 +1,139 @@
+{% extends 'modelTec.html' %}
+
+{% block conteudo %}
+
+<div class="container">
+    <h1 class="titulo">Manutenções <span class="recuo">Finalizadas</span></h1>
+
+    <!-- Verifica se há chamados finalizados -->
+    {% if chamados %}
+        <!-- Criando uma lista para armazenar chamados por data -->
+        {% set chamados_por_data = [] %}
+        
+        <!-- Loop para agrupar chamados por data -->
+        {% for chamado in chamados %}
+            {% set data_chamado = chamado.dataChamado | data_formatada %}
+
+            <!-- Verifica se a data já foi adicionada à lista -->
+            {% if loop.index == 1 or chamados[loop.index - 2].dataChamado | data_formatada != data_chamado %}
+                <div class="data-container">
+                    <p class="data">{{ data_chamado }}</p>
+                    <div class="linha-separacao"></div> 
+                </div>
+            {% endif %}
+            
+            <div class="chamado-grupo">
+                {% set placeholder_image = url_for('tec.serve_image', filename='ImagemIcon.png') %}
+                <div class="chamado-card">
+                    <!-- Acessando o ID do chamado para abrir na página "Ver Mais" -->
+                    
+                        <!-- Puxando a imagem do banco de dados -->
+                    <img
+                        src="{{ url_for('tec.serve_image', filename=chamado.imgChamado) }}" 
+                        class="chamado-imagem"
+                        onerror="this.onerror=null; this.src='{{ placeholder_image }}';">
+                    <a href="{{ url_for('tec.tec_more', idChamado=chamado.idChamado) }}" class="verMais">   
+                        <div class="chamado-conteudo">
+                            <span class="descricao">{{ chamado.nomeItem }}</span>
+                            <p class="local">Local: {{ chamado.nomeLocal }}</p>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        {% endfor %}
+    {% else %}
+        <p class="sem-chamados">Nenhum chamado finalizado até o momento.</p>
+    {% endif %}
+</div>
+
+<style>
+    body {
+        margin: 0; /* Remove a margem padrão do body */
+        padding: 0; /* Remove o padding padrão do body */
+        height: 100vh; /* Define a altura do body para 100% da altura da tela */
+    }
+
+    .container {
+        max-width: 360px;
+        margin: auto;
+        border-radius: 10px;
+        margin-top: 0; /* Garante que o container comece no topo */
+        padding: 20px; /* Mantém o padding desejado */
+    }
+
+    .verMais {
+        text-decoration: none;
+    }
+
+    .titulo {
+        font-size: 39px;
+        color: #225656;
+        margin-bottom: 20px;
+        font-weight: bold;
+    }
+
+    .recuo {
+        display: inline-block;
+        text-indent: 20px; 
+    }
+
+    .data-container {
+        display: flex;
+        align-items: center;
+        margin-top: 20px; 
+    }
+
+    .data {
+        font-size: 18px; /* Aumenta o tamanho da fonte */
+        color: #333; /* Deixa o texto mais escuro */
+        margin-right: 10px; /* Um pouco mais de espaço */
+        font-weight: bold; /* Torna o texto mais destacado */
+    }
+
+    .linha-separacao {
+        flex-grow: 1; 
+        border-top: 2px solid #000; /* Linha mais espessa e mais escura */
+        padding-bottom: 13px;
+    }
+
+    .chamado-card {
+        display: flex; /* Alinha imagem e texto horizontalmente */
+        align-items: center; /* Centraliza verticalmente */
+        background-color: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        margin-bottom: 15px;
+        padding: 12px;
+        transition: background-color 0.3s;
+    }
+
+    .chamado-imagem {
+        width: 70px; /* Mantém a largura fixa */
+        height: 70px; /* Define uma altura fixa para manter a proporção */
+        background-color: #E0E0E0;
+        border-radius: 8px;
+        margin-right: 15px; /* Espaço entre imagem e texto */
+        object-fit: contain; /* Ajusta a imagem para caber na caixa sem cortar */
+    }
+
+    .descricao {
+        font-size: 26px;
+        color: #225656;
+        margin-bottom: 2px;
+    }
+
+    .local {
+        font-size: 18px;
+        color: #777;
+        padding-top: 2px;
+    }
+
+    .sem-chamados {
+        text-align: center;
+        font-size: 16px;
+        color: #225656;
+        margin-top: 50%;
+    }
+</style>
+
+{% endblock %}

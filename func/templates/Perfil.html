@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Perfil</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            width: 80%;
+            max-width: 1200px;
+            background-color: rgb(241, 239, 239);
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            margin: 40px auto;
+            padding: 40px;
+            text-align: center;
+        }
+        header {
+            background-color: #005c56;
+            padding: 20px;
+            border-radius: 10px 10px 0 0;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        header h1 {
+            font-size: 24px;
+            margin: 0;
+        }
+        header .back-icon {
+            font-size: 24px;
+            cursor: pointer;
+        }
+        .profile-picture {
+            margin-top: 60px;
+            position: relative;
+        }
+        .profile-picture img {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            border: 3px solid #f4f4f4;
+        }
+        .profile-picture .edit-icon {
+            position: absolute;
+            bottom: 0;
+            right: 15px;
+            background-color: white;
+            border: 1px solid #ddd;
+            padding: 5px;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+        h2 {
+            color: #005c56;
+            margin: 30px 0;
+            font-size: 28px;
+        }
+        .profile-field {
+            background-color: #e0edeb;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            text-align: left;
+            font-size: 18px;
+        }
+        .profile-field label {
+            font-weight: bold;
+            display: block;
+            margin-bottom: 10px;
+        }
+        .profile-field p {
+            margin: 0;
+        }
+        .profile-info {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+        }
+        .profile-info .profile-field {
+            flex: 0 0 48%;
+            margin-bottom: 20px;
+        }
+        .profile-info .full-width {
+            flex: 0 0 100%;
+        }
+
+        /* Estilos para telas menores que 768px (tablets e celulares) */
+        @media (max-width: 768px) {
+            .container {
+                width: 90%;
+                padding: 20px;
+            }
+            .profile-info .profile-field {
+                flex: 0 0 100%;
+            }
+            header h1 {
+                font-size: 20px;
+            }
+            h2 {
+                font-size: 24px;
+            }
+            .profile-field {
+                font-size: 16px;
+            }
+        }
+
+        /* Estilos para telas menores que 480px (celulares) */
+        @media (max-width: 480px) {
+            header {
+                flex-direction: column;
+                text-align: center;
+            }
+            header h1 {
+                font-size: 18px;
+            }
+            .profile-picture img {
+                width: 100px;
+                height: 100px;
+            }
+            .profile-picture .edit-icon {
+                right: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <span class="back-icon">&#8592;</span>
+            <h1>Tio Carlos Conserta</h1>
+            <span class="menu-icon">&#9881;</span>
+        </header>
+        <div class="profile-picture">
+            <img src="https://via.placeholder.com/120" alt="Foto de perfil">
+        </div>
+        <h2>Perfil</h2>
+
+        <div class="profile-info">
+            <div class="profile-field full-width">
+                <label>Nome</label>
+                <p>Fernanda Aparecida Almeida Lima</p>
+            </div>
+
+            <div class="profile-field">
+                <label>E-mail</label>
+                <p>fernanda.lima@gmail.com</p>
+            </div>
+
+            <div class="profile-field">
+                <label>Senha</label>
+                <p>********</p>
+            </div>
+
+            <div class="profile-field">
+                <label>Número de telefone</label>
+                <p>15997979799</p>
+            </div>
+
+            <div class="profile-field">
+                <label>Cargo</label>
+                <p>Diretora</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

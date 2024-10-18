@@ -1,163 +1,161 @@
 {% extends 'modelAdm.html' %}
+
 {% block conteudo %}
 
-<p class="fw-bold text-center p-4 fs-5" style="color: #225656;">Administração</p>
+
+<button id="toggleButton" class="btn">
+  <ion-icon name="menu-outline"></ion-icon>
+</button>
+<p class="fw-bold text-center p-4 fs-5" style="color: #29474b;">Administração</p>
+
+<!-- Botão de menu adicionado aqui -->
+
 
 <main class="container-fluid">
-  <div class="row m-5">
+  <div class="row m-4">
     <!-- Meus Chamados -->
-    <div class="col-md-3 col-lg-3 col-xl-2">
-      <div class="card h-100" style="width: 18rem;">
+    <div class="col-12 col-md-4 col-lg-3 col-xl-2 mb-3">
+      <div class="card border-0 shadow-sm h-100">
         <div class="card-body">
-          <h5 class="card-title">Meus Chamados</h5>
-          <ul class="list-group">
+          <h5 class="card-title fs-5 text-muted">Meus Chamados</h5>
+          <ul class="list-group list-group-flush">
             {% for chamado in chamados %}
-            <li class="list-group-item">
+            <li class="list-group-item ps-3 border">
               <span>{{ chamado.descChamado }}</span>
               <br>
               <small class="text-muted">
                 {% if chamado.idItem %}
-                  Equipamento: {{ chamado.item.nomeItem }}
+                  Equipamento: {{ chamado.nomeItem }}
                 {% elif chamado.idLocal %}
-                  Sala: {{ chamado.local.nomeLocal }}
+                  Sala: {{ chamado.nomeLocal }}
                 {% endif %}
               </small>
-              <span class="badge {% if chamado.status.nomeStatus == 'Aberto' %} bg-danger {% else %} bg-success {% endif %} float-end">
-                {{ chamado.status.nomeStatus }}
+              <span class="badge 
+                {% if chamado.nomeStatus == 'Não Respondido' %}
+                    bg-danger
+                {% elif chamado.nomeStatus == 'Respondido' %}
+                    bg-success
+                {% else %}
+                    bg-primary
+                {% endif %} 
+                float-end">
+                {{ chamado.nomeStatus }}
               </span>
             </li>
             {% endfor %}
           </ul>
-          <button class="mt-3">
-              Ver Mais
-              <div class="arrow-wrapper">
-                <div class="arrow"></div>
-              </div>
-          </button>
+          <button class="mt-5 minimal-button">Ver Mais</button>
         </div>
       </div>
     </div>
 
     <!-- Chamados Overview -->
-    <div class="col-md-6 col-lg-7 col-xl-8">
+    <div class="col-12 col-md-8 col-lg-7 col-xl-8">
       <div class="row text-center">
-        <div class="col">
-          <div class="card p-3 mb-3">
-            <h6>Chamados Recentes</h6>
+        <div class="col-12 col-sm-4">
+          <div class="card p-3 mb-3 border-0 shadow-sm">
+            <h5 class="text-muted">Registro de Chamados</h5>
           </div>
         </div>
-        <div class="col">
-          <div class="card p-3 mb-3">
-            <h6>Chamados por Sala</h6>
+        <div class="col-12 col-sm-4">
+          <div class="card p-3 mb-3 border-0 shadow-sm">
+            <h5 class="text-muted">Chamados por Sala</h5>
           </div>
         </div>
-        <div class="col">
-          <div class="card p-3 mb-3">
-            <h6>Chamado por Item</h6>
+        <div class="col-12 col-sm-4">
+          <div class="card p-3 mb-3 border-0 shadow-sm">
+            <h5 class="text-muted">Chamados por Item</h5>
           </div>
         </div>
       </div>
       <div class="row text-center mt-4">
-        <div class="col">
-          <div class="card p-3">
-            <h6>Não Respondidos</h6>
-            <span class="badge bg-danger">{{ chamados|selectattr("status.nomeStatus", "equalto", "Não Respondido")|list|length }}</span>
+        <div class="col-12 col-sm-4">
+          <div class="card p-3 border-0 shadow-sm">
+            <h6 class="text-muted">Não Respondidos</h6>
+            <span class="badge bg-danger">{{ chamados|selectattr("nomeStatus", "equalto", "Não Respondido")|list|length }}</span>
           </div>
         </div>
-        <div class="col">
-          <div class="card p-3">
-            <h6>Respondidos</h6>
-            <span class="badge bg-success">{{ chamados|selectattr("status.nomeStatus", "equalto", "Respondido")|list|length }}</span>
+        <div class="col-12 col-sm-4">
+          <div class="card p-3 border-0 shadow-sm">
+            <h6 class="text-muted">Respondidos</h6>
+            <span class="badge bg-success">{{ chamados|selectattr("nomeStatus", "equalto", "Respondido")|list|length }}</span>
           </div>
         </div>
-        <div class="col">
-          <div class="card p-3">
-            <h6>Concluídos</h6>
-            <span class="badge bg-primary">{{ chamados|selectattr("status.nomeStatus", "equalto", "Concluído")|list|length }}</span>
+        <div class="col-12 col-sm-4">
+          <div class="card p-3 border-0 shadow-sm">
+            <h6 class="text-muted">Concluídos</h6>
+            <span class="badge bg-primary">{{ chamados|selectattr("nomeStatus", "equalto", "Concluído")|list|length }}</span>
           </div>
         </div>
       </div>
     </div>
 
     <!-- Ações Rápidas -->
-    <div class="col-md-3 col-lg-2 col-xl-2">
-        <div class="list-group">
-          <a href="/cadchamados" class="list-group-item list-group-item-action" style="cursor: pointer;">Novo Chamado</a>
-          <a onclick="storeFormTypeAndRedirect('funcionario')" class="list-group-item list-group-item-action" style="cursor: pointer;">Cadastrar Usuário</a>
-          <a onclick="storeFormTypeAndRedirect('equipamento')" class="list-group-item list-group-item-action" style="cursor: pointer;">Cadastrar Item</a>
-          <a onclick="storeFormTypeAndRedirect('local')" class="list-group-item list-group-item-action" style="cursor: pointer;">Cadastrar Local</a>
-        </div>
+    <div class="col-12 col-md-4 col-lg-2 col-xl-2 mt-3 mt-md-0 fs-5">
+      <div class="list-group border-0">
+        <a href="/cadchamados" class="list-group-item list-group-item-action text-muted cad">Novo Chamado</a>
+        <a href="/cadUsuario" class="list-group-item list-group-item-action text-muted cad">Cadastrar Usuário</a>
+        <a href="/cadItem" class="list-group-item list-group-item-action text-muted cad">Cadastrar Item</a>
+        <a href="/cadLocal" class="list-group-item list-group-item-action text-muted cad">Cadastrar Local</a>
       </div>
-
+    </div>
+  </div>
 </main>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
-<script>
-    function storeFormTypeAndRedirect(formType) {
-      sessionStorage.setItem('formType', formType);
-      window.location.href = '/cadastro';
-    }
-</script>
 
 <style>
-  button {
-    --primary-color: #29474b;
-    --secondary-color: #fff;
-    --hover-color: #29474b99;
-    --arrow-width: 10px;
-    --arrow-stroke: 2px;
-    box-sizing: border-box;
-    border: 0;
-    border-radius: 20px;
-    color: var(--secondary-color);
-    background: var(--primary-color);
-    display: flex;
-    transition: 0.2s background;
-    align-items: center;
-    gap: 0.6em;
-    font-weight: bold;
-    margin-left: auto;
-  }
-
-  button .arrow-wrapper {
+  #toggleButton {
     display: flex;
     justify-content: center;
     align-items: center;
+    width: 50px;
+    height: 50px;
+    border: none;
+    border-radius: 12px;
+}
+
+#toggleButton ion-icon {
+    font-size: 3em; /* Ajuste o tamanho do ícone */
+    color: black; /* Define a cor do ícone como preto */
+}
+
+
+  button.minimal-button {
+    border: 0;
+    border-radius: 12px;
+    background-color: #29474b;
+    color: white;
+    padding: 0.5em 1.5em;
+    transition: background-color 0.2s ease-in-out;
+    font-weight: 600;
   }
 
-  button .arrow {
-    margin-top: 1px;
-    width: var(--arrow-width);
-    background: var(--primary-color);
-    height: var(--arrow-stroke);
-    position: relative;
-    transition: 0.2s;
+  button.minimal-button:hover {
+    background-color: #1f3b3f;
   }
 
-  button .arrow::before {
-    content: "";
-    box-sizing: border-box;
-    position: absolute;
-    border: solid var(--secondary-color);
-    border-width: 0 var(--arrow-stroke) var(--arrow-stroke) 0;
-    display: inline-block;
-    top: -3px;
-    right: 3px;
-    transition: 0.2s;
-    padding: 3px;
-    transform: rotate(-45deg);
+  .card {
+    border-radius: 12px;
+    background-color: #fff;
   }
 
-  button:hover {
-    background-color: var(--hover-color);
+  .badge {
+    font-size: 0.9em;
   }
 
-  button:hover .arrow {
-    background: var(--secondary-color);
+  .text-muted {
+    color: #6c757d;
   }
 
-  button:hover .arrow:before {
-    right: 0;
+  .list-group-item {
+    border-radius: 12px;
+    padding: 0.75em 1em;
+    margin-bottom: 0.5em;
+  }
+  
+  .cad {
+    background-color: #fff;
   }
 </style>
 

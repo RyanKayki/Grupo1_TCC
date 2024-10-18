@@ -5,7 +5,7 @@ app = Flask(__name__)
 app.secret_key = "Rhzin"
 
 # Definindo o blueprint
-session_blueprint = Blueprint("session", __name__, template_folder="templates")
+session_blueprint = Blueprint("session", __name__, template_folder="templates", static_folder='src')
 
 #DB CLOUD
 def conecta_database():
@@ -36,11 +36,9 @@ def index():
         if cargo == "Administração":
             return redirect("/adm")
         elif cargo == "Manutenção":
-            return redirect("/TecHome")
-        elif cargo == "Funcionário":
-            return redirect("/FuncHome")
+            return redirect("/tecHome")
         else:
-            return redirect("/login")
+            return redirect("/funcHome")
     else:
         return redirect("/login")
 
@@ -61,37 +59,55 @@ def acesso():
     cursor.execute('SELECT * FROM usuario WHERE nomeUsuario = %s', (usuario_informado,))
     usuario = cursor.fetchone()
     cursor.close()  # Fechando o cursor
-    conexao.close()
 
     if usuario is None:
-    # Usuário não cadastrado
+        # Usuário não cadastrado
         flash("Usuário não cadastrado", "usuario")
         return redirect("/login")
 
     if not senha_informada:
-    # Se a senha não for informada
+        # Se a senha não for informada
         flash("Informe a senha", "senha")
         return redirect("/login")
 
     if usuario['senhaUsuario'] != senha_informada:
-    # Senha incorreta
+        # Senha incorreta
         flash("Senha incorreta", "senha")
         return redirect("/login")
 
     # Se as credenciais estiverem corretas
+    cursor = conexao.cursor(dictionary=True)
     session["login"] = True
     session["usuario"] = usuario_informado
-    session["cargo"] = usuario['cargoUsuario']
+    print(usuario_informado)
+    # Query para pegar o nome do cargo
+    query = """
+    SELECT c.nomeCargo
+    FROM Cargo c
+    JOIN usuario u ON c.idCargo = u.idCargo
+    WHERE u.nomeUsuario = %s
+"""
 
-    cargo = session['cargo']
-    if cargo == "Administração":
-        return redirect("/adm")
-    elif cargo == "Manutenção":
-        return redirect("/TecHome")
-    elif cargo == "Funcionário":
-        return redirect("/FuncHome")
+    cursor.execute(query, (usuario_informado,))
+    nomeCargo = cursor.fetchall()
+
+    if nomeCargo:
+        print(nomeCargo[0]["nomeCargo"])
+        session["cargo"] = nomeCargo[0]["nomeCargo"]  # Salvando o nome do cargo corretamente na sessão
     else:
-        return redirect("/login")
+        session["cargo"] = None
+    cargo = session['cargo']
+    cursor.close()  # Fechando o cursor
+    conexao.close()
+
+    # Redirecionando com base no cargo
+    if cargo == "Administração":
+            return redirect("/adm")
+    elif cargo == "Manutenção":
+        return redirect("/tecHome")
+    else:
+        return redirect("/funcHome")
+
 
 # Rota para recuperação de senha
 @session_blueprint.route('/recupsenha')
