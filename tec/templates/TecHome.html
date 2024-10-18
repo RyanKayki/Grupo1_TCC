@@ -1,82 +1,91 @@
 {% extends 'modelTec.html' %}
+
 {% block conteudo %}
 
-  <div class="container">
+<div class="container">
     <h1>Manutenções</h1>
 
-    <!-- Loop pelos chamados -->
-    <div class="card-body">
-      <ul class="list-group list-group-flush">
-        {% for chamado in chamados %}
-        <li class="list-group-item ps-3 border m-2 pt-1">
-          <!-- Link para a página de detalhes do chamado -->
-          <a href="{{ url_for('tec.tec_more', idChamado=chamado.idItem) }}" class="verMais">
-            <span class="item">{{ chamado.nomeItem }}</span>
-          <br>
-          <p class="nome">Aberto por: {{ chamado.nomeUsuario }} ({{ chamado.cargoUsuario }})</p>
-          <small class="text-muted fs-6">
-            Local: {{ chamado.nomeLocal }}
-          </small>
-          <span class="badge 
-            {% if chamado.nomeStatus == 'Não Respondido' %} bg-danger
-            {% elif chamado.nomeStatus == 'Respondido' %} bg-success
-            {% else %} bg-primary
-            {% endif %} 
-            float-end">
-            {{ chamado.nomeStatus }}
-          </span>
-        </a>
-        </li>
-        {% endfor %}
-      </ul>
-    </div>
-  </div>
+    <!-- Verifica se existem chamados -->
+    {% if chamados %}
+        <div class="card-body">
+            <ul class="list-group list-group-flush">
+                {% for chamado in chamados %}
+                <li class="list-group-item ps-3 border m-2 pt-1">
+                    <!-- Link para a página de detalhes do chamado -->
+                    <a href="{{ url_for('tec.tec_more', idChamado=chamado.idChamado) }}" class="verMais">
+                        <span class="item">{{ chamado.nomeItem }}</span>
+                        <br>
+                        <p class="nome">Aberto por: {{ chamado.nomeUsuario }} ({{ chamado.nomeCargo }})</p>
+                        <small class="text-muted fs-6">
+                            Local: {{ chamado.nomeLocal }}
+                        </small>
+                        <span class="badge 
+                            {% if chamado.nomeStatus == 'Não Respondido' %} bg-danger
+                            {% elif chamado.nomeStatus == 'Respondido' %} bg-success
+                            {% else %} bg-primary
+                            {% endif %} 
+                            float-end mb-1">
+                            {{ chamado.nomeStatus }}
+                        </span>
+                    </a>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% else %}
+        <div class="alert alert-info" role="alert">
+            Nenhum chamado encontrado.
+        </div>
+    {% endif %}
+</div>
 
-  <style>
-    .container {
-        max-width: 400px;
-        margin: auto;
-    }
+<style>
+  body {
+      margin: 0; /* Remove a margem padrão do body */
+      padding: 0; /* Remove o padding padrão do body */
+      height: 100vh; /* Define a altura do body para 100% da altura da tela */
+  }
 
-    h1 {
-        font-size: 42px;
-        color: #225656;
-        margin-bottom: 20px;
-    }
+  .container {
+      max-width: 400px;
+      margin: auto;
+      margin-top: 0; /* Garante que o container comece no topo */
+      padding: 20px; /* Mantém o padding desejado */
+  }
 
-    .item {
-        font-size: 26px;
-        color: #225656;
-        margin-bottom: 2px;
-    }
-    .verMais {
-        text-decoration: none;
-    }
-    .nome {
-        font-size: 17px;
-        color: #225656;
-        margin-bottom: 0;
-    }
-    .card {
-        display: flex;
-        align-items: center;
-        background-color: white;
-        border-radius: 12px;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        margin-bottom: 15px;
-        padding: 12px;
-        transition: background-color 0.3s;
-    }
-    .list-group-item {
+  h1 {
+      font-size: 42px;
+      color: #225656;
+      margin-bottom: 20px;
+  }
+
+  .item {
+      font-size: 26px;
+      color: #225656;
+      margin-bottom: 2px;
+  }
+
+  .verMais {
+      text-decoration: none;
+  }
+
+  .nome {
+      font-size: 17px;
+      color: #225656;
+      margin-bottom: 0;
+  }
+
+  .list-group-item {
       background-color: white;
       border-radius: 12px;
       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
       transition: background-color 0.3s;
-    }
-    .badge {
-        margin-top: 24px;
-        font-size: 15px;
-    }
-  </style>
+  }
+
+  .badge {
+      margin-top: 24px;
+      font-size: 15px;
+  }
+</style>
 
 {% endblock %}
