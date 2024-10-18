@@ -25,7 +25,12 @@ dias_da_semana = {
 @app.template_filter('data_formatada')
 def data_formatada(data):
     if isinstance(data, str):
-        data_datetime = datetime.strptime(data, "%Y-%m-%d")  # Converte para datetime
+        if data == 'Data não disponível':
+            return data  # Retorna a mensagem diretamente
+        try:
+            data_datetime = datetime.strptime(data, "%Y-%m-%d")  # Converte para datetime
+        except ValueError:
+            return 'Data inválida'  # Retorna uma mensagem de erro caso a conversão falhe
     else:
         data_datetime = data
     
@@ -38,6 +43,7 @@ def data_formatada(data):
     ano = data_datetime.year
 
     return f"{dia_semana}, {dia} de {mes}"
+
 
 # Registering the blueprints
 app.register_blueprint(adm_blueprint)

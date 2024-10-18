@@ -1,7 +1,7 @@
 {% extends 'modelFunc.html' %}
 {% block conteudo %}
-<div class="container">
-
+<div class="container mt-3">
+  <button class="submit-button w-100 py-1 text-light fs-4 rounded my-3" style="background-color: #225656; cursor: pointer;">Abrir um chamado</button>
   <!-- Verifica se há chamados finalizados -->
   {% if chamados %}
   
@@ -9,19 +9,37 @@
   {% for chamado in chamados %}
 
       
-      <div class="chamado-grupo">
+      <div class="chamado-grupo mt-3">
           <div class="chamado-card">
               <img src="{{ url_for('tec.serve_image', filename=chamado.imgChamado) }}" class="chamado-imagem">
               <div class="chamado-conteudo">
-                  <span class="descricao">{{ chamado.nomeItem }}</span>
-                  <p class="local">Local: {{ chamado.nomeLocal }}</p>
+                    <div class="row">
+                        <span class="descricao">{{ chamado.nomeItem }}</span>
+                        <p class="local">Local: {{ chamado.nomeLocal }}</p>
+                    </div>
+                    <div class="row">
+                        <!--Verifica a cor de acordo com o status-->
+                        {% if chamado.nomeStatus == "Não Respondido"%}
+                        <span class="status text-danger fs-6">{{ chamado.nomeStatus }}</span>
+                        {% elif chamado.nomeStatus == "Respondido" %}
+                        <span class="status fs-6" style="color: #225656">{{ chamado.nomeStatus }}</span>
+                        {% else %}
+                        <span class="status text-success fs-6">{{ chamado.nomeStatus }}</span>
+                        {% endif %}
+                        <!--Verifica se pegará a data da última resposta ou a data de coclusão-->
+                        {% if chamado.nomeStatus == "Respondido"%}
+                        <p class="data">{{ chamado.dataResposta }}</p>
+                        {% elif chamado.nomeStatus == "Concluído"%}
+                        <p class="data">{{ chamado.concChamado }}</p>
+                        {% endif %}
+                    </div>
               </div>
           </div>
       </div>
   {% endfor %}
   
   {% else %}
-  <p class="sem-chamados">Nenhum chamado finalizado até o momento.</p>
+  <p class="sem-chamados mt-3">Nenhum chamado finalizado até o momento.</p>
   {% endif %}
 </div>
 
@@ -29,7 +47,6 @@
 <style>
   .container {
       max-width: 360px;
-      margin: auto;
       border-radius: 10px;
   }
 
