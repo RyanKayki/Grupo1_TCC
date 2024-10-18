@@ -253,27 +253,28 @@
     }
 
     function finalizarChamado() {
-        const idChamado = getIdChamado(); // Obtém o idChamado
+    const idChamado = getIdChamado(); // Obtém o idChamado
 
-        fetch(`/tec/finalizarChamado/${idChamado}`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        })
-        .then(response => {
-            if (response.ok) {
-                alert('Chamado finalizado com sucesso.');
-                toggleConfirmationModal(); // Fecha o modal
-                window.location.href = "/tecTask"; // Redireciona para a página de chamados finalizados
-            } else {
-                alert('Erro ao finalizar o chamado: ' + response.statusText);
-            }
-        })
-        .catch(error => {
-            alert('Erro ao finalizar o chamado: ' + error.message);
-        });
-    }
+    fetch(`/tec/finalizarChamado/${idChamado}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => {
+        if (response.ok) {
+            alert('Chamado finalizado com sucesso.');
+            toggleConfirmationModal(); // Fecha o modal
+            window.location.href = "/tecTask"; // Redireciona para a página de chamados finalizados
+        } else {
+            alert('Erro ao finalizar o chamado: ' + response.statusText);
+        }
+    })
+    .catch(error => {
+        alert('Erro ao finalizar o chamado: ' + error.message);
+    });
+}
+
 </script>
 
 {% endblock %}
