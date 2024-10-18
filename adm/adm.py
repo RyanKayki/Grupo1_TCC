@@ -112,6 +112,32 @@ def cadastroLocal():
     return render_template("cadLocal.html", title=title, login=True)
 
 
+# Rota para filtrarItem
+@adm_blueprint.route("/filtrarItem")
+def filtrarItem():
+    title = "Filtrar Item"
+    return render_template("filtrarItem.html", title=title, login=True)
+
+# Rota para filtrarLocal
+@adm_blueprint.route("/filtrarLocal")
+def filtrarLocal():
+    title = "Filtrar Local"
+    return render_template("filtrarLocal.html", title=title, login=True)
+
+
+# Rota para edicaoLocal
+@adm_blueprint.route("/edicaoLocal")
+def edicaoLocal():
+    title = "Edição de Local"
+    return render_template("edicaoLocal.html", title=title, login=True)
+
+# Rota para edicaoItem
+@adm_blueprint.route("/edicaoItem")
+def edicaoItem():
+    title = "Edição de Item"
+    return render_template("edicaoItem.html", title=title, login=True)
+
+
 @adm_blueprint.route("/excluir/<int:idChamado>")
 def excluir(idChamado):
     # Rota para excluir um chamado
