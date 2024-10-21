@@ -2,9 +2,7 @@ from flask import render_template, redirect, Blueprint, request, flash, url_for
 import os
 from connection.connection import conecta_database
 from session.session import verifica_sessao
-import mysql.connector, uuid, os
-
-conexaoDB = conecta_database()
+import uuid
 
 # Definindo o blueprint para administração
 adm_blueprint = Blueprint("adm", __name__, template_folder="templates")
@@ -23,11 +21,11 @@ def adm():
                 JOIN local l ON c.idLocal = l.idLocal
                 JOIN item i ON c.idItem = i.idItem
                 JOIN status s ON c.idStatus = s.idStatus
-                """
+            """
             cursor.execute(query)
             chamados = cursor.fetchall()
 
-            return render_template("adm.html", chamados=chamados, title="Administração", login=True)  # redirecionar para uma página de erro
+            return render_template("adm.html", chamados=chamados, title="Administração", login=True)
         finally:
             conexao.close()
     else:
@@ -49,13 +47,23 @@ def cadchamados():
                 local = request.form.get('local')
                 item = request.form.get('item')
                 descricao = request.form.get('descricao')
-                imagem = request.files.get('imagem')  # Para imagem enviada
-                
-                # Lógica para salvar os dados no banco de dados
+                imagem = request.files['imagem']  # Para imagem enviada
+                idUsuario = request.form.get('idUsuario')  # Adicionando a captura do idUsuario
+
+                # Verifica se a imagem foi enviada
+                if not imagem:
+                    flash('A imagem é obrigatória para cadastrar um chamado!', 'error')
+                    return redirect('/cadchamados')
+
+                # Gerar um nome único para a imagem
+                id_foto = str(uuid.uuid4().hex)
+                filename = f"{id_foto}_{item}.png"
+                imagem.save(os.path.join("static/img/chamado", filename))  # Corrigido para o diretório correto
+
                 cursor.execute("""
-                    INSERT INTO Chamado (descChamado, imgChamado, idItem, idLocal, idUsuario, idStatus, dataChamado) 
+                    INSERT INTO chamado (descChamado, imgChamado, idItem, idLocal, idUsuario, idStatus, dataChamado) 
                     VALUES (%s, %s, %s, %s, %s, 1, NOW())  -- Assumindo que o status inicial é '1'
-                """, (descricao, imagem.filename if imagem else None, item, local, login['idUsuario']))
+                """, (descricao, filename, item, local, idUsuario))
 
                 conexao.commit()
                 flash('Chamado cadastrado com sucesso!', 'success')
@@ -68,29 +76,36 @@ def cadchamados():
             cursor.execute('SELECT * FROM item')
             itens = cursor.fetchall()
 
-            cursor.execute("SELECT idArea, nomeArea FROM Area")
+            cursor.execute("SELECT idArea, nomeArea FROM area")
             areas = cursor.fetchall()
 
+            cursor.execute("SELECT idUsuario, nomeUsuario FROM usuario")
+            usuarios = cursor.fetchall()
+
+            cursor.execute("SELECT idCargo, nomeCargo FROM cargo")
+            cargos = cursor.fetchall()
+
             title = "Cadastro de chamado"
-            return render_template("cadchamados.html", title=title, login=login, locais=locais, itens=itens, areas=areas)
+            return render_template("cadchamados.html", title=title, login=login, locais=locais, itens=itens, areas=areas, usuarios=usuarios, cargos=cargos)
         finally:
             conexao.close()
     else:
         return redirect("/login")
 
 
-
-
 # Rota para exibir mais informações sobre um chamado
 @adm_blueprint.route("/vermais/<int:idChamado>")
 def sobre(idChamado):
-    conexao = conecta_database()
-    cursor = conexao.cursor(dictionary=True)
-    cursor.execute("SELECT * FROM chamado WHERE idChamado = %s", (idChamado,))
-    chamado = cursor.fetchall()
-    conexao.close()
-    title = "Ver Mais"
-    return render_template("vermais.html", title=title, chamado=chamado)
+    if verifica_sessao():
+        conexao = conecta_database()
+        cursor = conexao.cursor(dictionary=True)
+        cursor.execute("SELECT * FROM chamado WHERE idChamado = %s", (idChamado,))
+        chamado = cursor.fetchone()
+        conexao.close()
+        title = "Ver Mais"
+        return render_template("vermais.html", title=title, chamado=chamado)
+    else:
+        return redirect("/login")
 
 
 # Rota para cadItem
@@ -118,15 +133,15 @@ def excluir(idChamado):
     if verifica_sessao():
         conexao = conecta_database()
         cursor = conexao.cursor(dictionary=True)
-        
+
         # Buscando a imagem associada ao chamado
-        cursor.execute('SELECT img_chamado FROM chamado WHERE idChamado = %s', (idChamado,))
+        cursor.execute('SELECT imgChamado FROM chamado WHERE idChamado = %s', (idChamado,))
         chamado = cursor.fetchone()
-        
+
         # Excluindo a imagem do chamado do diretório de imagens
-        if chamado and chamado['img_chamado']:
+        if chamado and chamado['imgChamado']:
             try:
-                os.remove(os.path.join("static/img/chamado/", chamado['img_chamado']))
+                os.remove(os.path.join("static/img/chamado", chamado['imgChamado']))
             except FileNotFoundError:
                 pass  # Se o arquivo não for encontrado, continuamos sem falhar
 
@@ -134,7 +149,7 @@ def excluir(idChamado):
         cursor.execute('DELETE FROM chamado WHERE idChamado = %s', (idChamado,))
         conexao.commit()
         conexao.close()
-        
+
         return redirect('/adm')
     else:
         return redirect("/login")

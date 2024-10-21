@@ -1,7 +1,8 @@
-from flask import render_template, Blueprint, redirect, send_from_directory
+from flask import render_template, Blueprint, redirect, send_from_directory, request, jsonify
 from session.session import verifica_sessao
 from connection.connection import conecta_database  # Importando corretamente
 import os
+from datetime import datetime
 
 tec_blueprint = Blueprint("tec", __name__, template_folder="templates")
 
@@ -16,7 +17,7 @@ def tec_home():
             cursor = conexao.cursor(dictionary=True)
 
             query = """
-                SELECT c.descChamado, c.dataChamado, u.nomeUsuario, ca.nomeCargo, l.nomeLocal, i.nomeItem, c.imgChamado, s.nomeStatus, c.idItem, c.idLocal
+                SELECT c.descChamado, c.dataChamado, u.nomeUsuario, ca.nomeCargo, l.nomeLocal, i.nomeItem, c.imgChamado, s.nomeStatus, c.idChamado
                 FROM chamado c
                 JOIN usuario u ON c.idUsuario = u.idUsuario
                 JOIN local l ON c.idLocal = l.idLocal
@@ -27,8 +28,7 @@ def tec_home():
             """
             cursor.execute(query)
             chamados = cursor.fetchall()
-            title="Manutenção"
-
+            title = "Manutenção"
 
             return render_template("tecHome.html", chamados=chamados, title=title, login=True)
         finally:
@@ -44,7 +44,7 @@ def tec_task():
             cursor = conexao.cursor(dictionary=True)
 
             query = """
-                SELECT c.descChamado, c.dataChamado, u.nomeUsuario, ca.nomeCargo, l.nomeLocal, i.nomeItem, c.imgChamado, s.nomeStatus, c.idItem, c.idLocal
+                SELECT c.descChamado, c.concChamado, u.nomeUsuario, ca.nomeCargo, l.nomeLocal, i.nomeItem, c.imgChamado, s.nomeStatus, c.idChamado
                 FROM chamado c
                 JOIN usuario u ON c.idUsuario = u.idUsuario
                 JOIN local l ON c.idLocal = l.idLocal
@@ -55,12 +55,13 @@ def tec_task():
             """
             cursor.execute(query)
             chamados = cursor.fetchall()
-            title="Finalizados"
+            title = "Finalizados"
             return render_template("tecTask.html", chamados=chamados, title=title, login=True)
         finally:
             conexao.close()
     else:
         return redirect("/login")
+
     
 
 @tec_blueprint.route('/tecMore/<int:idChamado>')
@@ -72,7 +73,7 @@ def tec_more(idChamado):
 
             # Adicione o filtro pela ID do chamado diretamente na consulta
             query = """
-                SELECT c.descChamado, c.dataChamado, u.nomeUsuario, ca.nomeCargo, l.nomeLocal, i.nomeItem, c.imgChamado, s.nomeStatus, c.idItem, c.idLocal
+                SELECT c.descChamado, c.dataChamado, u.nomeUsuario, ca.nomeCargo, l.nomeLocal, i.nomeItem, c.imgChamado, s.nomeStatus, c.idChamado
                 FROM chamado c
                 JOIN usuario u ON c.idUsuario = u.idUsuario
                 JOIN local l ON c.idLocal = l.idLocal
@@ -95,7 +96,40 @@ def tec_more(idChamado):
         return redirect("/login")
 
 
+@tec_blueprint.route('/tec/finalizarChamado/<int:idChamado>', methods=['POST'])
+def finalizar_chamado(idChamado):
+    try:
+        # Conecta ao banco de dados e busca o chamado pelo ID
+        print("Conectando ao banco de dados...")
+        conn = conecta_database()
+        cursor = conn.cursor()
+
+        # Define a data atual
+        data_atual = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        print(f"Data atual: {data_atual}")
+
+        # Atualiza o idStatus e a data de finalização do chamado
+        cursor.execute("""
+            UPDATE chamado
+            SET idStatus = 3, concChamado = %s
+            WHERE idChamado = %s
+        """, (data_atual, idChamado))
+        
+        print("Chamado atualizado, aplicando mudanças...")
+        # Confirma a transação e fecha a conexão
+        conn.commit()
+
+        cursor.close()
+        conn.close()
+        print("Chamado finalizado com sucesso!")
+
+        return jsonify({'message': 'Chamado finalizado com sucesso!'}), 200
+
+    except Exception as e:
+        print(f"Erro ao finalizar chamado: {e}")
+        return jsonify({'error': str(e)}), 500
+
+
 @tec_blueprint.route('/img/chamados/<path:filename>')
 def serve_image(filename):
     return send_from_directory(IMG_FOLDER, filename)
-    
