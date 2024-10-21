@@ -1,0 +1,90 @@
+{% extends 'modelFunc.html' %}
+{% block conteudo %}
+    <style>
+        .content {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .content img {
+            width: 200px;
+            height: 200px;
+            border-radius: 10px;
+            object-fit: cover;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        h2 {
+            color: #005c56;
+            margin: 20px 0;
+            font-size: 26px;
+        }
+        .description {
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+        .location {
+            font-size: 16px;
+            color: gray;
+        }
+        .response-box {
+            background-color: #e0edeb;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+            text-align: left;
+        }
+        .response-box h3 {
+            font-size: 18px;
+            color: #005c56;
+            margin: 0 0 10px 0;
+        }
+        .response-box p {
+            margin: 0;
+            font-size: 16px;
+        }
+
+        /* Estilos responsivos para dispositivos móveis */
+        @media (max-width: 768px) {
+            .container {
+                width: 90%;
+                padding: 20px;
+            }
+            header h1 {
+                font-size: 20px;
+            }
+            h2 {
+                font-size: 22px;
+            }
+            .content img {
+                width: 150px;
+                height: 150px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            header {
+                flex-direction: column;
+                text-align: center;
+            }
+            header h1 {
+                font-size: 18px;
+            }
+            .content img {
+                width: 120px;
+                height: 120px;
+            }
+        }
+    </style>
+        <div class="d-flex flex-column align-items-center row mt-3">
+            {% for info in infos %}
+            <img src="../../src/img/ImagemIcon.png" alt="{{info['nomeItem']}}" class="rounded col-12" style="object-fit: cover; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);"> <!-- Imagem da lâmpada -->
+            <h2 class="fs-2">{{info['nomeItem']}}</h2>
+            <p class="description">{{info['descChamado']}}</p>
+            <p class="location">{{info['nomeLocal']}}</p>
+        </div>
+
+        <div class="response-box">
+            <h3>Resposta</h3>
+            <p><strong>Tio Carlos:</strong> {{info['descResposta']}}</p> <!-- Resposta de Tio Carlos -->
+        </div>
+    </div>
+{% endblock %}
