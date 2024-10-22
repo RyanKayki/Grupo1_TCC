@@ -53,6 +53,7 @@
       margin: 0; /* Remove a margem padrão do body */
       padding: 0; /* Remove o padding padrão do body */
       height: 100vh; /* Define a altura do body para 100% da altura da tela */
+      overflow: hidden; /* Remove a barra de rolagem global do body */
   }
 
   .container {
@@ -95,7 +96,20 @@
       margin-top: 24px;
       font-size: 15px;
   }
+  .card-body {
+    height: calc(100vh - 260px); /* Ajuste a altura conforme necessário */
+    overflow-y: auto; /* Permite rolagem vertical quando necessário */
+  }
 
+  /* Estilização opcional para a barra de rolagem */
+  .card-body::-webkit-scrollbar {
+      width: 8px;
+  }
+
+  .card-body::-webkit-scrollbar-thumb {
+      background-color: #225656; /* Cor da barra de rolagem */
+      border-radius: 10px;
+  }
   .chamado-imagem {
     width: 70px; /* Mantém a largura fixa */
     height: 70px; /* Define uma altura fixa para manter a proporção */
