@@ -41,16 +41,16 @@
 
 <style>
   body {
-      margin: 0; /* Remove a margem padrão do body */
-      padding: 0; /* Remove o padding padrão do body */
-      height: 100vh; /* Define a altura do body para 100% da altura da tela */
+      margin: 0;
+      padding: 0;
+      height: 100vh;
   }
 
   .container {
       max-width: 400px;
       margin: auto;
-      margin-top: 0; /* Garante que o container comece no topo */
-      padding: 20px; /* Mantém o padding desejado */
+      margin-top: 0;
+      padding: 20px;
   }
 
   h1 {
@@ -86,6 +86,38 @@
       margin-top: 24px;
       font-size: 15px;
   }
+
+  /* Adiciona uma altura máxima e permite rolagem para muitos chamados */
+  .card-body {
+    height: calc(100vh - 200px); /* Ajuste a altura conforme necessário */
+      overflow-y: auto; /* Permite rolagem vertical quando necessário */
+  }
+
+  /* Estilização opcional para a barra de rolagem */
+  .card-body::-webkit-scrollbar {
+      width: 8px;
+  }
+
+  .card-body::-webkit-scrollbar-thumb {
+      background-color: #225656; /* Cor da barra de rolagem */
+      border-radius: 10px;
+  }
 </style>
+
+<script>
+    function verificarNovosChamados() {
+        fetch('/tecHome/novosChamados')
+            .then(response => response.json())
+            .then(data => {
+                if (data.novosChamados) {
+                    location.reload(); // Atualiza a página se houver novos chamados
+                }
+            })
+            .catch(error => console.error('Erro ao verificar novos chamados:', error));
+    }
+
+    // Verifica novos chamados a cada 30 segundos
+    setInterval(verificarNovosChamados, 30000);
+</script>
 
 {% endblock %}
