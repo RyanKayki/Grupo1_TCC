@@ -111,6 +111,11 @@ def cadastroLocal():
     title = "CADASTRO LOCAL"
     return render_template("cadLocal.html", title=title, login=True)
 
+# Rota para chamadosSala
+@adm_blueprint.route("/chamadosSala")
+def chamadosSala():
+    title = "CHAMADOS SALA"
+    return render_template("chamadosSala.html", title=title, login=True)
 
 @adm_blueprint.route("/excluir/<int:idChamado>")
 def excluir(idChamado):
