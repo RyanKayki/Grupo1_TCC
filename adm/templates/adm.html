@@ -2,6 +2,16 @@
 
 {% block conteudo %}
 
+<!-- Exibição das mensagens flash -->
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        <div class="container">
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">{{ message }}</div>
+            {% endfor %}
+        </div>
+    {% endif %}
+{% endwith %}
 
 <button id="toggleButton" class="btn">
   <ion-icon name="menu-outline"></ion-icon>
@@ -14,40 +24,40 @@
 <main class="container-fluid">
   <div class="row m-4">
     <!-- Meus Chamados -->
-    <div class="col-12 col-md-4 col-lg-3 col-xl-2 mb-3">
-      <div class="card border-0 shadow-sm h-100">
-        <div class="card-body">
-          <h5 class="card-title fs-5 text-muted">Meus Chamados</h5>
+<div class="col-12 col-md-4 col-lg-3 col-xl-2 mb-3">
+  <div class="card border-0 shadow-sm h-100">
+      <div class="card-body">
+          <h5 class="card-title fs-5 text-muted">Meus Ultimos Chamados</h5>
           <ul class="list-group list-group-flush">
-            {% for chamado in chamados %}
-            <li class="list-group-item ps-3 border">
-              <span>{{ chamado.descChamado }}</span>
-              <br>
-              <small class="text-muted">
-                {% if chamado.idItem %}
-                  Equipamento: {{ chamado.nomeItem }}
-                {% elif chamado.idLocal %}
-                  Sala: {{ chamado.nomeLocal }}
-                {% endif %}
-              </small>
-              <span class="badge 
-                {% if chamado.nomeStatus == 'Não Respondido' %}
-                    bg-danger
-                {% elif chamado.nomeStatus == 'Respondido' %}
-                    bg-success
-                {% else %}
-                    bg-primary
-                {% endif %} 
-                float-end">
-                {{ chamado.nomeStatus }}
-              </span>
-            </li>
-            {% endfor %}
+            {% for chamado in ultimos_chamados %}
+              <li class="list-group-item ps-3 border">
+                  <span>{{ chamado.descChamado }}</span>
+                  <br>
+                  <small class="text-muted">
+                      {% if chamado.idItem %}
+                          Equipamento: {{ chamado.nomeItem }}
+                      {% elif chamado.idLocal %}
+                          Sala: {{ chamado.nomeLocal }}
+                      {% endif %}
+                  </small>
+                  <span class="badge 
+                      {% if chamado.nomeStatus == 'Não Respondido' %}
+                          bg-danger
+                      {% elif chamado.nomeStatus == 'Respondido' %}
+                          bg-success
+                      {% else %}
+                          bg-primary
+                      {% endif %} 
+                      float-end">
+                      {{ chamado.nomeStatus }}
+                  </span>
+              </li>
+              {% endfor %}
           </ul>
           <button class="mt-5 minimal-button">Ver Mais</button>
-        </div>
       </div>
-    </div>
+  </div>
+</div>
 
     <!-- Chamados Overview -->
     <div class="col-12 col-md-8 col-lg-7 col-xl-8">
@@ -72,19 +82,19 @@
         <div class="col-12 col-sm-4">
           <div class="card p-3 border-0 shadow-sm">
             <h6 class="text-muted">Não Respondidos</h6>
-            <span class="badge bg-danger">{{ chamados|selectattr("nomeStatus", "equalto", "Não Respondido")|list|length }}</span>
+            <span class="badge bg-danger">{{ totais_chamados.nao_respondidos }}</span>
           </div>
         </div>
         <div class="col-12 col-sm-4">
           <div class="card p-3 border-0 shadow-sm">
             <h6 class="text-muted">Respondidos</h6>
-            <span class="badge bg-success">{{ chamados|selectattr("nomeStatus", "equalto", "Respondido")|list|length }}</span>
+            <span class="badge bg-success">{{ totais_chamados.respondidos }}</span>
           </div>
         </div>
         <div class="col-12 col-sm-4">
           <div class="card p-3 border-0 shadow-sm">
             <h6 class="text-muted">Concluídos</h6>
-            <span class="badge bg-primary">{{ chamados|selectattr("nomeStatus", "equalto", "Concluído")|list|length }}</span>
+            <span class="badge bg-primary">{{ totais_chamados.concluidos }}</span>
           </div>
         </div>
       </div>
