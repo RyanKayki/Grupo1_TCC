@@ -222,17 +222,17 @@ def cadLocal():
 
 
 
-# Rota para filtrarItem
-@adm_blueprint.route("/filtrarItem")
-def filtrarItem():
-    title = "Filtrar Item"
-    return render_template("filtrarItem.html", title=title, login=True)
+# Rota para filtrarItemedicao
+@adm_blueprint.route("/filtrarItemedicao")
+def filtrarItemedicao():
+    title = "Filtrar Item Edição"
+    return render_template("filtrarItemedicao.html", title=title, login=True)
 
-# Rota para filtrarLocal
-@adm_blueprint.route("/filtrarLocal")
-def filtrarLocal():
-    title = "Filtrar Local"
-    return render_template("filtrarLocal.html", title=title, login=True)
+# Rota para filtrarLocaledicao
+@adm_blueprint.route("/filtrarLocaledicao")
+def filtrarLocaledicao():
+    title = "Filtrar Local Edição"
+    return render_template("filtrarLocaledicao.html", title=title, login=True)
 
 # Rota para edicaoLocal
 @adm_blueprint.route("/edicaoLocal")
