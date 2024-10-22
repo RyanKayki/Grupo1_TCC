@@ -44,7 +44,7 @@ def tec_task():
             cursor = conexao.cursor(dictionary=True)
 
             query = """
-                SELECT c.descChamado, c.concChamado, u.nomeUsuario, ca.nomeCargo, l.nomeLocal, i.nomeItem, c.imgChamado, s.nomeStatus, c.idChamado
+                SELECT c.descChamado, c.concChamado, c.dataChamado, u.nomeUsuario, ca.nomeCargo, l.nomeLocal, i.nomeItem, c.imgChamado, s.nomeStatus, c.idChamado
                 FROM chamado c
                 JOIN usuario u ON c.idUsuario = u.idUsuario
                 JOIN local l ON c.idLocal = l.idLocal
