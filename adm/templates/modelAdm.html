@@ -7,7 +7,6 @@
   <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
   <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <title>Tio Carlos :: {{title}}</title>
@@ -15,7 +14,7 @@
     /* Sidebar styling */
     .sidebar {
       width: 250px;
-      height: 100vh;
+      height: 100%;
       position: fixed;
       top: 0;
       left: 0;
@@ -41,15 +40,40 @@
       color: white;
     }
 
+    /* Dropdown styling */
+    .dropdown-content {
+      display: none;
+      background-color: #495057;
+      position: absolute;
+      left: 0;
+      min-width: 160px;
+      z-index: 1;
+    }
+
+    .dropdown-content a {
+      color: white;
+      padding: 10px 15px;
+      display: block;
+      text-decoration: none;
+    }
+
+    .dropdown-content a:hover {
+      background-color: #343a40;
+    }
+
+    .dropdown:hover .dropdown-content {
+      display: block;
+    }
+
     /* Main content styling */
     main {
       padding: 20px;
-      margin-left: 0; /* Altere a margem inicial para 0 */
+      margin-left: 0;
       transition: margin-left 0.3s ease;
     }
 
     main.expanded {
-      margin-left: 250px; /* Adicione a margem quando a sidebar estiver aberta */
+      margin-left: 250px;
     }
 
     h4 {
@@ -65,7 +89,7 @@
 <body class="d-flex" style="min-height: 100vh; background-color: #F7FCFC;">
 
   <!-- Sidebar (aside) -->
-  <aside class="sidebar bg-dark text-white closed"> <!-- Adicione a classe 'closed' aqui -->
+  <aside class="sidebar bg-dark text-white closed">
     <div class="d-flex flex-column align-items-center p-3">
       <!-- Logo and Title -->
       <div class="logo p-4">
@@ -86,6 +110,19 @@
             <i class="bi bi-person-fill me-2"></i> Perfil
           </a>
         </li>
+
+        <!-- Custom Dropdown Menu -->
+        <li class="nav-item dropdown mb-2">
+          <a class="nav-link text-white d-flex align-items-center dropdown-toggle" href="#" id="dropdownToggle">
+            <i class="bi bi-pencil-square me-2"></i> Editar
+          </a>
+          <div class="dropdown-content">
+            <a href="/filtrarLocal">Local</a>
+            <a href="/filtrarItem">Item</a>
+            <hr class="dropdown-divider">
+          </div>
+        </li>
+
         <li class="nav-item mb-2">
           <a href="/logout" class="nav-link text-white d-flex align-items-center">
             <i class="bi bi-box-arrow-right me-2"></i> Logout
@@ -113,6 +150,7 @@
     {% endblock %}
   </main>
 
+  <!-- Script para abrir/fechar a sidebar -->
   <script>
     const sidebar = document.querySelector('.sidebar');
     const mainContent = document.querySelector('main');
