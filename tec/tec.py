@@ -202,4 +202,5 @@ def detalhe(id):
 
 @tec_blueprint.route('/img/chamados/<path:filename>')
 def serve_image(filename):
-    return send_from_directory(IMG_FOLDER, filename)
+    return send_from_directory(os.path.join(IMG_FOLDER, 'chamados'), filename)
+

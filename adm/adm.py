@@ -90,7 +90,7 @@ def cadchamados():
                 # Gerar um nome único para a imagem
                 id_foto = str(uuid.uuid4().hex)
                 filename = f"{id_foto}_{item}.png"
-                imagem.save(os.path.join("static/img/chamados", filename))  # Corrigido para o diretório correto
+                imagem.save(os.path.join("src/img/chamados", filename))  # Corrigido para o diretório correto
 
                 cursor.execute(""" 
                     INSERT INTO chamado (descChamado, imgChamado, idItem, idLocal, idUsuario, idStatus, dataChamado) 
@@ -260,7 +260,7 @@ def excluir(idChamado):
         # Excluindo a imagem do chamado do diretório de imagens
         if chamado and chamado['imgChamado']:
             try:
-                os.remove(os.path.join("static/img/chamados", chamado['imgChamado']))
+                os.remove(os.path.join("src/img/chamados", chamado['imgChamado']))
             except FileNotFoundError:
                 pass  # Se o arquivo não for encontrado, continuamos sem falhar
 
