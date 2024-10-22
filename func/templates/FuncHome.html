@@ -11,7 +11,7 @@
       
       <div class="chamado-grupo mt-3">
           <div class="chamado-card">
-            <a href="{{ url_for('tec.tec_more', idChamado=chamado.idChamado) }}" class="text-decoration-none">
+            <a href="{{ url_for('func.detalhe_chamado', idChamado=chamado.idChamado) }}" class="text-decoration-none">
                 <img src="{{ url_for('tec.serve_image', filename=chamado.imgChamado) }}" class="chamado-imagem">
               <div class="chamado-conteudo">
                     <div class="row">

@@ -74,17 +74,23 @@
             }
         }
     </style>
-        <div class="d-flex flex-column align-items-center row mt-3">
-            {% for info in infos %}
-            <img src="../../src/img/ImagemIcon.png" alt="{{info['nomeItem']}}" class="rounded col-12" style="object-fit: cover; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);"> <!-- Imagem da lâmpada -->
-            <h2 class="fs-2">{{info['nomeItem']}}</h2>
-            <p class="description">{{info['descChamado']}}</p>
-            <p class="location">{{info['nomeLocal']}}</p>
+    <div class="container d-flex flex-column align-items-center">
+        <div class="row mt-3">
+            {% set placeholder_image = url_for('func.serve_image', filename='ImagemIcon.png') %}
+            <div class="d-flex justify-content-center rounded shadow-sm mb-2">
+                <img src="{{ url_for('func.serve_image', filename=chamado.imgChamado) }}" 
+                     alt="{{ chamado['nomeItem'] }}" 
+                     class="w-75 rounded" 
+                     onerror="this.onerror=null; this.src='{{ placeholder_image }}';">
+            </div>
+            <h2 class="fs-2">{{chamado['chamadoItem']}}</h2>
+            <p class="description">{{chamado['descChamado']}}</p>
+            <p class="location">{{chamado['nomeLocal']}}</p>
         </div>
 
         <div class="response-box">
             <h3>Resposta</h3>
-            <p><strong>Tio Carlos:</strong> {{info['descResposta']}}</p> <!-- Resposta de Tio Carlos -->
+            <p><strong>Tio Carlos:</strong> {{chamado['descResposta']}}</p> <!-- Resposta de Tio Carlos -->
         </div>
     </div>
 {% endblock %}
