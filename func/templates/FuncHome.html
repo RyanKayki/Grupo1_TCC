@@ -11,7 +11,8 @@
       
       <div class="chamado-grupo mt-3">
           <div class="chamado-card">
-              <img src="{{ url_for('tec.serve_image', filename=chamado.imgChamado) }}" class="chamado-imagem">
+            <a href="{{ url_for('tec.tec_more', idChamado=chamado.idChamado) }}" class="text-decoration-none">
+                <img src="{{ url_for('tec.serve_image', filename=chamado.imgChamado) }}" class="chamado-imagem">
               <div class="chamado-conteudo">
                     <div class="row">
                         <span class="descricao">{{ chamado.nomeItem }}</span>
@@ -34,6 +35,7 @@
                         {% endif %}
                     </div>
               </div>
+            </a>
           </div>
       </div>
   {% endfor %}
