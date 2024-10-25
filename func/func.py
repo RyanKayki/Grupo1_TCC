@@ -42,19 +42,26 @@ def detalhe_chamado(idChamado):
                 conexao = conecta_database()  # Agora chama a função aqui, no momento apropriado
                 cursor = conexao.cursor(dictionary=True)
                 query = """
-                    SELECT c.descChamado, c.concChamado, c.imgChamado, l.nomeLocal, i.nomeItem, s.nomeStatus, r.descResposta, r.dataResposta
+                    SELECT c.descChamado, c.concChamado, c.imgChamado, l.nomeLocal, i.nomeItem, s.nomeStatus
                     FROM chamado c
                     JOIN local l ON c.idLocal = l.idLocal
                     JOIN item i ON c.idItem = i.idItem
                     JOIN status s ON c.idStatus = s.idStatus
-                    JOIN resposta r ON c.idChamado = r.idChamado
                     WHERE c.idChamado = %s
                 """
                 cursor.execute(query, (idChamado,))
                 chamado = cursor.fetchone()
-                print(chamado)
+
+                queryResposta = """
+                    SELECT r.descResposta, r.dataResposta, u.nomeUsuario
+                    FROM resposta r
+                    JOIN usuario u ON r.idUsuario = u.idUsuario
+                    WHERE r.idChamado = %s
+                """
+                cursor.execute(queryResposta, (idChamado,))
+                respostas = cursor.fetchall()
                 title = "Detalhes do Chamado"
-                return render_template('details.html', title=title, chamado=chamado, login=True)
+                return render_template('details.html', title=title, chamado=chamado, respostas=respostas, login=True)
             finally:
                  conexao.close()
         else:
