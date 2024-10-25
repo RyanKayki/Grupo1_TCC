@@ -59,8 +59,8 @@
   .container {
       max-width: 400px;
       margin: auto;
-      margin-top: 0; /* Garante que o container comece no topo */
-      padding: 20px; /* Mantém o padding desejado */
+      margin-top: 0;
+      padding: 20px;
   }
 
   h1 {
@@ -119,5 +119,21 @@
     object-fit: contain; /* Ajusta a imagem para caber na caixa sem cortar */
     }
 </style>
+
+<script>
+    function verificarNovosChamados() {
+        fetch('/tecHome/novosChamados')
+            .then(response => response.json())
+            .then(data => {
+                if (data.novosChamados) {
+                    location.reload(); // Atualiza a página se houver novos chamados
+                }
+            })
+            .catch(error => console.error('Erro ao verificar novos chamados:', error));
+    }
+
+    // Verifica novos chamados a cada 30 segundos
+    setInterval(verificarNovosChamados, 30000);
+</script>
 
 {% endblock %}
