@@ -1,73 +1,97 @@
 {% extends 'modelFunc.html' %}
+
 {% block conteudo %}
     <style>
         .content {
             text-align: center;
             margin-top: 20px;
+            max-width: 1200px; /* Limitar a largura para telas grandes */
+            margin: 0 auto; /* Centraliza o conteúdo */
         }
         .content img {
-            width: 200px;
-            height: 200px;
+            width: 50%;
+            height: auto;
+            max-width: 300px; /* Aumentar para 300px para telas maiores */
             border-radius: 10px;
             object-fit: cover;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
         }
         h2 {
             color: #005c56;
             margin: 20px 0;
-            font-size: 26px;
+            font-size: 2.5em; /* Aumentar o tamanho da fonte */
+            font-weight: bold; /* Negrito */
+            text-shadow: 2px 2px rgba(0, 0, 0, 0.1); /* Sombra mais suave */
         }
         .description {
-            font-size: 18px;
+            font-size: 1.2em;
             margin-bottom: 10px;
+            color: #333; /* Cor mais escura para legibilidade */
         }
         .location {
-            font-size: 16px;
+            font-size: 1.1em;
             color: gray;
         }
         .response-box {
-            background-color: #e0edeb;
+            background-color: #f0f4f3; /* Fundo um pouco mais claro */
             border-radius: 10px;
             padding: 20px;
             margin-top: 20px;
             text-align: left;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Sombra suave */
         }
         .response-box h3 {
-            font-size: 18px;
+            font-size: 1.5em;
             color: #005c56;
             margin: 0 0 10px 0;
         }
         .response-box p {
             margin: 0;
-            font-size: 16px;
+            font-size: 1em;
+            line-height: 1.5; /* Melhorar a legibilidade */
+        }
+        @media (max-width: 768px) {
+            .content img {
+                width: 80%; /* Imagem ocupa mais espaço em telas menores */
+                max-width: 100%; /* Remover limite máximo para tela pequena */
+            }
+            h2 {
+                font-size: 2em; /* Reduzir tamanho da fonte em telas pequenas */
+            }
         }
     </style>
-    <div class="container d-flex flex-column align-items-center">
+    <div class="container d-flex flex-column align-items-center content">
         <div class="d-flex flex-column align-items-center mt-3">
             {% set placeholder_image = url_for('func.serve_image', filename='ImagemIcon.png') %}
             <div class="d-flex justify-content-center rounded shadow-sm mb-2 w-75 p-5">
-                <img src="{{ url_for('func.serve_image', filename=chamado.imgChamado) }}" 
-                     alt="{{ chamado['nomeItem'] }}" 
-                     class="w-100 rounded" 
-                     onerror="this.onerror=null; this.src='{{ placeholder_image }}';">
+                {% if chamado.imgChamado %}
+                    <img src="{{ url_for('func.serve_image', filename=chamado.imgChamado) }}" 
+                         alt="{{ chamado['nomeItem'] }}" 
+                         class="w-100 rounded" 
+                         onerror="this.onerror=null; this.src='{{ placeholder_image }}';">
+                {% else %}
+                    <img src="{{ placeholder_image }}" alt="Imagem placeholder" class="w-100 rounded">
+                {% endif %}
             </div>
-            <h2 class="fs-1 text-bold text-shadow" style="color: #225656; text-shadow: 1px 1px #0005">{{chamado['nomeItem']}}</h2>
+            <h2 class="text-bold">{{ chamado['nomeItem'] }}</h2>
             <div class="w-75">
-                <p class="fs-3 location">{{chamado['nomeLocal']}}</p>
-                <p class="fs-3 description">{{chamado['descChamado']}}</p>
+                <p class="location">{{ chamado['nomeLocal'] }}</p>
+                <p class="description">{{ chamado['descChamado'] }}</p>
             </div>
         </div>
 
-        
-        <h3 class="fs-1 mt-5" style="color: #225656">Respostas</h3>
-        {% for resposta in respostas%}
-        <div class="response-box my-2">
-            <div class="row d-flex justify-content-around" style="color: #225656">
-                <p class="fs-6 col-6">{{resposta['nomeUsuario']}}</p>
-                <p class="fs-6 col-6">{{resposta['dataResposta']}}</p>
+        <h3 class="mt-5" style="color: #225656">Respostas</h3>
+        {% if respostas and respostas | length > 0 %}
+            {% for resposta in respostas %}
+            <div class="response-box my-2 mb-2">
+                <div class="row d-flex justify-content-between" style="color: #225656">
+                    <p class="col-6"><strong>{{ resposta['nomeUsuario'] }}</strong></p>
+                    <p class="col-6 text-end"><strong>{{ resposta.dataResposta | funcData }}</strong></p>
+                    <p class="col-6 mt-2">{{ resposta.descResposta }}</p>
+                </div>
             </div>
-            <p class="fs-4">{{resposta['descResposta']}}</p> <!-- Resposta de Tio Carlos -->
-        </div>
-        {% endfor %}
+            {% endfor %}
+        {% else %}
+            <p class="mt-3" style="color: gray;">Não há respostas para este chamado.</p>
+        {% endif %}
     </div>
 {% endblock %}

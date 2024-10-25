@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bloco 1</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f5f5f5;
+        }
+
+        h1 {
+            text-align: center;
+            color: #225656;
+            margin-bottom: 100px;
+            margin-top: -150px;
+        }
+
+        .back-arrow {
+            position: absolute;
+            left: 20px;
+            top: 20px;
+            font-size: 24px;
+            text-decoration: none;
+            color: #225656;
+        }
+
+        .search {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 20px;
+        }
+
+        .search input {
+            padding: 5px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            width: 200px;
+        }
+
+        .row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .row-title {
+            width: 100%;
+            border-bottom: 1px solid #000;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .row div {
+            text-align: center;
+            width: 30%;
+        }
+
+        .row-others {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+        }
+
+        .row-others div {
+            width: 33%;
+            text-align: center;
+        }
+
+    </style>
+</head>
+<body>
+
+    <a href="#" class="back-arrow">&larr;</a>
+
+    <div class="container">
+        <h1>Bloco 1</h1>
+
+        <div class="search">
+            <input type="text" placeholder="Buscar...">
+        </div>
+
+        <div class="row-title">Sala de aula</div>
+        <div class="row">
+            <div>Sala 1</div>
+            <div>Sala 2</div>
+            <div>Sala 3</div>
+        </div>
+
+        <div class="row-title">Banheiro</div>
+        <div class="row">
+            <div>Banheiro Professores Masc 1</div>
+            <div>Banheiro Professores Fem 1</div>
+            <div>Banheiro Preferencial</div>
+        </div>
+
+        <div class="row">
+            <div>Banheiro Fem 1</div>
+            <div>Banheiro Masc 1</div>
+        </div>
+
+        <div class="row-title">Outros</div>
+        <div class="row-others">
+            <div>Atendimento aos Pais</div>
+            <div>Diretoria</div>
+            <div>Secretaria</div>
+        </div>
+
+    </div>
+
+</body>
+</html>

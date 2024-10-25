@@ -1,4 +1,4 @@
-from flask import render_template, redirect, Blueprint, request, flash, url_for, session
+from flask import render_template, redirect, Blueprint, request, flash, url_for, session, jsonify
 import os
 from connection.connection import conecta_database
 from session.session import verifica_sessao
@@ -123,6 +123,55 @@ def cadchamados():
         conexao.close()
 
 
+@adm_blueprint.route("/filtrarLocais/<int:idArea>", methods=['GET'])
+def filtrarLocais(idArea):
+    conexao = conecta_database()
+    cursor = conexao.cursor(dictionary=True)
+    
+    # Filtrar locais relacionados à área
+    query = """
+    SELECT idLocal, nomeLocal FROM local WHERE idArea = %s
+    """
+    cursor.execute(query, (idArea,))
+    locais = cursor.fetchall()
+    
+    conexao.close()
+    
+    # Retorna os locais como JSON
+    return jsonify(locais)
+
+
+@adm_blueprint.route("/filtrarItens/<int:idLocal>", methods=['GET'])
+def filtrarItens(idLocal):
+    conexao = conecta_database()
+    cursor = conexao.cursor(dictionary=True)
+
+    # Primeiro, obtém a categoria do local selecionado
+    query_categoria = "SELECT idCategoria FROM local WHERE idLocal = %s"
+    cursor.execute(query_categoria, (idLocal,))
+    categoria = cursor.fetchone()
+
+    if categoria:
+        idCategoria = categoria['idCategoria']
+
+        # Filtrar itens relacionados à categoria do local
+        query_itens = """
+        SELECT i.idItem, i.nomeItem
+        FROM item i
+        JOIN item_categoria ic ON i.idItem = ic.idItem
+        WHERE ic.idCategoria = %s
+        """
+        cursor.execute(query_itens, (idCategoria,))
+        itens = cursor.fetchall()
+    else:
+        itens = []
+
+    conexao.close()
+
+    # Retorna os itens como JSON
+    return jsonify(itens)
+
+
 # Rota para cadUsuario
 @adm_blueprint.route("/cadUsuario", methods=['GET', 'POST'])
 def cadastroUsuario():
@@ -222,17 +271,17 @@ def cadLocal():
 
 
 
-# Rota para filtrarItem
-@adm_blueprint.route("/filtrarItem")
-def filtrarItem():
-    title = "Filtrar Item"
-    return render_template("filtrarItem.html", title=title, login=True)
+# Rota para filtrarItemedicao
+@adm_blueprint.route("/filtrarItemedicao")
+def filtrarItemedicao():
+    title = "Filtrar Item Edição"
+    return render_template("filtrarItemedicao.html", title=title, login=True)
 
-# Rota para filtrarLocal
-@adm_blueprint.route("/filtrarLocal")
-def filtrarLocal():
-    title = "Filtrar Local"
-    return render_template("filtrarLocal.html", title=title, login=True)
+# Rota para filtrarLocaledicao
+@adm_blueprint.route("/filtrarLocaledicao")
+def filtrarLocaledicao():
+    title = "Filtrar Local Edição"
+    return render_template("filtrarLocaledicao.html", title=title, login=True)
 
 # Rota para edicaoLocal
 @adm_blueprint.route("/edicaoLocal")
