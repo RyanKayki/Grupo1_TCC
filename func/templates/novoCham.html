@@ -1,9 +1,54 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Novo Chamado</title>
+{% extends 'modelFunc.html' %}
+{% block conteudo %}
+
+    <div class="container">
+        <header class="header">
+            <div class="title-container">
+                <h1 class="main-title">Tio Carlos Concerta</h1>
+            </div>
+            <img src="../../static/IMG/app/logo_branca.png" alt="Logo" class="logo">
+        </header>
+
+        <div class="form-container">
+            <a href="#" class="back-button">&#8592;</a>
+            <div class="new-chamado">
+                <h1>Novo chamado</h1>
+            </div>
+            
+            <div class="photo-upload">
+                <label for="photoInput" class="photo-label">
+                    <img src="../../src/img/ImagemIcon.png" alt="Adicionar imagem">
+                </label>
+                <input type="file" id="photoInput" class="photo-input" accept="image/*">
+            </div>
+
+            <select class="input-field">
+                <option>Filtrar área</option>
+                <option>Bloco 1</option>
+                <option>Bloco 2</option>
+                <option>Área externa</option>
+                <option>Quadra</option>
+            </select>
+
+            <select class="input-field">
+                <option>Local do problema</option>
+                <option>Local 1</option>
+                <option>Local 2</option>
+            </select>
+
+            <select class="input-field">
+                <option>Itens</option>
+                <option>Item 1</option>
+                <option>Item 2</option>
+            </select>
+
+            <textarea class="input-field" placeholder="Descrição..."></textarea>
+
+            <button class="submit-button">Enviar chamado</button>
+        </div>
+    </div>
+
+
     <style>
         * {
             margin: 0;
@@ -147,53 +192,4 @@
             margin-top: 10px;
         }
     </style>
-</head>
-<body>
-    <div class="container">
-        <header class="header">
-            <div class="title-container">
-                <h1 class="main-title">Tio Carlos Concerta</h1>
-            </div>
-            <img src="../../static/IMG/app/logo_branca.png" alt="Logo" class="logo">
-        </header>
-
-        <div class="form-container">
-            <a href="#" class="back-button">&#8592;</a>
-            <div class="new-chamado">
-                <h1>Novo chamado</h1>
-            </div>
-            
-            <div class="photo-upload">
-                <label for="photoInput" class="photo-label">
-                    <img src="../../src/img/ImagemIcon.png" alt="Adicionar imagem">
-                </label>
-                <input type="file" id="photoInput" class="photo-input" accept="image/*">
-            </div>
-
-            <select class="input-field">
-                <option>Filtrar área</option>
-                <option>Bloco 1</option>
-                <option>Bloco 2</option>
-                <option>Área externa</option>
-                <option>Quadra</option>
-            </select>
-
-            <select class="input-field">
-                <option>Local do problema</option>
-                <option>Local 1</option>
-                <option>Local 2</option>
-            </select>
-
-            <select class="input-field">
-                <option>Itens</option>
-                <option>Item 1</option>
-                <option>Item 2</option>
-            </select>
-
-            <textarea class="input-field" placeholder="Descrição..."></textarea>
-
-            <button class="submit-button">Enviar chamado</button>
-        </div>
-    </div>
-</body>
-</html>
+{% endblock %}
