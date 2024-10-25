@@ -68,7 +68,7 @@
             <p>Tem certeza que deseja finalizar o chamado?</p>
             <p>Se finalizar, não será possível adicionar outras respostas ao problema.</p>
             <div class="modal-actions">
-                <button class="btn-finalizar-confirm" onclick="finalizarChamado()">FINALIZAR</button>
+                <button class="btn-finalizar-confirm me-2" onclick="finalizarChamado()">FINALIZAR</button>
                 <button class="btn-cancel" onclick="toggleConfirmationModal()">CANCELAR</button>
             </div>
         </div>
@@ -117,7 +117,7 @@
 }
 
   .bulb-image {
-      max-width: 250px;
+      width: 250px;
       height: auto;
       border-radius: 10px;
       border: 1px solid #225656;
@@ -157,16 +157,16 @@
   }
 
   .btn-add, .btn-finalizar, .btn-finalizar-confirm, .btn-cancel {
-      background-color: #225656;
-      color: white;
-      border: none;
-      border-radius: 10px;
-      padding: 10px 20px;
-      font-size: 16px;
-      cursor: pointer;
-      width: 100%;
-      max-width: 250px;
-      margin-top: 10px;
+      background-color: #225656; /* Cor do fundo */
+      color: white; /* Cor do texto */
+      border: none; /* Sem borda */
+      border-radius: 10px; /* Bordas arredondadas */
+      padding: 10px 20px; /* Espaçamento interno */
+      font-size: 16px; /* Tamanho da fonte */
+      cursor: pointer; /* Cursor de ponteiro */
+      width: 100%; /* Largura total */
+      max-width: 250px; /* Largura máxima */
+      margin-top: 10px; /* Margem superior */
   }
 
   .response-input {
@@ -224,6 +224,16 @@
       cursor: pointer;
   }
 
+  /* Adiciona espaço acima do botão de finalizar */
+  .modal-actions button {
+      margin-top: 10px;
+  }
+
+  /* Adiciona espaço à direita do botão cancelar, se desejado */
+  .btn-cancel {
+      margin-right: 10px;
+  }
+
   /* Media query para telas menores que 700px de altura */
   @media (max-height: 700px) {
       .title {
@@ -235,36 +245,28 @@
       }
 
       .local {
-          font-size: 14px; /* Diminuir texto da sala */
+          font-size: 14px; /* Diminuir texto da local */
       }
 
       .btn-add, .btn-finalizar, .btn-finalizar-confirm, .btn-cancel {
           font-size: 14px; /* Diminuir tamanho dos botões */
-          padding: 8px 16px; /* Diminuir padding dos botões */
-      }
-
-      .bulb-image {
-          max-width: 200px; /* Diminuir tamanho da imagem */
-      }
-
-      .input-textarea {
-          height: 60px; /* Diminuir altura do textarea */
-      }
-
-      .response-input {
-          margin-top: 10px; /* Diminuir margin das respostas */
       }
   }
 </style>
 
 <script>
     function getIdChamado() {
-        const chamadoIdElement = document.getElementById('chamado-id');
-        return chamadoIdElement.getAttribute('data-id'); // Obtém o idChamado do atributo data-id
+        return document.getElementById('chamado-id').dataset.id;
     }
 
     function addResponseField() {
         const responsesContainer = document.getElementById('responses-container');
+        
+        // Verifica se já existe um campo de resposta
+        if (responsesContainer.querySelector('.response-input')) {
+            alert('Você já está adicionando uma resposta.');
+            return;
+        }
 
         const responseDiv = document.createElement('div');
         responseDiv.className = 'response-input';
@@ -274,7 +276,7 @@
         textarea.placeholder = 'Digite sua resposta aqui...';
 
         const saveButton = document.createElement('button');
-        saveButton.className = 'btn-save-response';
+        saveButton.className = 'btn-save-response btn-add';
         saveButton.innerHTML = 'Salvar <i class="save-icon">✔️</i>';
         saveButton.onclick = function() {
             const resposta = textarea.value;
@@ -309,21 +311,30 @@
             });
         };
 
+        const cancelButton = document.createElement('button');
+        cancelButton.className = 'btn-cancel btn-add';
+        cancelButton.innerHTML = 'Cancelar <i class="cancel-icon">❌</i>';
+        cancelButton.onclick = function() {
+            responsesContainer.removeChild(responseDiv); // Remove o campo ao cancelar
+        };
+
         responseDiv.appendChild(textarea);
         responseDiv.appendChild(saveButton);
+        responseDiv.appendChild(cancelButton);
         responsesContainer.appendChild(responseDiv);
     }
 
     function toggleResponses() {
         const responsesList = document.getElementById('responses-list');
         const toggleButton = document.getElementById('toggle-responses-btn');
+
         if (responsesList.style.display === 'none') {
-        toggleButton.innerText = 'Ocultar Respostas'; // Muda o texto do botão
-    } else {
-        toggleButton.innerText = 'Mostrar Respostas'; // Muda o texto do botão
-    }
-        responsesList.style.display = responsesList.style.display === 'none' ? 'block' : 'none';
-        
+            responsesList.style.display = 'block';
+            toggleButton.innerHTML = 'Ocultar Respostas';
+        } else {
+            responsesList.style.display = 'none';
+            toggleButton.innerHTML = 'Mostrar Respostas';
+        }
     }
 
     function toggleConfirmationModal() {
@@ -332,15 +343,18 @@
     }
 
     function finalizarChamado() {
-        const idChamado = getIdChamado(); // Obtém o idChamado
+        const idChamado = getIdChamado();
 
         fetch(`/tec/finalizarChamado/${idChamado}`, {
             method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
         })
         .then(response => {
             if (response.ok) {
                 alert('Chamado finalizado com sucesso!');
-                window.location.reload(); // Atualiza a página após finalizar
+                window.location.reload(); // Atualiza a página
             } else {
                 alert('Erro ao finalizar chamado.');
             }
