@@ -1,7 +1,7 @@
-from flask import render_template, Blueprint, redirect, send_from_directory
+from flask import render_template, Blueprint, redirect, send_from_directory, request, session, flash, url_for
 from session.session import verifica_sessao
 from connection.connection import conecta_database  # Importando corretamente
-import os
+import os, uuid
 
 func_blueprint = Blueprint("func", __name__, template_folder="templates")
 
@@ -12,27 +12,29 @@ IMG_FOLDER = os.path.join('src', 'img')
 def func_home():
     if verifica_sessao():
         try:
-            conexao = conecta_database()  # Agora chama a função aqui, no momento apropriado
+            conexao = conecta_database()
             cursor = conexao.cursor(dictionary=True)
 
             query = """
-                SELECT c.descChamado, c.dataChamado, l.nomeLocal, i.nomeItem, c.imgChamado, s.nomeStatus, c.idItem, c.idLocal, r.descResposta, c.idChamado
+                SELECT c.descChamado, c.dataChamado, c.concChamado, l.nomeLocal, i.nomeItem, c.imgChamado, 
+                       s.nomeStatus, c.idChamado, r.dataResposta
                 FROM chamado c
                 JOIN local l ON c.idLocal = l.idLocal
                 JOIN item i ON c.idItem = i.idItem
                 JOIN status s ON c.idStatus = s.idStatus
-                JOIN resposta r ON c.idChamado = r.idChamado
+                LEFT JOIN resposta r ON c.idChamado = r.idChamado  -- Junção à tabela resposta
             """
             cursor.execute(query)
             chamados = cursor.fetchall()
-            title="Manutenção"
-
+            title = "Manutenção"
 
             return render_template("funcHome.html", chamados=chamados, title=title, login=True)
         finally:
             conexao.close()
     else:
         return redirect("/login")
+
+
 
 # Rota para ver detalhes do chamado
 @func_blueprint.route('/detalhe_chamado/<int:idChamado>')
@@ -68,11 +70,64 @@ def detalhe_chamado(idChamado):
             return redirect("/login")
         
 
-# Rota para cadLocal
-@func_blueprint.route("/novoChamado")
+# Rota para novoChamado
+@func_blueprint.route("/novoChamado", methods=['GET', 'POST'])
 def novoChamado():
-    title = "NOVO CHAMADO"
-    return render_template("novoChamado.html", title=title, login=True)
+    login = verifica_sessao()
+
+    try:
+        conexao = conecta_database()
+        cursor = conexao.cursor(dictionary=True)
+
+        if request.method == 'POST':
+            # Obter o idUsuario da sessão
+            id_usuario = session.get('idUsuario')  # Usando get() para evitar KeyError
+            if id_usuario is None:
+                flash('Você precisa estar logado para cadastrar um chamado!', 'error')
+                return redirect('/login')
+
+            # Obter os dados do formulário
+            area = request.form.get('area')
+            local = request.form.get('local')
+            item = request.form.get('item')
+            descricao = request.form.get('descricao')
+            imagem = request.files.get('imagem')  # Para imagem enviada
+
+            # Verifica se a imagem foi enviada
+            if not imagem:
+                flash('A imagem é obrigatória para cadastrar um chamado!', 'error')
+                return redirect('/novoChamado')
+
+            # Gerar um nome único para a imagem
+            id_foto = str(uuid.uuid4().hex)
+            filename = f"{id_foto}_{item}.png"
+            imagem.save(os.path.join("src/img/chamados", filename))  # Corrigido para o diretório correto
+
+            cursor.execute(""" 
+                INSERT INTO chamado (descChamado, imgChamado, idItem, idLocal, idUsuario, idStatus, dataChamado) 
+                VALUES (%s, %s, %s, %s, %s, 1, NOW())  -- Assumindo que o status inicial é '1'
+            """, (descricao, filename, item, local, id_usuario))
+
+            conexao.commit()
+            flash('Chamado cadastrado com sucesso!', 'success')
+            return redirect(url_for('func.home'))  # Altere para o redirecionamento desejado
+
+        # Obtenção dos dados para o formulário
+        cursor.execute('SELECT * FROM local')
+        locais = cursor.fetchall()
+
+        cursor.execute('SELECT * FROM item')
+        itens = cursor.fetchall()
+
+        cursor.execute("SELECT idArea, nomeArea FROM area")
+        areas = cursor.fetchall()
+
+        title = "Novo Chamado"
+        return render_template("novoCham.html", title=title, login=login, locais=locais, itens=itens, areas=areas)
+
+    finally:
+        conexao.close()
+
 
 # Rota para cadastro de funcionário (lógica a ser implementada)
 @func_blueprint.route("/cadastro_funcionario", methods=['POST'])

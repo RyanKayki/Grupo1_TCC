@@ -2,24 +2,25 @@
 {% block conteudo %}
 
     <div class="container">
-        <header class="header">
-            <div class="title-container">
-                <h1 class="main-title">Tio Carlos Concerta</h1>
-            </div>
-            <img src="../../static/IMG/app/logo_branca.png" alt="Logo" class="logo">
-        </header>
 
         <div class="form-container">
-            <a href="#" class="back-button">&#8592;</a>
+            <a href="{{ url_for('func.func_home') }}" class="back-button">
+                <img src="{{ url_for('func.serve_image', filename='ButtonBack.png') }}" alt="Voltar" class="button-image">
+              </a>
             <div class="new-chamado">
                 <h1>Novo chamado</h1>
             </div>
             
             <div class="photo-upload">
                 <label for="photoInput" class="photo-label">
-                    <img src="../../src/img/ImagemIcon.png" alt="Adicionar imagem">
+                    {% set placeholder_image = url_for('func.serve_image', filename='ImagemIcon.png') %}
+                    <img
+                        id="chamadoImagem"
+                        src="{{ placeholder_image }}"
+                        class="chamado-imagem"
+                        onerror="this.onerror=null; this.src='{{ placeholder_image }}';">
                 </label>
-                <input type="file" id="photoInput" class="photo-input" accept="image/*">
+                <input type="file" id="photoInput" class="photo-input" accept="image/*" onchange="previewImage(event)"> <!-- Chama a função ao selecionar arquivo -->
             </div>
 
             <select class="input-field">
@@ -117,14 +118,18 @@
             align-items: center;
             margin-top: 20px;
         }
-
+        
         .photo-upload {
             width: 100%;
             display: flex;
             justify-content: center;
             margin-bottom: 20px;
         }
-
+        .button-image {
+            width: 40px;
+            height: auto;
+            cursor: pointer;
+        }
         .photo-label {
             display: flex;
             flex-direction: column;
@@ -192,4 +197,21 @@
             margin-top: 10px;
         }
     </style>
+
+<script>
+    function previewImage(event) {
+        const image = document.getElementById('chamadoImagem');
+        const file = event.target.files[0];
+
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                image.src = e.target.result; // Atualiza a imagem para a imagem selecionada
+            }
+            reader.readAsDataURL(file); // Lê o arquivo como URL de dados
+        } else {
+            image.src = '{{ placeholder_image }}'; // Reseta para o placeholder se nenhum arquivo for selecionado
+        }
+    }
+</script>
 {% endblock %}
