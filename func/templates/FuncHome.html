@@ -1,48 +1,40 @@
 {% extends 'modelFunc.html' %}
 {% block conteudo %}
 <div class="container mt-3">
-  <button class="submit-button w-100 py-1 text-light fs-4 rounded my-3" style="background-color: #225656; cursor: pointer;">Abrir um chamado</button>
-  <!-- Verifica se há chamados finalizados -->
-  {% if chamados %}
-  
-  <!-- Loop para agrupar chamados por data -->
-  {% for chamado in chamados %}
-
-      
-      <div class="chamado-grupo mt-3">
-          <div class="chamado-card">
-              <img src="{{ url_for('tec.serve_image', filename=chamado.imgChamado) }}" class="chamado-imagem">
-              <div class="chamado-conteudo">
-                    <div class="row">
-                        <span class="descricao">{{ chamado.nomeItem }}</span>
-                        <p class="local">Local: {{ chamado.nomeLocal }}</p>
+    <button class="submit-button w-100 py-1 text-light fs-4 rounded my-3" style="background-color: #225656; cursor: pointer;">Abrir um chamado</button>
+    {% if chamados %}
+        <ul class="list-group list-group-flush" style="font-family: Poppins">
+            {% for chamado in chamados %}
+                <li class="list-group-item ps-3 rounded m-2 pt-1">
+                    {% set placeholder_image = url_for('func.serve_image', filename='ImagemIcon.png') %}
+                    <div class="chamado-card d-flex align-items-center">
+                        <img
+                            src="{{ url_for('func.serve_image', filename=chamado.imgChamado) }}" 
+                            class="chamado-imagem"
+                            onerror="this.onerror=null; this.src='{{ placeholder_image }}';">
+                        <a href="{{ url_for('func.detalhe_chamado', idChamado=chamado.idChamado) }}" class="verMais text-decoration-none">
+                            <div class="chamado-conteudo ms-3">
+                                <span class="item fw-bold">{{ chamado.nomeItem }}</span>
+                                <br>
+                                <p class="local">Local: {{ chamado.nomeLocal }}</p>
+                                <span class="badge 
+                                    {% if chamado.nomeStatus == 'Não Respondido' %} bg-danger
+                                    {% elif chamado.nomeStatus == 'Respondido' %} bg-success
+                                    {% else %} bg-primary
+                                    {% endif %} 
+                                    float-end mb-1">
+                                    {{ chamado.nomeStatus }}
+                                </span>
+                            </div>
+                        </a>
                     </div>
-                    <div class="row">
-                        <!--Verifica a cor de acordo com o status-->
-                        {% if chamado.nomeStatus == "Não Respondido"%}
-                        <span class="status text-danger fs-6">{{ chamado.nomeStatus }}</span>
-                        {% elif chamado.nomeStatus == "Respondido" %}
-                        <span class="status fs-6" style="color: #225656">{{ chamado.nomeStatus }}</span>
-                        {% else %}
-                        <span class="status text-success fs-6">{{ chamado.nomeStatus }}</span>
-                        {% endif %}
-                        <!--Verifica se pegará a data da última resposta ou a data de coclusão-->
-                        {% if chamado.nomeStatus == "Respondido"%}
-                        <p class="data">{{ chamado.dataResposta }}</p>
-                        {% elif chamado.nomeStatus == "Concluído"%}
-                        <p class="data">{{ chamado.concChamado }}</p>
-                        {% endif %}
-                    </div>
-              </div>
-          </div>
-      </div>
-  {% endfor %}
-  
-  {% else %}
-  <p class="sem-chamados mt-3">Nenhum chamado finalizado até o momento.</p>
-  {% endif %}
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p class="sem-chamados mt-3">Nenhum chamado finalizado até o momento.</p>
+    {% endif %}
 </div>
-
 
 <style>
   .container {
@@ -92,14 +84,51 @@
       transition: background-color 0.3s;
   }
 
+  .item {
+      font-size: 26px;
+      color: #225656;
+      margin-bottom: 2px;
+  }
+
+  .verMais {
+      text-decoration: none;
+  }
+
+  .nome {
+      font-size: 17px;
+      color: #225656;
+      margin-bottom: 0;
+  }
+
+
+  
+  .card-body {
+      height: calc(100vh - 260px); /* Ajuste a altura conforme necessário */
+      overflow-y: auto; /* Permite rolagem vertical quando necessário */
+  }
+
+  /* Estilização opcional para a barra de rolagem */
+  .card-body::-webkit-scrollbar {
+      width: 8px;
+  }
+
+  .card-body::-webkit-scrollbar-thumb {
+      background-color: #225656; /* Cor da barra de rolagem */
+      border-radius: 10px;
+  }
+  
   .chamado-imagem {
-  width: 70px; /* Mantém a largura fixa */
-  height: 70px; /* Define uma altura fixa para manter a proporção */
-  background-color: #E0E0E0;
-  border-radius: 8px;
-  margin-right: 15px;
-  object-fit: contain; /* Ajusta a imagem para caber na caixa sem cortar */
-}
+      width: 160px; /* A largura será definida de acordo com o texto */
+      height: 110px; /* Define uma altura fixa para manter a proporção */
+      background-color: #E0E0E0;
+      border-radius: 8px;
+      margin-right: 15px; /* Espaço entre imagem e texto */
+  }
+
+  .chamado-card {
+      display: flex; /* Mantém a imagem e o texto alinhados */
+      align-items: center; /* Centraliza verticalmente */
+  }
 
 
 

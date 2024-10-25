@@ -74,7 +74,7 @@ def tec_task():
             cursor = conexao.cursor(dictionary=True)
 
             query = """
-                SELECT c.descChamado, c.concChamado, u.nomeUsuario, ca.nomeCargo, l.nomeLocal, i.nomeItem, c.imgChamado, s.nomeStatus, c.idChamado
+                SELECT c.descChamado, c.concChamado, c.dataChamado, u.nomeUsuario, ca.nomeCargo, l.nomeLocal, i.nomeItem, c.imgChamado, s.nomeStatus, c.idChamado
                 FROM chamado c
                 JOIN usuario u ON c.idUsuario = u.idUsuario
                 JOIN local l ON c.idLocal = l.idLocal
@@ -234,4 +234,5 @@ def detalhe(id):
 
 @tec_blueprint.route('/img/chamados/<path:filename>')
 def serve_image(filename):
-    return send_from_directory(IMG_FOLDER, filename)
+    return send_from_directory(os.path.join(IMG_FOLDER, 'chamados'), filename)
+
