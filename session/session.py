@@ -48,62 +48,72 @@ def login_page():
     title = "Login"
     return render_template("login.html", title=title)  # Exibe página de login caso não esteja logado
 
+
+
 @session_blueprint.route("/acesso", methods=['POST'])
 def acesso():
     # Validação de login
     usuario_informado = request.form["usuario"]
     senha_informada = request.form["senha"]
 
+    # Conectando ao banco de dados
     conexao = conecta_database()
     cursor = conexao.cursor(dictionary=True)
+    
+    # Buscando usuário no banco de dados
     cursor.execute('SELECT * FROM usuario WHERE nomeUsuario = %s', (usuario_informado,))
     usuario = cursor.fetchone()
-    cursor.close()  # Fechando o cursor
 
     if usuario is None:
         # Usuário não cadastrado
         flash("Usuário não cadastrado", "usuario")
+        cursor.close()  # Fechando o cursor antes de redirecionar
+        conexao.close()
         return redirect("/login")
 
     if not senha_informada:
         # Se a senha não for informada
         flash("Informe a senha", "senha")
+        cursor.close()  # Fechando o cursor antes de redirecionar
+        conexao.close()
         return redirect("/login")
 
+    # Verificando a senha
     if usuario['senhaUsuario'] != senha_informada:
         # Senha incorreta
         flash("Senha incorreta", "senha")
+        cursor.close()  # Fechando o cursor antes de redirecionar
+        conexao.close()
         return redirect("/login")
 
     # Se as credenciais estiverem corretas
-    cursor = conexao.cursor(dictionary=True)
     session["login"] = True
     session["usuario"] = usuario_informado
-    print(usuario_informado)
-    # Query para pegar o nome do cargo
+
+    # Query para pegar o nome do cargo e o ID do usuário
     query = """
-    SELECT c.nomeCargo
+    SELECT c.nomeCargo, u.idUsuario
     FROM Cargo c
     JOIN usuario u ON c.idCargo = u.idCargo
     WHERE u.nomeUsuario = %s
-"""
+    """
 
     cursor.execute(query, (usuario_informado,))
-    nomeCargo = cursor.fetchall()
+    cargo_data = cursor.fetchone()  # Mudamos para fetchone() para pegar apenas uma linha
 
-    if nomeCargo:
-        print(nomeCargo[0]["nomeCargo"])
-        session["cargo"] = nomeCargo[0]["nomeCargo"]  # Salvando o nome do cargo corretamente na sessão
+    if cargo_data:
+        session["cargo"] = cargo_data["nomeCargo"]  # Salvando o nome do cargo na sessão
+        session["idUsuario"] = cargo_data["idUsuario"]  # Armazenando o ID do usuário na sessão
     else:
         session["cargo"] = None
-    cargo = session['cargo']
+
     cursor.close()  # Fechando o cursor
-    conexao.close()
+    conexao.close()  # Fechando a conexão
 
     # Redirecionando com base no cargo
-    if cargo == "Administração":
-            return redirect("/adm")
-    elif cargo == "Manutenção":
+    if session["cargo"] == "Administração":
+        return redirect("/adm")
+    elif session["cargo"] == "Manutenção":
         return redirect("/tecHome")
     else:
         return redirect("/funcHome")
