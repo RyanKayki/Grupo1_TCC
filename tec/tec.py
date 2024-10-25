@@ -1,4 +1,4 @@
-from flask import render_template, Blueprint, redirect, send_from_directory, request, jsonify
+from flask import render_template, Blueprint, redirect, send_from_directory, request, jsonify, abort
 from session.session import verifica_sessao
 from connection.connection import conecta_database  # Importando corretamente
 import os
@@ -234,5 +234,9 @@ def detalhe(id):
 
 @tec_blueprint.route('/img/chamados/<path:filename>')
 def serve_image(filename):
-    return send_from_directory(os.path.join(IMG_FOLDER, 'chamados'), filename)
+    image_path = os.path.join(IMG_FOLDER, 'chamados', filename)
+    if os.path.exists(image_path):
+        return send_from_directory(os.path.join(IMG_FOLDER, 'chamados'), filename)
+    else:
+        return send_from_directory(os.path.join(IMG_FOLDER, 'chamados'), 'ImagemIcon.png')
 
