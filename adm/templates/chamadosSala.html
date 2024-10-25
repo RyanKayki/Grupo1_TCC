@@ -1,9 +1,8 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chamados por Sala</title>
+{% extends 'modelAdm.html' %}
+{% block conteudo %}
+<button id="toggleButton" class="btn">
+    <ion-icon name="menu-outline"></ion-icon>
+ </button>
     <style>
         * {
             margin: 0;
@@ -13,30 +12,12 @@
 
         body {
             font-family: Arial, sans-serif;
-            background-color: #f5f5f5;
-        }
-
-        /* Estilo da barra de navegação */
-        header {
-            background-color: #fff;
-            padding: 1.2%;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            background-color: #2256561e;
+            height: 82vh;
             display: flex;
-            justify-content: space-between;
-            align-items: center;
+            flex-direction: column;
         }
 
-        header .menu {
-            display: flex;
-            gap: 20px;
-        }
-
-        header a {
-            text-decoration: none;
-            color: #225656;
-            font-weight: bold;
-            font-size: 16px;
-        }
 
 
         /* Container principal da página */
@@ -44,15 +25,15 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 80vh;
+            flex-grow: 1;
             flex-direction: column;
             text-align: center;
         }
 
         h1 {
-            font-size: 24px;
-            color: #2c3e50;
-            margin-bottom: 40px;
+            font-size: 36px;
+            color: #225656;
+            margin-bottom: 200px;
             font-weight: 500;
         }
 
@@ -60,7 +41,7 @@
         .button-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 20px;
+            gap: 15px;
             width: 400px;
         }
 
@@ -68,13 +49,13 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            padding: 40px 0;
+            padding: 50px 0;
             background-color: #fff;
             border: none;
             border-radius: 10px;
-            font-size: 18px;
-            font-weight: 500;
-            color: #000;
+            font-size: 20px;
+            font-weight: 600;
+            color: #225656;
             text-decoration: none;
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
             transition: transform 0.2s ease, background-color 0.2s ease;
@@ -86,19 +67,9 @@
         }
 
     </style>
-</head>
-<body>
 
-    <!-- Barra de Navegação -->
-    <header>
-        <div><a href="#">Manutenção</a></div>
-        <div class="menu">
-            <a href="#">Início</a>
-            <a href="#">Editor</a>
-            <a href="#">Perfil</a>
-        </div>
-    </header>
-    
+<main>
+
 
     <!-- Conteúdo Principal -->
     <div class="container">
@@ -111,5 +82,5 @@
         </div>
     </div>
 
-</body>
-</html>
+</main>
+{% endblock%}
