@@ -180,14 +180,17 @@ def add_response(idChamado):
         data = request.get_json()
         resposta = data.get('resposta')
 
+        # Recupera o idUsuario da sessão
+        idUsuario = verifica_sessao()  # Ou outra maneira de recuperar o ID do usuário logado
+
         # Define a data atual
         data_atual = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
-        # Insere a resposta no banco de dados
+        # Insere a resposta no banco de dados, agora com idUsuario
         cursor.execute("""
-            INSERT INTO resposta (descResposta, dataResposta, idChamado)
-            VALUES (%s, %s, %s)
-        """, (resposta, data_atual, idChamado))
+            INSERT INTO resposta (descResposta, dataResposta, idChamado, idUsuario)
+            VALUES (%s, %s, %s, %s)
+        """, (resposta, data_atual, idChamado, idUsuario))
 
         # Atualiza o idStatus do chamado para "respondido"
         cursor.execute("""
