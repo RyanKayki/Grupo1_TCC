@@ -1,6 +1,12 @@
 {% extends 'modelAdm.html' %}
 {% block conteudo %}
 
+<!-- Botão de menu -->
+<button id="toggleButton" class="btn">
+    <ion-icon name="menu-outline"></ion-icon>
+</button>
+
+<!-- Estilos -->
 <style>
     main {
         background-color: #F7FCFC;
@@ -19,11 +25,12 @@
     }
 </style>
 
+<!-- Conteúdo principal -->
 <main>
     <div class="container">
         <p class="fw-bold text-center p-5 fs-5" style="color: #225656;">Novo Chamado</p>
 
-        <!-- Mensagens de feedback -->
+        <!-- Exibição de mensagens de feedback -->
         {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
         <div class="alert alert-dismissible fade show" role="alert">
@@ -40,48 +47,50 @@
         <!-- Formulário de Chamados -->
         <div class="card mx-auto" id="formFuncionario" style="max-width: 600px; background-color: #fff; margin-bottom: 40px;">
             <div class="card-body">
-                <form action="/cadchamados" method="post">
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label for="area" class="form-label">Área:</label>
-                        <select class="form-select" id="area" name="area" required>
-                            <option selected>Escolha...</option>
-                            {% for area in areas %}
-                            <option value="{{ area.idArea }}">{{ area.nomeArea }}</option>
-                            {% endfor %}
-                        </select>
+                <form action="/cadchamados" method="POST" enctype="multipart/form-data">
+                    <!-- Seleção de Área e Local -->
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="area" class="form-label">Área:</label>
+                            <select class="form-select" id="area" name="area" required onchange="filtrarLocais()">
+                                <option disabled selected>Escolha...</option>
+                                {% for area in areas %}
+                                <option value="{{ area.idArea }}">{{ area.nomeArea }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>  
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="local" class="form-label">Local:</label>
+                            <select class="form-select" id="local" name="local" required onchange="filtrarItens()">
+                                <option disabled selected>Escolha...</option>
+                                <!-- Opções preenchidas dinamicamente -->
+                            </select>
+                        </div>
                     </div>
                     
-                    <div class="col-md-6 mb-3">
-                        <label for="local" class="form-label">Local:</label>
-                        <select class="form-select" id="local" name="local" required>
-                            <option selected>Escolha...</option>
-                            {% for local in locais %}
-                            <option value="{{ local.idLocal }}">{{ local.nomeLocal }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                </div>
+                    <!-- Seleção de Item -->
                     <div class="col-md-8 mb-3 w-100">
                         <label for="item" class="form-label">Item:</label>
                         <select class="form-select" id="item" name="item" required>
-                            <option selected>Escolha...</option>
-                            {% for item in itens %}
-                            <option value="{{ item.idItem }}">{{ item.nomeItem }}</option>
-                            {% endfor %}
+                            <option disabled selected>Escolha...</option>
+                            <!-- Opções preenchidas dinamicamente -->
                         </select>
                     </div>
                     
+                    <!-- Descrição -->
                     <div class="col-md-8 mb-3 w-100">
                         <label for="descricao" class="form-label">Descrição:</label>
                         <textarea class="form-control" id="descricao" name="descricao" required></textarea>
                     </div>
 
+                    <!-- Upload de Imagem -->
                     <div class="col-md-8 mb-3 w-100">
                         <label for="imagem" class="form-label">Imagem:</label>
                         <input type="file" class="form-control" id="imagem" name="imagem" placeholder="Adicionar foto do problema (opcional)">
                     </div>
 
+                    <!-- Botão de envio -->
                     <div class="text-center pt-3 pb-3">
                         <button type="submit" class="btn btn-success" style="width: 12rem; height: 2rem;">Concluído</button>
                     </div>
@@ -91,33 +100,52 @@
     </div>
 </main>
 
+<!-- Dependências do Bootstrap -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
+<!-- JavaScript para filtragem dinâmica -->
 <script>
-    // Função que altera as opções conforme o valor selecionado em "Por"
-    function updateSetorOptions() {
-        var porSelect = document.getElementById('porSelect').value;
-        var setorLabel = document.getElementById('setorLabel');
-        var setorSelect = document.getElementById('setorSelect');
-        var options = '';
-
-        if (porSelect === 'local') {
-            options = `{% for local in locais %}<option value="{{ local.idLocal }}">{{ local.nomeLocal }}</option>{% endfor %}`;
-        } else {
-            setorLabel.innerText = 'item:';
-            options = `{% for item in itens %}<option value="{{ item.idItem }}">{{ item.nomeItem }}</option>{% endfor %}`;
+    // Função para filtrar os locais com base na área selecionada
+    function filtrarLocais() {
+        var idArea = document.getElementById('area').value;
+        
+        if (idArea) {
+            fetch(`/filtrarLocais/` + idArea)
+                .then(response => response.json())
+                .then(data => {
+                    var localSelect = document.getElementById('local');
+                    localSelect.innerHTML = '<option disabled selected>Escolha...</option>';
+                    
+                    data.forEach(local => {
+                        var option = document.createElement('option');
+                        option.value = local.idLocal;
+                        option.textContent = local.nomeLocal;
+                        localSelect.appendChild(option);
+                    });
+                })
+                .catch(error => console.error('Erro ao carregar locais:', error));
         }
-        setorSelect.innerHTML = options;
     }
 
-    // Função para exibir campo extra ao selecionar "Outros"
-    function checkProblemaComum() {
-        var problemaComum = document.getElementById('problemasComuns').value;
-        var outrosContainer = document.getElementById('outrosProblemaContainer');
-        if (problemaComum === 'outros') {
-            outrosContainer.classList.remove('d-none');
-        } else {
-            outrosContainer.classList.add('d-none');
+    // Função para filtrar os itens com base no local selecionado
+    function filtrarItens() {
+        var idLocal = document.getElementById('local').value;
+        
+        if (idLocal) {
+            fetch(`/filtrarItens/` + idLocal)
+                .then(response => response.json())
+                .then(data => {
+                    var itemSelect = document.getElementById('item');
+                    itemSelect.innerHTML = '<option disabled selected>Escolha...</option>';
+                    
+                    data.forEach(item => {
+                        var option = document.createElement('option');
+                        option.value = item.idItem;
+                        option.textContent = item.nomeItem;
+                        itemSelect.appendChild(option);
+                    });
+                })
+                .catch(error => console.error('Erro ao carregar itens:', error));
         }
     }
 </script>

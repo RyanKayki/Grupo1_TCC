@@ -1,6 +1,10 @@
 {% extends 'modelAdm.html' %}
 {% block conteudo %}
 
+<button id="toggleButton" class="btn">
+    <ion-icon name="menu-outline"></ion-icon>
+</button>
+
 <style>
     main {
         background-color: #F7FCFC;
@@ -40,7 +44,7 @@
         <!-- Formulário de Cadastro de Funcionarios -->
         <div class="card mx-auto" id="formFuncionario" style="max-width: 600px; background-color: #fff; margin-bottom: 40px;">
             <div class="card-body">
-                <form action="/cadastro" method="post">
+                <form action="/cadUsuario" method="post">
                     <input type="hidden" name="tipo" value="funcionario"> <!-- Campo oculto para indicar o tipo -->
                     <div class="row">
                         <div class="col-md-8 mb-3 w-100">
@@ -51,28 +55,23 @@
                             <label for="nomeEmail" class="form-label">E-mail:</label>
                             <input type="text" class="form-control" id="nomeEmail" name="nome_email" required>
                         </div>
-                        <div class="col-md-8 mb-3 w-100">
-                            <label for="cargo" class="form-label">Cargo:</label>
-                            <select class="form-select" id="cargo" name="cargo" required>
-                                <option selected>Escolha...</option>
-                                {% for cargo in cargos %}
-                                <option value="{{ cargo }}">{{ cargo }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                    </div>
-
+                     
                     <div class="row mb-3">
-                        <div class="col-md-6">
-                            <label for="dataNascimento" class="form-label">Data de Nascimento:</label>
-                            <input type="date" class="form-control" id="dataNascimento" name="data_nascimento" required>
-                        </div>
+    <div class="col-md-6">
+        <label for="cargo" class="form-label">Cargo:</label>
+        <select class="form-select" id="cargo" name="cargo" required>
+            <option selected>Escolha...</option>
+            {% for cargo in cargos %}
+            <option value="{{ cargo }}">{{ cargo.nomeCargo }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="col-md-6">
+        <label for="numero" class="form-label">Telefone:</label>
+        <input type="text" class="form-control" id="numero" name="numero" required>
+    </div>
+</div>
 
-                        <div class="col-md-6">
-                            <label for="numero" class="form-label">Telefone:</label>
-                            <input type="text" class="form-control" id="numero" name="numero" required>
-                        </div>
-                    </div>
 
                     <div class="text-center pt-3 pb-3">
                         <button type="submit" class="btn btn-success" style="width: 12rem; height: 2rem;">Concluído</button>

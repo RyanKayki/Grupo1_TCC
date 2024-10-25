@@ -5,7 +5,7 @@
   <img src="{{ url_for('tec.serve_image', filename='ButtonBack.png') }}" alt="Voltar" class="button-image">
 </a>
 <div class="container">
-  
+
     {% set placeholder_image = url_for('tec.serve_image', filename='ImagemIcon.png') %}
     <div class="imageText">
         <div class="image-container">
@@ -21,6 +21,25 @@
     <div class="details-container">
         <p class="descricao">{{ chamado.descChamado }}</p>
         <p class="local">Sala: {{ chamado.nomeLocal }}</p>
+
+        <!-- Botão para exibir/ocultar respostas -->
+        <button id="toggle-responses-btn" class="button-show-answer" onclick="toggleResponses()">
+            Mostrar Respostas
+        </button>
+        <div id="responses-list" style="display: none;">
+            {% if respostas %}
+                <ul class="respostas-list">
+                    {% for resposta in respostas %}
+                        <li class="resposta-item">
+                            <p>{{ resposta.dataResposta | data_formatada }}</p>
+                            <p>{{ resposta.descResposta }}</p>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p>Nenhuma resposta adicionada ainda.</p>
+            {% endif %}
+        </div>
     </div>
 
     <!-- Campo para adicionar resposta -->
@@ -37,7 +56,7 @@
         {% if chamado.nomeStatus == 'Concluído' %}
             <button class="btn-finalizar" disabled>FINALIZADO ✔️</button>
         {% else %}
-            <button class="btn-finalizar" onclick="toggleConfirmationModal()">FINALIZAR</button>
+            <button class="btn-finalizar mb-5" onclick="toggleConfirmationModal()">FINALIZAR</button>
         {% endif %}
     </div>
 
@@ -69,6 +88,17 @@
       max-height: 90vh;
       margin-top: 40px;
   }
+  .respostas-list {
+    list-style-type: none;
+    padding: 0;
+}
+
+.resposta-item {
+    background-color: #f1f1f1;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+}
 
   .imageText {
     border-radius: 20px;
@@ -86,15 +116,24 @@
     margin-bottom: 1rem; /* Define o espaço entre a imagem e o título */
 }
 
-
-
   .bulb-image {
       max-width: 250px;
       height: auto;
       border-radius: 10px;
       border: 1px solid #225656;
   }
-
+  .button-show-answer {
+    background-color: #225656;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+      width: 100%;
+      max-width: 250px;
+      margin-top: 10px;
+  }
   .details-container {
       text-align: center;
       max-width: 400px;
@@ -238,13 +277,53 @@
         saveButton.className = 'btn-save-response';
         saveButton.innerHTML = 'Salvar <i class="save-icon">✔️</i>';
         saveButton.onclick = function() {
-            textarea.disabled = true; // Desativa o campo
-            saveButton.style.display = 'none'; // Esconde o botão de salvar
+            const resposta = textarea.value;
+            const idChamado = getIdChamado(); // Obtém o idChamado
+
+            if (resposta.trim() === "") {
+                alert('A resposta não pode estar vazia.');
+                return;
+            }
+
+            // Envia a resposta ao backend
+            fetch(`/tec/addResponse/${idChamado}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ resposta }),
+            })
+            .then(response => {
+                if (response.ok) {
+                    alert('Resposta adicionada com sucesso!');
+                    responsesContainer.removeChild(responseDiv); // Remove o campo após salvar
+                    toggleResponses(); // Atualiza a lista de respostas
+                    window.location.reload(); // Atualiza a página
+                } else {
+                    alert('Erro ao adicionar resposta.');
+                }
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+                alert('Erro ao adicionar resposta.');
+            });
         };
 
         responseDiv.appendChild(textarea);
         responseDiv.appendChild(saveButton);
         responsesContainer.appendChild(responseDiv);
+    }
+
+    function toggleResponses() {
+        const responsesList = document.getElementById('responses-list');
+        const toggleButton = document.getElementById('toggle-responses-btn');
+        if (responsesList.style.display === 'none') {
+        toggleButton.innerText = 'Ocultar Respostas'; // Muda o texto do botão
+    } else {
+        toggleButton.innerText = 'Mostrar Respostas'; // Muda o texto do botão
+    }
+        responsesList.style.display = responsesList.style.display === 'none' ? 'block' : 'none';
+        
     }
 
     function toggleConfirmationModal() {
@@ -253,28 +332,24 @@
     }
 
     function finalizarChamado() {
-    const idChamado = getIdChamado(); // Obtém o idChamado
+        const idChamado = getIdChamado(); // Obtém o idChamado
 
-    fetch(`/tec/finalizarChamado/${idChamado}`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        }
-    })
-    .then(response => {
-        if (response.ok) {
-            alert('Chamado finalizado com sucesso.');
-            toggleConfirmationModal(); // Fecha o modal
-            window.location.href = "/tecTask"; // Redireciona para a página de chamados finalizados
-        } else {
-            alert('Erro ao finalizar o chamado: ' + response.statusText);
-        }
-    })
-    .catch(error => {
-        alert('Erro ao finalizar o chamado: ' + error.message);
-    });
-}
-
+        fetch(`/tec/finalizarChamado/${idChamado}`, {
+            method: 'POST',
+        })
+        .then(response => {
+            if (response.ok) {
+                alert('Chamado finalizado com sucesso!');
+                window.location.reload(); // Atualiza a página após finalizar
+            } else {
+                alert('Erro ao finalizar chamado.');
+            }
+        })
+        .catch(error => {
+            console.error('Erro:', error);
+            alert('Erro ao finalizar chamado.');
+        });
+    }
 </script>
 
 {% endblock %}

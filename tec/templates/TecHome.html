@@ -3,12 +3,12 @@
 {% block conteudo %}
 
 <div class="container">
-    <h1>Manutenções</h1>
+    <h1 style="font-family: Cousine; font-weight: 700;">Manutenções</h1>
 
     <!-- Verifica se existem chamados -->
     {% if chamados %}
         <div class="card-body">
-            <ul class="list-group list-group-flush">
+            <ul class="list-group list-group-flush" style="font-family: Poppins">
                 {% for chamado in chamados %}
                 <li class="list-group-item ps-3 border m-2 pt-1">
                     <!-- Link para a página de detalhes do chamado -->

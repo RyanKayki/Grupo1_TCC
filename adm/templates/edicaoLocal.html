@@ -1,0 +1,165 @@
+{% extends 'modelAdm.html' %}
+{% block conteudo %}
+
+<button id="toggleButton" class="btn">
+    <ion-icon name="menu-outline"></ion-icon>
+</button>
+
+<style>
+    main {
+        background-color: #F7FCFC;
+        font-family: 'Open Sans', sans-serif;
+    }
+    .card {
+        border: none;
+        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+    }
+    .btn-success {
+        background-color: #225656;
+        border: none;
+    }
+    .form-control, .form-select {
+        background-color: #22565665;
+    }
+    .btn-delete, .btn-add {
+        background-color: transparent;
+        border: none;
+        color: #225656;
+        font-size: 1.5rem;
+        cursor: pointer;
+    }
+</style>
+
+<main>
+    <div class="container">
+        <p class="fw-bold text-center p-5 fs-5" style="color: #225656;">Editar Local</p>
+
+        <!-- Mensagens de feedback -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        <div class="alert alert-dismissible fade show" role="alert">
+            {% for category, message in messages %}
+            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        {% endwith %}
+
+        <!-- Formulário de Edição de Local -->
+        <div class="card mx-auto" id="formLocal" style="max-width: 600px; background-color: #fff; margin-bottom: 40px;">
+            <div class="card-body">
+                <form action="/editarLocal" method="post">
+                    <input type="hidden" name="tipo" value="local"> <!-- Campo oculto para indicar o tipo -->
+                    
+                    <!-- Nome da Sala -->
+                    <div class="row mb-3">
+                        <div class="col-md-8 w-100">
+                            <label for="nomeSala" class="form-label">Nome da Sala:</label>
+                            <input type="text" class="form-control" id="nomeSala" name="nome_sala" value="Laboratório de Química" required>
+                        </div>
+                    </div>
+                    
+                    <!-- Bloco e Categoria -->
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="bloco" class="form-label">Bloco:</label>
+                            <select class="form-select" id="bloco" name="bloco" required>
+                                <option selected>Bloco 2</option>
+                                <option value="1">Bloco 1</option>
+                                <option value="3">Bloco 3</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="categoria" class="form-label">Categoria:</label>
+                            <select class="form-select" id="categoria" name="categoria" required>
+                                <option selected>Laboratório</option>
+                                <option value="sala">Sala de Aula</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Itens Presentes -->
+                    <div id="itensContainer">
+                        <div class="row mb-3 item-row">
+                            <div class="col-md-10">
+                                <input type="text" class="form-control" value="Tomada" disabled>
+                            </div>
+                            <div class="col-md-2 d-flex justify-content-center align-items-center">
+                                <button type="button" class="btn-delete" onclick="removerItem(this)"><ion-icon name="trash-outline"></ion-icon></button>
+                            </div>
+                        </div>
+                        <div class="row mb-3 item-row">
+                            <div class="col-md-10">
+                                <input type="text" class="form-control" value="Torneira" disabled>
+                            </div>
+                            <div class="col-md-2 d-flex justify-content-center align-items-center">
+                                <button type="button" class="btn-delete" onclick="removerItem(this)"><ion-icon name="trash-outline"></ion-icon></button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Adicionar Item -->
+                    <div class="row mb-3">
+                        <div class="col-md-10">
+                            <input type="text" class="form-control" id="novoItemInput" placeholder="Adicionar item presente nessa sala (opcional)">
+                        </div>
+                        <div class="col-md-2 d-flex justify-content-center align-items-center">
+                            <button type="button" class="btn-add" onclick="adicionarItem()"><ion-icon name="add-circle-outline"></ion-icon></button>
+                        </div>
+                    </div>
+
+                    <!-- Botão de Conclusão -->
+                    <div class="text-center pt-3 pb-3">
+                        <button type="submit" class="btn btn-success" style="width: 12rem; height: 2rem;">Concluído</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    function removerItem(button) {
+        // Remove a linha do item quando o botão de exclusão for clicado
+        const row = button.closest('.item-row');
+        row.remove();
+    }
+
+    function adicionarItem() {
+        // Adiciona um novo item à lista
+        const novoItemInput = document.getElementById('novoItemInput');
+        const novoItemValor = novoItemInput.value.trim();
+        
+        if (novoItemValor !== "") {
+            const itensContainer = document.getElementById('itensContainer');
+
+            // Criar a nova linha do item
+            const novaLinha = document.createElement('div');
+            novaLinha.classList.add('row', 'mb-3', 'item-row');
+            
+            novaLinha.innerHTML = `
+                <div class="col-md-10">
+                    <input type="text" class="form-control" value="${novoItemValor}" disabled>
+                </div>
+                <div class="col-md-2 d-flex justify-content-center align-items-center">
+                    <button type="button" class="btn-delete" onclick="removerItem(this)"><ion-icon name="trash-outline"></ion-icon></button>
+                </div>
+            `;
+
+            // Adicionar a nova linha ao container
+            itensContainer.appendChild(novaLinha);
+
+            // Limpar o campo de entrada
+            novoItemInput.value = "";
+        } else {
+            alert('Por favor, insira o nome de um item antes de adicionar.');
+        }
+    }
+</script>
+
+{% endblock %}
