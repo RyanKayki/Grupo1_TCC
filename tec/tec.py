@@ -1,4 +1,4 @@
-from flask import render_template, Blueprint, redirect, send_from_directory, request, jsonify
+from flask import render_template, Blueprint, redirect, send_from_directory, request, jsonify, abort
 from session.session import verifica_sessao
 from connection.connection import conecta_database  # Importando corretamente
 import os
@@ -180,14 +180,17 @@ def add_response(idChamado):
         data = request.get_json()
         resposta = data.get('resposta')
 
+        # Recupera o idUsuario da sessão
+        idUsuario = verifica_sessao()  # Ou outra maneira de recuperar o ID do usuário logado
+
         # Define a data atual
         data_atual = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
-        # Insere a resposta no banco de dados
+        # Insere a resposta no banco de dados, agora com idUsuario
         cursor.execute("""
-            INSERT INTO resposta (descResposta, dataResposta, idChamado)
-            VALUES (%s, %s, %s)
-        """, (resposta, data_atual, idChamado))
+            INSERT INTO resposta (descResposta, dataResposta, idChamado, idUsuario)
+            VALUES (%s, %s, %s, %s)
+        """, (resposta, data_atual, idChamado, idUsuario))
 
         # Atualiza o idStatus do chamado para "respondido"
         cursor.execute("""
@@ -234,5 +237,9 @@ def detalhe(id):
 
 @tec_blueprint.route('/img/chamados/<path:filename>')
 def serve_image(filename):
-    return send_from_directory(os.path.join(IMG_FOLDER, 'chamados'), filename)
+    image_path = os.path.join(IMG_FOLDER, 'chamados', filename)
+    if os.path.exists(image_path):
+        return send_from_directory(os.path.join(IMG_FOLDER, 'chamados'), filename)
+    else:
+        return send_from_directory(os.path.join(IMG_FOLDER, 'chamados'), 'ImagemIcon.png')
 

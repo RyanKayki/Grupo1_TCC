@@ -13,10 +13,14 @@
                 {% for chamado in chamados %}
                 <li class="list-group-item ps-3 rounded m-2 pt-1">
                     <div class="chamado-card d-flex align-items-center">
-                        <img
-                            src="{{ url_for('tec.serve_image', filename=chamado.imgChamado) }}" 
-                            class="chamado-imagem"
-                            onerror="this.onerror=null; this.src='{{ placeholder_image }}';">
+                        {% if chamado.imgChamado %}
+                            <img
+                                src="{{ url_for('tec.serve_image', filename=chamado.imgChamado) }}" 
+                                class="chamado-imagem"
+                                onerror="this.onerror=null; this.src='{{ placeholder_image }}';">
+                        {% else %}
+                            <img src="{{ placeholder_image }}" alt="Imagem placeholder" class="chamado-imagem">
+                        {% endif %}
                         <!-- Link para a página de detalhes do chamado -->
                         <a href="{{ url_for('tec.tec_more', idChamado=chamado.idChamado) }}" class="verMais">
                             <div class="chamado-conteudo ms-3"> <!-- Adiciona margem esquerda -->
