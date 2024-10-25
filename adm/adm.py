@@ -1,4 +1,4 @@
-from flask import render_template, redirect, Blueprint, request, flash, url_for, session
+from flask import render_template, redirect, Blueprint, request, flash, url_for, session, jsonify
 import os
 from connection.connection import conecta_database
 from session.session import verifica_sessao
@@ -121,6 +121,42 @@ def cadchamados():
             return render_template("cadchamados.html", title=title, login=login, locais=locais, itens=itens, areas=areas, usuarios=usuarios, cargos=cargos)
     finally:
         conexao.close()
+
+
+@adm_blueprint.route("/filtrarLocais/<int:idArea>", methods=['GET'])
+def filtrarLocais(idArea):
+    conexao = conecta_database()
+    cursor = conexao.cursor(dictionary=True)
+    
+    # Filtrar locais relacionados à área
+    query = """
+    SELECT idLocal, nomeLocal FROM local WHERE idArea = %s
+    """
+    cursor.execute(query, (idArea,))
+    locais = cursor.fetchall()
+    
+    conexao.close()
+    
+    # Retorna os locais como JSON
+    return jsonify(locais)
+
+
+@adm_blueprint.route("/filtrarItens/<int:idLocal>", methods=['GET'])
+def filtrarItens(idLocal):
+    conexao = conecta_database()
+    cursor = conexao.cursor(dictionary=True)
+    
+    # Filtrar itens relacionados ao local
+    query = """
+    SELECT idItem, nomeItem FROM item WHERE idLocal = %s
+    """
+    cursor.execute(query, (idLocal,))
+    itens = cursor.fetchall()
+    
+    conexao.close()
+    
+    # Retorna os itens como JSON
+    return jsonify(itens)
 
 
 # Rota para cadUsuario
