@@ -61,6 +61,12 @@ def detalhe_chamado(idChamado):
             return redirect("/login")
         
 
+# Rota para cadLocal
+@func_blueprint.route("/novoChamado")
+def novoChamado():
+    title = "NOVO CHAMADO"
+    return render_template("novoChamado.html", title=title, login=True)
+
 # Rota para cadastro de funcionário (lógica a ser implementada)
 @func_blueprint.route("/cadastro_funcionario", methods=['POST'])
 def cadastro_funcionario_json():
@@ -76,5 +82,5 @@ def perfil_func():
 # Rota para verficar imagem do chamado
 @func_blueprint.route('/img/chamados/<path:filename>')
 def serve_image(filename):
-    return send_from_directory(IMG_FOLDER, filename)
+    return send_from_directory(os.path.join(IMG_FOLDER, 'chamados'), filename)
 
