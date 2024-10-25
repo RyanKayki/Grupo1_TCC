@@ -1,7 +1,8 @@
-from flask import render_template, Blueprint, redirect, send_from_directory, request, session, flash, url_for
+from flask import render_template, Blueprint, redirect, send_from_directory, request, session, flash, url_for, jsonify
 from session.session import verifica_sessao
 from connection.connection import conecta_database  # Importando corretamente
 import os, uuid
+from datetime import datetime
 
 func_blueprint = Blueprint("func", __name__, template_folder="templates")
 
@@ -15,6 +16,13 @@ def func_home():
             conexao = conecta_database()
             cursor = conexao.cursor(dictionary=True)
 
+            # Obter o idUsuario da sessão
+            id_usuario = session.get('idUsuario')
+            if id_usuario is None:
+                flash('Você precisa estar logado para visualizar os chamados!', 'error')
+                return redirect('/login')
+
+            # Modificar a consulta para incluir o idUsuario
             query = """
                 SELECT c.descChamado, c.dataChamado, c.concChamado, l.nomeLocal, i.nomeItem, c.imgChamado, 
                        s.nomeStatus, c.idChamado, r.dataResposta
@@ -22,9 +30,10 @@ def func_home():
                 JOIN local l ON c.idLocal = l.idLocal
                 JOIN item i ON c.idItem = i.idItem
                 JOIN status s ON c.idStatus = s.idStatus
-                LEFT JOIN resposta r ON c.idChamado = r.idChamado  -- Junção à tabela resposta
+                LEFT JOIN resposta r ON c.idChamado = r.idChamado  
+                WHERE c.idUsuario = %s
             """
-            cursor.execute(query)
+            cursor.execute(query, (id_usuario,))
             chamados = cursor.fetchall()
             title = "Manutenção"
 
@@ -33,6 +42,7 @@ def func_home():
             conexao.close()
     else:
         return redirect("/login")
+
 
 
 
@@ -81,7 +91,7 @@ def novoChamado():
 
         if request.method == 'POST':
             # Obter o idUsuario da sessão
-            id_usuario = session.get('idUsuario')  # Usando get() para evitar KeyError
+            id_usuario = session.get('idUsuario')
             if id_usuario is None:
                 flash('Você precisa estar logado para cadastrar um chamado!', 'error')
                 return redirect('/login')
@@ -91,26 +101,28 @@ def novoChamado():
             local = request.form.get('local')
             item = request.form.get('item')
             descricao = request.form.get('descricao')
-            imagem = request.files.get('imagem')  # Para imagem enviada
+            imagem = request.files.get('photoInput')  # Altere para 'photoInput'            
 
             # Verifica se a imagem foi enviada
-            if not imagem:
-                flash('A imagem é obrigatória para cadastrar um chamado!', 'error')
-                return redirect('/novoChamado')
+            if imagem:
+                # Gerar um nome único para a imagem
+                id_foto = str(uuid.uuid4().hex)
+                filename = f"{id_foto}_{item}.png"
+                imagem.save(os.path.join("src/img/chamados", filename))
 
-            # Gerar um nome único para a imagem
-            id_foto = str(uuid.uuid4().hex)
-            filename = f"{id_foto}_{item}.png"
-            imagem.save(os.path.join("src/img/chamados", filename))  # Corrigido para o diretório correto
-
-            cursor.execute(""" 
-                INSERT INTO chamado (descChamado, imgChamado, idItem, idLocal, idUsuario, idStatus, dataChamado) 
-                VALUES (%s, %s, %s, %s, %s, 1, NOW())  -- Assumindo que o status inicial é '1'
-            """, (descricao, filename, item, local, id_usuario))
-
+                cursor.execute(""" 
+                    INSERT INTO chamado (descChamado, imgChamado, idItem, idLocal, idUsuario, idStatus, dataChamado) 
+                    VALUES (%s, %s, %s, %s, %s, 1, NOW())
+                """, (descricao, filename, item, local, id_usuario))
+            else:
+                cursor.execute(""" 
+                    INSERT INTO chamado (descChamado, idItem, idLocal, idUsuario, idStatus, dataChamado) 
+                    VALUES (%s, %s, %s, %s, 1, NOW())
+                """, (descricao, item, local, id_usuario))  # Corrigi aqui removendo o parâmetro extra
+        
             conexao.commit()
             flash('Chamado cadastrado com sucesso!', 'success')
-            return redirect(url_for('func.home'))  # Altere para o redirecionamento desejado
+            return redirect(url_for('func.func_home'))  # Corrigido para a rota de redirecionamento
 
         # Obtenção dos dados para o formulário
         cursor.execute('SELECT * FROM local')
@@ -121,7 +133,7 @@ def novoChamado():
 
         cursor.execute("SELECT idArea, nomeArea FROM area")
         areas = cursor.fetchall()
-
+        
         title = "Novo Chamado"
         return render_template("novoCham.html", title=title, login=login, locais=locais, itens=itens, areas=areas)
 
@@ -129,17 +141,81 @@ def novoChamado():
         conexao.close()
 
 
-# Rota para cadastro de funcionário (lógica a ser implementada)
-@func_blueprint.route("/novo_chamado", methods=['POST'])
-def novo_chamado():
-    title = "Novo Chamado"
-    return render_template("novoCham.html", title=title)
+
+@func_blueprint.route("/filtrarLocais/<int:idArea>", methods=['GET'])
+def filtrarLocais(idArea):
+    conexao = conecta_database()
+    cursor = conexao.cursor(dictionary=True)
+    
+    # Filtrar locais relacionados à área
+    query = """
+    SELECT idLocal, nomeLocal FROM local WHERE idArea = %s
+    """
+    cursor.execute(query, (idArea,))
+    locais = cursor.fetchall()
+    
+    conexao.close()
+    
+    # Retorna os locais como JSON
+    return jsonify(locais)
+
+
+@func_blueprint.route("/filtrarItens/<int:idLocal>", methods=['GET'])
+def filtrarItens(idLocal):
+    conexao = conecta_database()
+    cursor = conexao.cursor(dictionary=True)
+
+    # Primeiro, obtém a categoria do local selecionado
+    query_categoria = "SELECT idCategoria FROM local WHERE idLocal = %s"
+    cursor.execute(query_categoria, (idLocal,))
+    categoria = cursor.fetchone()
+
+    if categoria:
+        idCategoria = categoria['idCategoria']
+
+        # Filtrar itens relacionados à categoria do local
+        query_itens = """
+        SELECT i.idItem, i.nomeItem
+        FROM item i
+        JOIN item_categoria ic ON i.idItem = ic.idItem
+        WHERE ic.idCategoria = %s
+        """
+        cursor.execute(query_itens, (idCategoria,))
+        itens = cursor.fetchall()
+    else:
+        itens = []
+
+    conexao.close()
+
+    # Retorna os itens como JSON
+    return jsonify(itens)
 
 # Rota do perfil do funcionário
 @func_blueprint.route("/Perfil_funcionario", methods=['POST'])
 def perfil_func():
     # Implementar lógica da tela de perfil
     pass
+
+
+# Dicionários para formatação
+dias_da_semana = {0: 'Segunda-feira', 1: 'Terça-feira', 2: 'Quarta-feira', 3: 'Quinta-feira', 4: 'Sexta-feira', 5: 'Sábado', 6: 'Domingo'}
+meses = {1: 'Janeiro', 2: 'Fevereiro', 3: 'Março', 4: 'Abril', 5: 'Maio', 6: 'Junho', 7: 'Julho', 8: 'Agosto', 9: 'Setembro', 10: 'Outubro', 11: 'Novembro', 12: 'Dezembro'}
+
+@func_blueprint.app_template_filter('funcData')  # Use app_template_filter para registrar no Blueprint
+def data_formatada(data):
+    if isinstance(data, str):
+        if data == 'Data não disponível':
+            return data  # Retorna a mensagem diretamente
+        try:
+            data_datetime = datetime.strptime(data, "%Y-%m-%d")  # Converte para datetime
+        except ValueError:
+            return 'Data inválida'  # Retorna uma mensagem de erro caso a conversão falhe
+    else:
+        data_datetime = data
+
+    # Formata a data como xx/xx/xx às xx:xx
+    return data_datetime.strftime("%d/%m/%y às %H:%M")
+
 
 # Rota para verficar imagem do chamado
 @func_blueprint.route('/img/chamados/<path:filename>')

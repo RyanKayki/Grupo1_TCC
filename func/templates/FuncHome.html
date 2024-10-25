@@ -8,20 +8,24 @@
             <li class="list-group-item ps-3 rounded m-2 pt-1">
                 {% set placeholder_image = url_for('func.serve_image', filename='ImagemIcon.png') %}
                 <div class="chamado-card d-flex align-items-center">
-                    <img
-                        src="{{ url_for('func.serve_image', filename=chamado.imgChamado) }}" 
-                        class="chamado-imagem"
-                        onerror="this.onerror=null; this.src='{{ placeholder_image }}';">
+                    {% if chamado.imgChamado %}
+                        <img
+                            src="{{ url_for('func.serve_image', filename=chamado.imgChamado) }}" 
+                            class="chamado-imagem"
+                            onerror="this.onerror=null; this.src='{{ placeholder_image }}';">
+                    {% else %}
+                        <img src="{{ placeholder_image }}" class="chamado-imagem">
+                    {% endif %}
                     <a href="{{ url_for('func.detalhe_chamado', idChamado=chamado.idChamado) }}" class="verMais text-decoration-none">
                         <div class="chamado-conteudo ms-3">
                             <span class="item fw-bold">{{ chamado.nomeItem }}</span>
                             <br>
                             <p class="local">Local: {{ chamado.nomeLocal }}</p>
                             {% if chamado.nomeStatus == 'Respondido' %}
-                            <p class="data">{{ chamado.dataResposta | data_formatada }}</p>
-                        {% elif chamado.nomeStatus == 'Concluído' %}
-                            <p class="data">{{ chamado.concChamado | data_formatada }}</p>
-                        {% endif %}
+                                <p class="data">{{ chamado.dataResposta | data_formatada }}</p>
+                            {% elif chamado.nomeStatus == 'Concluído' %}
+                                <p class="data">{{ chamado.concChamado | data_formatada }}</p>
+                            {% endif %}
                             <span class="badge 
                                 {% if chamado.nomeStatus == 'Não Respondido' %} bg-danger
                                 {% elif chamado.nomeStatus == 'Respondido' %} bg-success
@@ -36,10 +40,9 @@
             </li>
         {% endfor %}
     </ul>
-{% else %}
-    <p class="sem-chamados mt-3">Nenhum chamado finalizado até o momento.</p>
-{% endif %}
-
+    {% else %}
+        <p class="sem-chamados mt-3">Nenhum chamado finalizado até o momento.</p>
+    {% endif %}
 </div>
 
 <style>
