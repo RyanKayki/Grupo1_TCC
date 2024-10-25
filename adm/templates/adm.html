@@ -31,14 +31,10 @@
           <ul class="list-group list-group-flush">
             {% for chamado in ultimos_chamados %}
               <li class="list-group-item ps-3 border">
-                  <span>{{ chamado.descChamado }}</span>
+                  <span>{{ chamado.nomeItem }}</span>
                   <br>
                   <small class="text-muted">
-                      {% if chamado.idItem %}
-                          Equipamento: {{ chamado.nomeItem }}
-                      {% elif chamado.idLocal %}
-                          Sala: {{ chamado.nomeLocal }}
-                      {% endif %}
+                      Sala: {{ chamado.nomeLocal }}
                   </small>
                   <span class="badge 
                       {% if chamado.nomeStatus == 'Não Respondido' %}
