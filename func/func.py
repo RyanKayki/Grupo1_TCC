@@ -101,7 +101,7 @@ def novoChamado():
             local = request.form.get('local')
             item = request.form.get('item')
             descricao = request.form.get('descricao')
-            imagem = request.files.get('photoInput')  # Altere para 'photoInput'            
+            imagem = request.files.get('imagem')        
 
             # Verifica se a imagem foi enviada
             if imagem:
@@ -217,8 +217,16 @@ def data_formatada(data):
     return data_datetime.strftime("%d/%m/%y às %H:%M")
 
 
-# Rota para verficar imagem do chamado
+# Rota para verificar a imagem do chamado
 @func_blueprint.route('/img/chamados/<path:filename>')
 def serve_image(filename):
-    return send_from_directory(os.path.join(IMG_FOLDER, 'chamados'), filename)
+    # Caminho completo para a imagem
+    image_path = os.path.join(IMG_FOLDER, 'chamados', filename)
+    
+    # Verifica se a imagem existe
+    if os.path.exists(image_path):
+        return send_from_directory(os.path.join(IMG_FOLDER, 'chamados'), filename)
+    else:
+        # Se não existir, retorna a imagem placeholder
+        return send_from_directory(os.path.join(IMG_FOLDER, 'chamados'), 'ImagemIcon.png')
 
