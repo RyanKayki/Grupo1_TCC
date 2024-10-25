@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chamados por Sala</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+        }
+
+        /* Estilo da barra de navegação */
+        header {
+            background-color: #fff;
+            padding: 1.2%;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        header .menu {
+            display: flex;
+            gap: 20px;
+        }
+
+        header a {
+            text-decoration: none;
+            color: #225656;
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+
+        /* Container principal da página */
+        .container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 80vh;
+            flex-direction: column;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 24px;
+            color: #2c3e50;
+            margin-bottom: 40px;
+            font-weight: 500;
+        }
+
+        /* Estilo da grade de botões */
+        .button-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            width: 400px;
+        }
+
+        .button-grid a {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 40px 0;
+            background-color: #fff;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: 500;
+            color: #000;
+            text-decoration: none;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s ease, background-color 0.2s ease;
+        }
+
+        .button-grid a:hover {
+            background-color: #f0f0f0;
+            transform: translateY(-5px);
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- Barra de Navegação -->
+    <header>
+        <div><a href="#">Manutenção</a></div>
+        <div class="menu">
+            <a href="#">Início</a>
+            <a href="#">Editor</a>
+            <a href="#">Perfil</a>
+        </div>
+    </header>
+    
+
+    <!-- Conteúdo Principal -->
+    <div class="container">
+        <h1>Chamados por Sala</h1>
+        <div class="button-grid">
+            <a href="#">Bloco 1</a>
+            <a href="#">Bloco 2</a>
+            <a href="#">Área Externa</a>
+            <a href="#">Quadra</a>
+        </div>
+    </div>
+
+</body>
+</html>
