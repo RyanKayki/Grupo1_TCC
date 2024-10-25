@@ -41,56 +41,33 @@
             margin: 0;
             font-size: 16px;
         }
-
-        /* Estilos responsivos para dispositivos móveis */
-        @media (max-width: 768px) {
-            .container {
-                width: 90%;
-                padding: 20px;
-            }
-            header h1 {
-                font-size: 20px;
-            }
-            h2 {
-                font-size: 22px;
-            }
-            .content img {
-                width: 150px;
-                height: 150px;
-            }
-        }
-
-        @media (max-width: 480px) {
-            header {
-                flex-direction: column;
-                text-align: center;
-            }
-            header h1 {
-                font-size: 18px;
-            }
-            .content img {
-                width: 120px;
-                height: 120px;
-            }
-        }
     </style>
     <div class="container d-flex flex-column align-items-center">
-        <div class="row mt-3">
+        <div class="d-flex flex-column align-items-center mt-3">
             {% set placeholder_image = url_for('func.serve_image', filename='ImagemIcon.png') %}
-            <div class="d-flex justify-content-center rounded shadow-sm mb-2">
+            <div class="d-flex justify-content-center rounded shadow-sm mb-2 w-75 p-5">
                 <img src="{{ url_for('func.serve_image', filename=chamado.imgChamado) }}" 
                      alt="{{ chamado['nomeItem'] }}" 
-                     class="w-75 rounded" 
+                     class="w-100 rounded" 
                      onerror="this.onerror=null; this.src='{{ placeholder_image }}';">
             </div>
-            <h2 class="fs-2">{{chamado['chamadoItem']}}</h2>
-            <p class="description">{{chamado['descChamado']}}</p>
-            <p class="location">{{chamado['nomeLocal']}}</p>
+            <h2 class="fs-1 text-bold text-shadow" style="color: #225656; text-shadow: 1px 1px #0005">{{chamado['nomeItem']}}</h2>
+            <div class="w-75">
+                <p class="fs-3 location">{{chamado['nomeLocal']}}</p>
+                <p class="fs-3 description">{{chamado['descChamado']}}</p>
+            </div>
         </div>
 
-        <div class="response-box">
-            <h3>Resposta</h3>
-            <p><strong>Tio Carlos:</strong> {{chamado['descResposta']}}</p> <!-- Resposta de Tio Carlos -->
+        
+        <h3 class="fs-1 mt-5" style="color: #225656">Respostas</h3>
+        {% for resposta in respostas%}
+        <div class="response-box my-2">
+            <div class="row d-flex justify-content-around" style="color: #225656">
+                <p class="fs-6 col-6">{{resposta['nomeUsuario']}}</p>
+                <p class="fs-6 col-6">{{resposta['dataResposta']}}</p>
+            </div>
+            <p class="fs-4">{{resposta['descResposta']}}</p> <!-- Resposta de Tio Carlos -->
         </div>
+        {% endfor %}
     </div>
 {% endblock %}
