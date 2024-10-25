@@ -33,10 +33,10 @@ def func_home():
         return redirect("/login")
 
 # Rota para cadastro de funcionário (lógica a ser implementada)
-@func_blueprint.route("/cadastro_funcionario", methods=['POST'])
-def cadastro_funcionario_json():
-    # Implementar lógica de cadastro de funcionário aqui
-    pass
+@func_blueprint.route("/novo_chamado", methods=['POST'])
+def novo_chamado():
+    title = "Novo Chamado"
+    return render_template("novoCham.html", title=title)
 
 # Rota do perfil do funcionário
 @func_blueprint.route("/Perfil_funcionario", methods=['POST'])
