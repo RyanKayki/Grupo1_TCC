@@ -145,16 +145,29 @@ def filtrarLocais(idArea):
 def filtrarItens(idLocal):
     conexao = conecta_database()
     cursor = conexao.cursor(dictionary=True)
-    
-    # Filtrar itens relacionados ao local
-    query = """
-    SELECT idItem, nomeItem FROM item WHERE idLocal = %s
-    """
-    cursor.execute(query, (idLocal,))
-    itens = cursor.fetchall()
-    
+
+    # Primeiro, obtém a categoria do local selecionado
+    query_categoria = "SELECT idCategoria FROM local WHERE idLocal = %s"
+    cursor.execute(query_categoria, (idLocal,))
+    categoria = cursor.fetchone()
+
+    if categoria:
+        idCategoria = categoria['idCategoria']
+
+        # Filtrar itens relacionados à categoria do local
+        query_itens = """
+        SELECT i.idItem, i.nomeItem
+        FROM item i
+        JOIN item_categoria ic ON i.idItem = ic.idItem
+        WHERE ic.idCategoria = %s
+        """
+        cursor.execute(query_itens, (idCategoria,))
+        itens = cursor.fetchall()
+    else:
+        itens = []
+
     conexao.close()
-    
+
     # Retorna os itens como JSON
     return jsonify(itens)
 

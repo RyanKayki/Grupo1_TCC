@@ -1,0 +1,73 @@
+{% extends 'modelFunc.html' %}
+{% block conteudo %}
+    <style>
+        .content {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .content img {
+            width: 200px;
+            height: 200px;
+            border-radius: 10px;
+            object-fit: cover;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        h2 {
+            color: #005c56;
+            margin: 20px 0;
+            font-size: 26px;
+        }
+        .description {
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+        .location {
+            font-size: 16px;
+            color: gray;
+        }
+        .response-box {
+            background-color: #e0edeb;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+            text-align: left;
+        }
+        .response-box h3 {
+            font-size: 18px;
+            color: #005c56;
+            margin: 0 0 10px 0;
+        }
+        .response-box p {
+            margin: 0;
+            font-size: 16px;
+        }
+    </style>
+    <div class="container d-flex flex-column align-items-center">
+        <div class="d-flex flex-column align-items-center mt-3">
+            {% set placeholder_image = url_for('func.serve_image', filename='ImagemIcon.png') %}
+            <div class="d-flex justify-content-center rounded shadow-sm mb-2 w-75 p-5">
+                <img src="{{ url_for('func.serve_image', filename=chamado.imgChamado) }}" 
+                     alt="{{ chamado['nomeItem'] }}" 
+                     class="w-100 rounded" 
+                     onerror="this.onerror=null; this.src='{{ placeholder_image }}';">
+            </div>
+            <h2 class="fs-1 text-bold text-shadow" style="color: #225656; text-shadow: 1px 1px #0005">{{chamado['nomeItem']}}</h2>
+            <div class="w-75">
+                <p class="fs-3 location">{{chamado['nomeLocal']}}</p>
+                <p class="fs-3 description">{{chamado['descChamado']}}</p>
+            </div>
+        </div>
+
+        
+        <h3 class="fs-1 mt-5" style="color: #225656">Respostas</h3>
+        {% for resposta in respostas%}
+        <div class="response-box my-2">
+            <div class="row d-flex justify-content-around" style="color: #225656">
+                <p class="fs-6 col-6">{{resposta['nomeUsuario']}}</p>
+                <p class="fs-6 col-6">{{resposta['dataResposta']}}</p>
+            </div>
+            <p class="fs-4">{{resposta['descResposta']}}</p> <!-- Resposta de Tio Carlos -->
+        </div>
+        {% endfor %}
+    </div>
+{% endblock %}
