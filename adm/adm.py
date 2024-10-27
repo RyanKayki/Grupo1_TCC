@@ -234,27 +234,67 @@ def sobre(idChamado):
         return redirect("/login")
 
 # Rota para cadItem
-@adm_blueprint.route("/cadItem")
+@adm_blueprint.route("/cadItem", methods=['GET', 'POST'])
 def cadastroItem():
-    title = "CADASTRO ITEM"
-    return render_template("cadItem.html", title=title, login=True)
+    conexao = conecta_database()
+    cursor = conexao.cursor(dictionary=True)
+
+    cursor.execute('SELECT * FROM categoria')
+    categorias = cursor.fetchall()
+    try:
+        if request.method == 'POST':
+            nome_item = request.form.get("nome_item")
+            categorias_selecionadas = request.form.getlist('categorias')
+
+            # Primeiro, insere o item na tabela 'item'
+            cursor.execute("INSERT INTO item (nomeItem) VALUES (%s)", (nome_item,))
+            conexao.commit()
+
+            # Pega o ID do item recém-inserido
+            idItem = cursor.lastrowid
+
+            # Insere cada categoria selecionada na tabela de associação 'item_categoria'
+            for idCategoria in categorias_selecionadas:
+                cursor.execute(
+                    "INSERT INTO item_categoria (idItem, idCategoria) VALUES (%s, %s)",
+                    (idItem, idCategoria)
+                )
+            conexao.commit()
+            flash('Item cadastrado com sucesso!', 'success')
+            return redirect(url_for('adm.adm'))
+
+    except Exception as e:
+            flash(f'Erro ao cadastrar item: {str(e)}', 'error')
+            return redirect(url_for('adm.cadItem'))  # Corrigido para usar o nome certo da rota
+
+    finally:
+        conexao.close()
+    return render_template("cadItem.html", title="Cadastrar Item", categorias=categorias, login=True)
 
 # Rota para cadLocal
 @adm_blueprint.route("/cadLocal", methods=['GET', 'POST'])
 def cadLocal():
+    conexao = conecta_database()
+    cursor = conexao.cursor(dictionary=True)
+
+    cursor.execute('SELECT * FROM categoria')
+    categorias = cursor.fetchall()
+
+    cursor.execute("SELECT * FROM area")
+    areas = cursor.fetchall()
+
     if request.method == 'POST':
         nome_local = request.form.get('nome_local')
-        descricao = request.form.get('descricao')
+        area = request.form.get('area')
+        categoria = request.form.get('categoria')
 
         try:
-            conexao = conecta_database()
-            cursor = conexao.cursor()
 
             # Comando de inserção
             cursor.execute("""
-                INSERT INTO local (nomeLocal, descricao) 
-                VALUES (%s, %s)
-            """, (nome_local, descricao))
+                INSERT INTO local (nomeLocal, idCategoria, idArea) 
+                VALUES (%s, %s, %s)
+            """, (nome_local, categoria, area,))
 
             conexao.commit()
             flash('Local cadastrado com sucesso!', 'success')
@@ -267,7 +307,7 @@ def cadLocal():
         finally:
             conexao.close()
 
-    return render_template("cadLocal.html", title="Cadastro de Local", login=True)
+    return render_template("cadLocal.html", title="Cadastro de Local", categorias=categorias, areas=areas, login=True)
 
 
 

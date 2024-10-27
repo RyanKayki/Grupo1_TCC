@@ -22,7 +22,7 @@
 
 <main>
     <div class="container">
-      <p class="fw-bold text-center p-5 fs-5" style="color: #225656;">Cadastro de Item</p>
+      <p class="fw-bold text-center p-5 fs-5" style="color: #225656; text-shadow: 1px 1px #0005">Cadastro de Item</p>
 
         <!-- Mensagens de feedback -->
         {% with messages = get_flashed_messages(with_categories=true) %}
@@ -38,24 +38,23 @@
         <!-- Formulário de Cadastro de Equipamentos -->
         <div class="card mx-auto" id="formEquipamento" style="max-width: 600px; background-color: #fff; margin-bottom: 40px;">
             <div class="card-body">
-                <form action="/cadastro" method="post">
+                <form action="/cadItem" method="post">
                     <input type="hidden" name="tipo" value="item">
                     <div class="row mb-3">
                         <div class="col-md-8 w-100">
                             <label for="nomeItem" class="form-label">Nome do Item:</label>
-                            <input type="text" class="form-control w-100" id="nomeItem" name="nome_item" required style="background-color: #22565665;">
+                            <input type="text" class="form-control w-100" id="nomeItem" name="nome_item" required style="background-color: #d3dddd;">
                         </div>
                     </div>
-
-                    <div class="row mb-3">
-                        <div class="col-md-8 w-100">
-                            <label for="destinadoPara" class="form-label">Adicionar local que possui esse item (opcional):</label>
-                            <select class="form-select w-100" id="destinadoPara" name="destinado_para" required style="background-color: #22565665; height: 4rem;">
-                                <option selected>Escolha um local</option>
-                                <option value="1">Área 1</option>
-                                <option value="2">Área 2</option>
-                            </select>
+                    
+                    <p style="color: #225656">Categorias:</p>
+                    <div class="d-flex justify-content-around mb-3 w-100">
+                        {% for categoria in categorias %}
+                        <div class="col-md-4 mx-1">
+                            <input type="checkbox" name="categorias" id="categorias" style="accent-color: #225656; width: 15px; height: 15px; cursor: pointer;"/>
+                            <label for="categorias" class="form-label fs-6">{{categoria['nomeCategoria']}}</label>
                         </div>
+                        {% endfor %}
                     </div>
 
                     <div class="text-center pt-3 pb-3">
