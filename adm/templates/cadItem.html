@@ -51,11 +51,12 @@
                     <div class="d-flex justify-content-around mb-3 w-100">
                         {% for categoria in categorias %}
                         <div class="col-md-4 mx-1">
-                            <input type="checkbox" name="categorias" id="categorias" style="accent-color: #225656; width: 15px; height: 15px; cursor: pointer;"/>
-                            <label for="categorias" class="form-label fs-6">{{categoria['nomeCategoria']}}</label>
+                            <input type="checkbox" name="categorias" value="{{ categoria['idCategoria'] }}" id="categoria_{{ categoria['idCategoria'] }}" style="accent-color: #225656; width: 15px; height: 15px; cursor: pointer;"/>
+                            <label for="categoria_{{ categoria['idCategoria'] }}" class="form-label fs-6">{{ categoria['nomeCategoria'] }}</label>
                         </div>
                         {% endfor %}
                     </div>
+
 
                     <div class="text-center pt-3 pb-3">
                         <button type="submit" class="btn btn-success" style="width: 12rem; height: 2rem;">Concluído</button>
