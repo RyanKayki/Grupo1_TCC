@@ -335,6 +335,53 @@ def edicaoItem():
     title = "Edição de Item"
     return render_template("edicaoItem.html", title=title, login=True)
 
+@adm_blueprint.route("/chamadosSala")
+def ChamadosSala():
+    title = "Chamados Da Sala"
+    return render_template("chamadosSala.html", title=title, login=True)
+
+@adm_blueprint.route("/chamSalasBloco")
+def ChamBloco():
+    title = "Chamados Por Bloco"
+    
+    # Conexão com o banco de dados
+    conexao = conecta_database()
+    cursor = conexao.cursor()
+
+    # Executando os SELECTs necessários
+    try:
+        # SELECT para buscar apenas os nomes das áreas
+        cursor.execute("SELECT nomeArea FROM area")
+        areas = cursor.fetchall()
+
+        # SELECT para buscar apenas os nomes dos locais
+        cursor.execute("SELECT nomeLocal, idCategoria FROM local")
+        locais = cursor.fetchall()
+
+        # SELECT para buscar apenas os nomes das categorias
+        cursor.execute("SELECT nomeCategoria FROM Categoria")
+        categorias = cursor.fetchall()
+
+        # Fechar a conexão após as operações
+        conexao.close()
+
+    except Exception as e:
+        print(f"Erro ao executar SELECTs: {e}")
+        conexao.close()
+        return f"Erro ao carregar dados: {e}", 500
+
+    # Renderizar template com os dados
+    return render_template(
+        "chamSalasBloco.html",
+        title=title,
+        login=True,
+        areas=areas,
+        locais=locais,
+        categorias=categorias
+    )
+
+
+
 @adm_blueprint.route("/excluir/<int:idChamado>")
 def excluir(idChamado):
     # Rota para excluir um chamado
