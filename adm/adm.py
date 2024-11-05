@@ -4,6 +4,7 @@ from connection.connection import conecta_database
 from session.session import verifica_sessao
 import uuid
 from datetime import datetime
+import ast # Biblioteca para converter string em dicionário
 
 # Definindo o blueprint para administração
 adm_blueprint = Blueprint("adm", __name__, template_folder="templates")
@@ -85,19 +86,21 @@ def cadchamados():
                 imagem = request.files.get('imagem')  # Para imagem enviada
 
                 # Verifica se a imagem foi enviada
-                if not imagem:
-                    flash('A imagem é obrigatória para cadastrar um chamado!', 'error')
-                    return redirect('/cadchamados')
+                if imagem:
+                    # Gerar um nome único para a imagem
+                    id_foto = str(uuid.uuid4().hex)
+                    filename = f"{id_foto}_{item}.png"
+                    imagem.save(os.path.join("src/img/chamados", filename))
 
-                # Gerar um nome único para a imagem
-                id_foto = str(uuid.uuid4().hex)
-                filename = f"{id_foto}_{item}.png"
-                imagem.save(os.path.join("src/img/chamados", filename))  # Corrigido para o diretório correto
-
-                cursor.execute(""" 
-                    INSERT INTO chamado (descChamado, imgChamado, idItem, idLocal, idUsuario, idStatus, dataChamado) 
-                    VALUES (%s, %s, %s, %s, %s, 1, NOW())  -- Assumindo que o status inicial é '1'
-                """, (descricao, filename, item, local, id_usuario))
+                    cursor.execute(""" 
+                        INSERT INTO chamado (descChamado, imgChamado, idItem, idLocal, idUsuario, idStatus, dataChamado) 
+                        VALUES (%s, %s, %s, %s, %s, 1, NOW())
+                    """, (descricao, filename, item, local, id_usuario))
+                else:
+                    cursor.execute(""" 
+                        INSERT INTO chamado (descChamado, idItem, idLocal, idUsuario, idStatus, dataChamado) 
+                        VALUES (%s, %s, %s, %s, 1, NOW())
+                    """, (descricao, item, local, id_usuario))  # Corrigi aqui removendo o parâmetro extra
 
                 conexao.commit()
                 flash('Chamado cadastrado com sucesso!', 'success')
@@ -180,19 +183,34 @@ def cadastroUsuario():
     if request.method == 'POST':
         # Obter os dados do formulário
         nome_completo = request.form.get('nome_completo')
-        email = request.form.get('nome_email')
-        cargo = request.form.get('cargo')
+        senha = request.form.get('senha')
+        email = request.form.get('email')
+        imagem = request.files.get('imagem')
+        cargo = request.form.get('cargo') # Retorna um dicionário, mas no formato string
+        cargo = ast.literal_eval(cargo) # Converte a string para dicionário
+        cargo = cargo["idCargo"] # Filtra apenas o valor 
         numero = request.form.get('numero')
 
         try:
             conexao = conecta_database()
             cursor = conexao.cursor(dictionary=True)
+             # Verifica se a imagem foi enviada
+            if imagem:
+                # Gerar um nome único para a imagem
+                id_foto = str(uuid.uuid4().hex)
+                filename = f"{id_foto}_{nome_completo}.png"
+                imagem.save(os.path.join("src/img/usuarios", filename))
 
-            # Inserindo o novo usuário no banco de dados
-            cursor.execute("""
-                INSERT INTO usuario (nomeUsuario, emailUsuario, idCargo, dataNascimento, numero)
-                VALUES (%s, %s, %s, %s, %s)
-            """, (nome_completo, email, cargo,  numero))
+                cursor.execute(""" 
+                    INSERT INTO usuario (nomeUsuario, emailUsuario, senhaUsuario, numeroUsuario, imgUsuario, idCargo, ) 
+                    VALUES (%s, %s, %s, %s, %s, %s)
+                """, (nome_completo, email, senha, numero, filename, cargo))
+            else:
+                cursor.execute(""" 
+                    INSERT INTO usuario (nomeUsuario, emailUsuario, senhaUsuario, numeroUsuario, idCargo) 
+                    VALUES (%s, %s, %s, %s, %s)
+                """, (nome_completo, email, senha, numero, cargo))  # Corrigi aqui removendo o parâmetro extra
+            
 
             conexao.commit()
             flash('Usuário cadastrado com sucesso!', 'success')
@@ -403,15 +421,14 @@ def ChamadosSala():
     return render_template("chamadosSala.html", title=title, login=True)
 
 # Registro de Chamados - Histórico de chamados agrupados por data
-@adm_blueprint.route("/registroChamados")
-def registroChamados():
+@adm_blueprint.route("/registrochamados")
+def registroChamado():
     if verifica_sessao():
         try:
             conexao = conecta_database()
             cursor = conexao.cursor(dictionary=True)
 
-            # Consulta para obter todos os chamados do usuário logado, agrupados por data
-            query_chamados = """
+            query = """
                 SELECT c.descChamado, c.dataChamado, u.nomeUsuario, l.nomeLocal, i.nomeItem, c.imgChamado, s.nomeStatus
                 FROM chamado c
                 JOIN usuario u ON c.idUsuario = u.idUsuario
@@ -420,8 +437,9 @@ def registroChamados():
                 JOIN status s ON c.idStatus = s.idStatus
                 ORDER BY c.dataChamado DESC
             """
-            cursor.execute(query_chamados)
+            cursor.execute(query)
             chamados = cursor.fetchall()
+            
 
             # Agrupar chamados por data
             chamados_por_data = {}
@@ -432,7 +450,7 @@ def registroChamados():
                 chamados_por_data[data].append(chamado)
 
             return render_template(
-                "registroCham.html",
+                "listaChamado.html",
                 chamados_por_data=chamados_por_data,
                 title="Registro de Chamados",
                 login=True
@@ -443,6 +461,7 @@ def registroChamados():
         return redirect("/login")
 
 
+# seleção dos blocos para o chamado por sala
 @adm_blueprint.route("/chamSalasBloco")
 def ChamBloco():
     title = "Chamados Por Bloco"
