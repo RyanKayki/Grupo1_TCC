@@ -1,10 +1,6 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bloco 1</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.5.0/font/bootstrap-icons.min.css">
+{% extends 'modelAdm.html' %}
+{% block conteudo %}
+
     <style>
         * {
             margin: 0;
@@ -18,14 +14,14 @@
             justify-content: center;
             align-items: center;
             height: 100vh;
-            background-color: #2256560b;
+            background-color: #f5f5f5;
         }
 
         h1 {
             text-align: center;
             color: #225656;
-            margin-bottom: -25px;
-            margin-top: -100px;
+            margin-bottom: 100px;
+            margin-top: -150px;
         }
 
         .back-arrow {
@@ -37,73 +33,49 @@
             color: #225656;
         }
 
-        .container {
-            width: 100%;
-            max-width: 900px;
-            max-height: 400px;
-            padding: 0 20px;
-        }
-
-        .search-container {
+        .search {
             display: flex;
             justify-content: flex-end;
             margin-bottom: 20px;
         }
 
-        .search {
-            position: relative;
-            width: 220px;
-        }
-
         .search input {
-            width: 100%;
-            padding: 5px 30px 5px 10px; /* Padding direito para o ícone */
-            font-size: 13px;
-            border: 2px solid #225656;
-            border-radius: 15px;
-            margin-top: -10%;
-            margin-bottom: 120px;
+            padding: 5px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            width: 200px;
         }
 
-        .search i {
-            position: absolute;
-            right: 10px; /* Ícone alinhado à direita */
-            margin-top: 1px;
-            font-size: 16px;
-            color: #225656;
+        .row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
         }
 
         .row-title {
-            display: flex;
-            align-items: center;
+            width: 100%;
+            border-bottom: 1px solid #000;
+            font-weight: bold;
             margin-bottom: 10px;
         }
 
-        .row-title span {
-            font-weight: bold;
-            margin-right: 10px;
-            white-space: nowrap;
-        }
-
-        .row-title .line {
-            flex-grow: 1;
-            height: 1px;
-            background-color: #000;
-        }
-
-        .row, .row-others {
-            display: flex;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            margin-bottom: 50px;
-        }
-
-        .row div, .row-others div {
+        .row div {
             text-align: center;
             width: 30%;
-            min-width: 120px; 
-            margin-bottom: 10px;
         }
+
+        .row-others {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+        }
+
+        .row-others div {
+            width: 33%;
+            text-align: center;
+        }
+
     </style>
 </head>
 <body>
@@ -113,27 +85,18 @@
     <div class="container">
         <h1>Bloco 1</h1>
 
-        <div class="search-container">
-            <div class="search">
-                <input type="text" placeholder="Buscar...">
-                <i class="bi bi-search"></i>
-            </div>
+        <div class="search">
+            <input type="text" placeholder="Buscar...">
         </div>
 
-        <div class="row-title">
-            <span>Sala de aula</span>
-            <div class="line"></div>
-        </div>
+        <div class="row-title">Sala de aula</div>
         <div class="row">
             <div>Sala 1</div>
             <div>Sala 2</div>
             <div>Sala 3</div>
         </div>
 
-        <div class="row-title">
-            <span>Banheiro</span>
-            <div class="line"></div>
-        </div>
+        <div class="row-title">Banheiro</div>
         <div class="row">
             <div>Banheiro Professores Masc 1</div>
             <div>Banheiro Professores Fem 1</div>
@@ -145,10 +108,7 @@
             <div>Banheiro Masc 1</div>
         </div>
 
-        <div class="row-title">
-            <span>Outros</span>
-            <div class="line"></div>
-        </div>
+        <div class="row-title">Outros</div>
         <div class="row-others">
             <div>Atendimento aos Pais</div>
             <div>Diretoria</div>
@@ -157,5 +117,4 @@
 
     </div>
 
-</body>
-</html>
+{% endblock %}
