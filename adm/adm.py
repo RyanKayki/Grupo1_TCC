@@ -1,11 +1,14 @@
-from flask import render_template, redirect, Blueprint, request, flash, url_for, session, jsonify
+from flask import render_template, redirect, Blueprint, request, flash, url_for, session, jsonify, send_from_directory
 import os
 from connection.connection import conecta_database
 from session.session import verifica_sessao
 import uuid
+from datetime import datetime
 
 # Definindo o blueprint para administração
 adm_blueprint = Blueprint("adm", __name__, template_folder="templates")
+
+IMG_FOLDER = os.path.join('src', 'img')
 
 @adm_blueprint.route("/adm")
 def adm():
@@ -265,7 +268,7 @@ def cadastroItem():
 
     except Exception as e:
             flash(f'Erro ao cadastrar item: {str(e)}', 'error')
-            return redirect(url_for('adm.cadItem'))  # Corrigido para usar o nome certo da rota
+            return redirect(url_for('adm.adm'))  # Corrigido para usar o nome certo da rota
 
     finally:
         conexao.close()
@@ -311,6 +314,40 @@ def cadLocal():
 
 
 
+# Rota para perfil
+@adm_blueprint.route("/perfil")
+def perfil():
+    if verifica_sessao():
+        # Obter o idUsuario da sessão
+        id_usuario = session.get('idUsuario')
+        if id_usuario is None:
+            flash('Você precisa estar logado para acessar o perfil.', 'error')
+            return redirect('/login')
+
+        # Conectar ao banco e buscar dados do usuário logado
+        conexao = conecta_database()
+        cursor = conexao.cursor(dictionary=True)
+
+        try:
+            query_usuario = """
+                SELECT u.nomeUsuario, u.emailUsuario, u.numeroUsuario, u.imgUsuario, c.nomeCargo
+                FROM usuario u
+                JOIN cargo c ON u.idCargo = c.idCargo
+                WHERE u.idUsuario = %s
+            """
+            cursor.execute(query_usuario, (id_usuario,))
+            usuario = cursor.fetchone()  # Obtemos um dicionário com os dados do usuário
+
+            # Renderizar o template com os dados do usuário
+            title = "Perfil"
+            return render_template("perfil.html", title=title, login=True, usuario=usuario)
+
+        finally:
+            conexao.close()
+    else:
+        return redirect("/login")
+
+
 # Rota para filtrarItemedicao
 @adm_blueprint.route("/filtrarItemedicao")
 def filtrarItemedicao():
@@ -334,6 +371,94 @@ def edicaoLocal():
 def edicaoItem():
     title = "Edição de Item"
     return render_template("edicaoItem.html", title=title, login=True)
+
+@adm_blueprint.route("/chamadosSala")
+def ChamadosSala():
+    title = "Chamados Da Sala"
+    return render_template("chamadosSala.html", title=title, login=True)
+
+# Registro de Chamados - Histórico de chamados agrupados por data
+@adm_blueprint.route("/registroChamados")
+def registroChamados():
+    if verifica_sessao():
+        try:
+            conexao = conecta_database()
+            cursor = conexao.cursor(dictionary=True)
+
+            # Consulta para obter todos os chamados do usuário logado, agrupados por data
+            query_chamados = """
+                SELECT c.descChamado, c.dataChamado, u.nomeUsuario, l.nomeLocal, i.nomeItem, c.imgChamado, s.nomeStatus
+                FROM chamado c
+                JOIN usuario u ON c.idUsuario = u.idUsuario
+                JOIN local l ON c.idLocal = l.idLocal
+                JOIN item i ON c.idItem = i.idItem
+                JOIN status s ON c.idStatus = s.idStatus
+                ORDER BY c.dataChamado DESC
+            """
+            cursor.execute(query_chamados)
+            chamados = cursor.fetchall()
+
+            # Agrupar chamados por data
+            chamados_por_data = {}
+            for chamado in chamados:
+                data = chamado['dataChamado'].strftime("%a, %d de %B")
+                if data not in chamados_por_data:
+                    chamados_por_data[data] = []
+                chamados_por_data[data].append(chamado)
+
+            return render_template(
+                "registroCham.html",
+                chamados_por_data=chamados_por_data,
+                title="Registro de Chamados",
+                login=True
+            )
+        finally:
+            conexao.close()
+    else:
+        return redirect("/login")
+
+
+@adm_blueprint.route("/chamSalasBloco")
+def ChamBloco():
+    title = "Chamados Por Bloco"
+    
+    # Conexão com o banco de dados
+    conexao = conecta_database()
+    cursor = conexao.cursor()
+
+    # Executando os SELECTs necessários
+    try:
+        # SELECT para buscar apenas os nomes das áreas
+        cursor.execute("SELECT nomeArea FROM area")
+        areas = cursor.fetchall()
+
+        # SELECT para buscar apenas os nomes dos locais
+        cursor.execute("SELECT nomeLocal, idCategoria FROM local")
+        locais = cursor.fetchall()
+
+        # SELECT para buscar apenas os nomes das categorias
+        cursor.execute("SELECT nomeCategoria FROM Categoria")
+        categorias = cursor.fetchall()
+
+        # Fechar a conexão após as operações
+        conexao.close()
+
+    except Exception as e:
+        print(f"Erro ao executar SELECTs: {e}")
+        conexao.close()
+        return f"Erro ao carregar dados: {e}", 500
+
+    # Renderizar template com os dados
+    return render_template(
+        "chamSalasBloco.html",
+        title=title,
+        login=True,
+        areas=areas,
+        locais=locais,
+        categorias=categorias
+    )
+
+
 
 @adm_blueprint.route("/excluir/<int:idChamado>")
 def excluir(idChamado):
@@ -361,3 +486,51 @@ def excluir(idChamado):
         return redirect('/adm')
     else:
         return redirect("/login")
+
+
+
+# Dicionários para formatação
+dias_da_semana = {0: 'Segunda-feira', 1: 'Terça-feira', 2: 'Quarta-feira', 3: 'Quinta-feira', 4: 'Sexta-feira', 5: 'Sábado', 6: 'Domingo'}
+meses = {1: 'Janeiro', 2: 'Fevereiro', 3: 'Março', 4: 'Abril', 5: 'Maio', 6: 'Junho', 7: 'Julho', 8: 'Agosto', 9: 'Setembro', 10: 'Outubro', 11: 'Novembro', 12: 'Dezembro'}
+
+@adm_blueprint.app_template_filter('admData')
+def data_formatada(data):
+    if isinstance(data, str):
+        if data == 'Data não disponível':
+            return data
+        try:
+            data_datetime = datetime.strptime(data, "%Y-%m-%d")  # Verifica se a data está no formato esperado
+        except ValueError:
+            return 'Data inválida'  # Retorna "Data inválida" se a conversão falhar
+    elif isinstance(data, datetime):
+        data_datetime = data
+    else:
+        return 'Formato de data incorreto'  # Mensagem clara para valores de data inesperados
+    
+    dia_semana = dias_da_semana[data_datetime.weekday()]
+    dia = data_datetime.day
+    mes = meses[data_datetime.month]
+    ano = data_datetime.year
+
+    return f"{dia_semana}, {dia} de {mes}"
+
+
+#Salvar foto do Usuario
+@adm_blueprint.route('/img/usuarios/<path:filename>')
+def serve_imageUser(filename):
+    image_path = os.path.join(IMG_FOLDER, 'usuarios', filename)
+    if os.path.exists(image_path):
+        return send_from_directory(os.path.join(IMG_FOLDER, 'usuarios'), filename)
+    else:
+        return send_from_directory(os.path.join(IMG_FOLDER, 'usuarios'), 'userPlaceHolder.png')
+    
+#Salvar foto do Chamado
+@adm_blueprint.route('/img/chamados/<path:filename>')
+def serve_image(filename):
+    image_path = os.path.join(IMG_FOLDER, 'chamados', filename)
+    if os.path.exists(image_path):
+        return send_from_directory(os.path.join(IMG_FOLDER, 'chamados'), filename)
+    else:
+        return send_from_directory(os.path.join(IMG_FOLDER, 'chamados'), 'ImagemIcon.png')
+    
+
