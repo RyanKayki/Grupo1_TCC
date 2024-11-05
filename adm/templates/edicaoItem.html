@@ -7,7 +7,7 @@
 
 <main>
     <div class="container">
-      <p class="fw-bold text-center p-5 fs-5" style="color: #225656; text-shadow: 1px 1px #0005">Edição de Item</p>
+        <p class="fw-bold text-center p-5 fs-5" style="color: #225656; text-shadow: 1px 1px #0005">Edição de Item</p>
 
         <!-- Mensagens de feedback -->
         {% with messages = get_flashed_messages(with_categories=true) %}
@@ -20,32 +20,36 @@
         {% endif %}
         {% endwith %}
 
-        <!-- Formulário de Cadastro de Equipamentos -->
+        <!-- Formulário de Edição de Item -->
         <div class="card mx-auto" id="formEquipamento" style="max-width: 600px; background-color: #fff; margin-bottom: 40px;">
             <div class="card-body">
-                <form action="/cadItem" method="post">
-                    <input type="hidden" name="tipo" value="item">
+                <form action="/updateItem?id={{ item['idItem'] }}" method="post">
                     <div class="row mb-3">
                         <div class="col-md-8 w-100">
                             <label for="nomeItem" class="form-label">Nome do Item:</label>
-                          <input type="text" class="form-control" id="nomeItem" name="nome_item" required style="background-color: #d3dddd;" value="{{ item['nomeItem'] if item else '' }}">
+                            <input type="text" class="form-control" id="nomeItem" name="nome_item" required
+                                   style="background-color: #d3dddd;"
+                                   value="{{ item['nomeItem'] }}">
                         </div>
                     </div>
-                    
                     <p style="color: #225656">Categorias:</p>
-                    <div class="d-flex justify-content-around mb-3 w-100">
+                    <div class="row d-flex justify-content-around mb-3 w-100">
+                        {% if categorias %}
                         {% for categoria in categorias %}
-                      <div class="col-md-4 mx-1">
-                          <input type="checkbox" name="categorias" value="{{ categoria['idCategoria'] }}"
-                                 id="categoria_{{ categoria['idCategoria'] }}"
-                                 style="accent-color: #225656; width: 15px; height: 15px; cursor: pointer;"
-                                 {% if categoria['idCategoria'] in categorias_item %}checked{% endif %}/>
-                          <label for="categoria_{{ categoria['idCategoria'] }}" class="form-label fs-6">
-                              {{ categoria['nomeCategoria'] }}
-                          </label>
-                          {% endfor %}
+                        <div class="col-md-4 mx-1">
+                            <input type="checkbox" name="categorias" value="{{ categoria['idCategoria'] }}"
+                                   id="categoria_{{ categoria['idCategoria'] }}"
+                                   style="accent-color: #225656; width: 15px; height: 15px; cursor: pointer;"
+                                   {% if categoria['idCategoria'] in categorias_item %}checked{% endif %}/>
+                            <label for="categoria_{{ categoria['idCategoria'] }}" class="form-label fs-6">
+                                {{ categoria['nomeCategoria'] }}
+                            </label>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                    <p class="msg text-center">Nenhuma Categoria está Cadastrada.</p>
+                    {% endif %}
                     </div>
-
 
                     <div class="text-center pt-3 pb-3">
                         <button type="submit" class="btn btn-success" style="width: 12rem; height: 2rem;">Concluído</button>

@@ -13,13 +13,12 @@
             <!-- Select para "Por" -->
             <div class="me-3">
                 <label for="porSelect" class="form-label">Filtrar Por:</label>
-                <select class="form-select" id="porSelect" name="por" onchange="updateSetorOptions()" style="width: 200px;">
-                    <option value="sala" selected>Local</option>
-                    <option value="bloco1">Bloco 1</option>
-                    <option value="bloco1">Bloco 2</option>
-                    <option value="bloco1">Quadra</option>
-                    <option value="bloco1">Área Externa</option>
-                </select>
+                <select class="form-select" id="setorSelect" name="setor" style="width: 200px;">
+                    <option value="sala" selected disabled>Áreas</option>
+                    {% for sala in salas %}
+                        <option value="{{ sala[0] }}">{{ sala[1] }}</option>
+                    {% endfor %}
+                </select>                
             </div>
             <!-- Select para "Sala" ou "Equipamento" que vai mudar dinamicamente -->
             <div class="d-flex align-items-end">
@@ -27,13 +26,9 @@
                     <label for="setorSelect" class="form-label" id="setorLabel">Por:</label>
                     <select class="form-select" id="setorSelect" name="setor" style="width: 200px;">
                         <option value="sala" selected>Categoria</option>
-                        <option value="bloco1">Salas de Aula</option>
-                        <option value="bloco1">Banheiro</option>
-                        <option value="bloco1">Cozinha</option>
-                        <option value="bloco1">Diretoria</option>
                         <!-- Aqui as opções serão carregadas via Django -->
-                        {% for sala in salas %}
-                            <option value="{{ sala.idLocal }}">{{ sala.nomeLocal }}</option>
+                        {% for categoria in categorias %}
+                            <option value="{{ categoria.idCategoria }}">{{ categoria.nomeCategoria }}</option>
                         {% endfor %}
                     </select>
                 </div>
