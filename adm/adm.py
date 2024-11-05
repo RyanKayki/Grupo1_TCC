@@ -177,6 +177,33 @@ def filtrarItens(idLocal):
     return jsonify(itens)
 
 
+# Rota para a página de lista de locais
+@adm_blueprint.route("/chamadosalas/<int:idArea>", methods=['GET'])
+def chamadoSalas(idArea):
+    conexao = conecta_database()
+    cursor = conexao.cursor(dictionary=True)
+
+    query = """
+    SELECT c.nomeCategoria, GROUP_CONCAT(l.nomeLocal SEPARATOR ', ') AS locais
+    FROM categoria c
+    JOIN local l ON c.idCategoria = l.idCategoria
+    GROUP BY c.nomeCategoria
+    WHERE l.idArea = %s;
+    """
+
+    cursor.execute(query, (idArea,))
+    locais = cursor.fetchall()
+
+    query = """
+    SELECT nomeArea FROM area WHERE idArea = %s
+    """
+
+    cursor.execute(query, (idArea,))
+    area = cursor.fetchone()
+    conexao.close()
+
+    return render_template("chamadoSalas.html", title="Lista de salas", locais=locais, area=area)
+
 # Rota para cadUsuario
 @adm_blueprint.route("/cadUsuario", methods=['GET', 'POST'])
 def cadastroUsuario():
@@ -453,6 +480,116 @@ def registroChamado():
                 "listaChamado.html",
                 chamados_por_data=chamados_por_data,
                 title="Registro de Chamados",
+                login=True
+            )
+        finally:
+            conexao.close()
+    else:
+        return redirect("/login")
+    
+# Filtragem dos chamados por status, item, local ou chamados do usuário
+@adm_blueprint.route("/filtrarchamados/<filtro>/<id>")
+def filtrarChamados(filtro, id):
+    if verifica_sessao():
+        try:
+            conexao = conecta_database()
+            cursor = conexao.cursor(dictionary=True)
+
+            if filtro == "item":
+            
+                query = """
+                    SELECT c.descChamado, c.dataChamado, u.nomeUsuario, l.nomeLocal, i.nomeItem, c.imgChamado, s.nomeStatus
+                    FROM chamado c
+                    JOIN usuario u ON c.idUsuario = u.idUsuario
+                    JOIN local l ON c.idLocal = l.idLocal
+                    JOIN item i ON c.idItem = i.idItem
+                    JOIN status s ON c.idStatus = s.idStatus
+                    WHERE c.idItem = %s
+                    ORDER BY c.dataChamado DESC
+                """
+                cursor.execute(query, (id,))
+                chamados = cursor.fetchall()
+
+                query_item = "SELECT nomeItem FROM item WHERE idItem = %s"
+                cursor.execute(query_item, (id,))
+                nomeItem = cursor.fetchone()
+
+                title = "Chamados por item: " + nomeItem
+            
+            elif filtro == "local":
+
+                query = """
+                    SELECT c.descChamado, c.dataChamado, u.nomeUsuario, l.nomeLocal, i.nomeItem, c.imgChamado, s.nomeStatus
+                    FROM chamado c
+                    JOIN usuario u ON c.idUsuario = u.idUsuario
+                    JOIN local l ON c.idLocal = l.idLocal
+                    JOIN item i ON c.idItem = i.idItem
+                    JOIN status s ON c.idStatus = s.idStatus
+                    WHERE c.idLocal = %s
+                    ORDER BY c.dataChamado DESC
+                """ 
+
+                cursor.execute(query, (id,))
+                chamados = cursor.fetchall()
+
+                query_local = "SELECT nomeLocal FROM local WHERE idLocal = %s"
+                cursor.execute(query_local, (id,))
+                nomeLocal = cursor.fetchone()
+
+                title = "Chamados por Local: " + nomeLocal
+            
+            elif filtro == "status":
+
+                query = """
+                    SELECT c.descChamado, c.dataChamado, u.nomeUsuario, l.nomeLocal, i.nomeItem, c.imgChamado, s.nomeStatus
+                    FROM chamado c
+                    JOIN usuario u ON c.idUsuario = u.idUsuario
+                    JOIN local l ON c.idLocal = l.idLocal
+                    JOIN item i ON c.idItem = i.idItem
+                    JOIN status s ON c.idStatus = s.idStatus
+                    WHERE c.idStatus = %s
+                    ORDER BY c.dataChamado DESC
+                """ 
+
+                cursor.execute(query, (id,))
+                chamados = cursor.fetchall()
+
+                if id == 1:
+                    title = "Chamados Não Respondidos"
+                elif id == 2:
+                    title = "Chamados Respondidos"
+                else:
+                    title = "Chamados Concluídos"
+
+            elif filtro == "usuario":
+
+                query = """
+                    SELECT c.descChamado, c.dataChamado, u.nomeUsuario, l.nomeLocal, i.nomeItem, c.imgChamado, s.nomeStatus
+                    FROM chamado c
+                    JOIN usuario u ON c.idUsuario = u.idUsuario
+                    JOIN local l ON c.idLocal = l.idLocal
+                    JOIN item i ON c.idItem = i.idItem
+                    JOIN status s ON c.idStatus = s.idStatus
+                    WHERE c.idUsuario = %s
+                    ORDER BY c.dataChamado DESC
+                """ 
+
+                cursor.execute(query, (id,))
+                chamados = cursor.fetchall()
+
+                title = "Meus chamados"
+            # Agrupar chamados por data
+            chamados_por_data = {}
+            for chamado in chamados:
+                data = chamado['dataChamado'].strftime("%a, %d de %B")
+                if data not in chamados_por_data:
+                    chamados_por_data[data] = []
+                chamados_por_data[data].append(chamado)
+
+            return render_template(
+                "listaChamado.html",
+                chamados_por_data=chamados_por_data,
+                title=title,
                 login=True
             )
         finally:
