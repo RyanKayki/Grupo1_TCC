@@ -9,7 +9,7 @@
     {% set placeholder_image = url_for('tec.serve_image', filename='ImagemIcon.png') %}
     <div class="imageText">
         <div class="image-container">
-            <img src="{{ url_for('tec.serve_image', filename=chamado.imgChamado) }}" 
+            <img src="{{ url_for('tec.serve_image', filename=chamado.imgChamado if chamado.imgChamado else 'ImagemIcon.png') }}" 
                  alt="{{ chamado.tituloChamado }}" 
                  class="bulb-image" 
                  onerror="this.onerror=null; this.src='{{ placeholder_image }}';">
