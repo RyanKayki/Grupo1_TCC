@@ -79,17 +79,17 @@
     </style>
 </head>
 <body>
-
-    <a href="#" class="back-arrow">&larr;</a>
-
+    
+    <!-- <a href="#" class="back-arrow">&larr;</a> -->
     <div class="container">
-        <h1>Bloco 1</h1>
+        <h1>{{area.nomeArea}}</h1>
 
         <div class="search">
             <input type="text" placeholder="Buscar...">
         </div>
 
-        <div class="row-title">Sala de aula</div>
+        {%for local in locais%}
+        <div class="row-title">{{local.nomeCategoria}}</div>
         <div class="row">
             <div>Sala 1</div>
             <div>Sala 2</div>
@@ -116,5 +116,4 @@
         </div>
 
     </div>
-
 {% endblock %}

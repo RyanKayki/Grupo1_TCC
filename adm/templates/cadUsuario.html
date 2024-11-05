@@ -59,27 +59,27 @@
                             <label for="Senha" class="form-label">Senha:</label>
                             <input type="text" class="form-control" id="Senha" name="senha" required>
                         </div>
-                        
-                        <div class="col-md-8 mb-3 w-100">
-                            <label for="imagem" class="form-label">Foto do usuário:</label>
-                            <input type="file" class="form-control" id="imagem" name="imagem" placeholder="Adicionar foto do usuário (opcional)">
-                        </div>
 
                     <div class="row mb-3">
-    <div class="col-md-6">
-        <label for="cargo" class="form-label">Cargo:</label>
-        <select class="form-select" id="cargo" name="cargo" required>
-            <option selected>Escolha...</option>
-            {% for cargo in cargos %}
-            <option value="{{ cargo }}">{{ cargo.nomeCargo }}</option>
-            {% endfor %}
-        </select>
-    </div>
-    <div class="col-md-6">
-        <label for="numero" class="form-label">Telefone:</label>
-        <input type="text" class="form-control" id="numero" name="numero" required>
-    </div>
-</div>
+                        <div class="col-md-6">
+                            <label for="cargo" class="form-label">Cargo:</label>
+                            <select class="form-select" id="cargo" name="cargo" required>
+                                <option selected>Escolha...</option>
+                                {% for cargo in cargos %}
+                                <option value="{{ cargo }}">{{ cargo.nomeCargo }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="numero" class="form-label">Telefone:</label>
+                            <input type="text" class="form-control" id="numero" name="numero" required>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-8 mb-3 w-100">
+                        <label for="imagem" class="form-label">Foto do usuário:</label>
+                        <input type="file" class="form-control" id="imagem" name="imagem" placeholder="Adicionar foto do usuário (opcional)">
+                    </div>
 
 
                     <div class="text-center pt-3 pb-3">
