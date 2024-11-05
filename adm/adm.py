@@ -59,7 +59,6 @@ def adm():
         return redirect("/login")
 
 
-
 # Rota para cadastro de chamado
 @adm_blueprint.route("/cadchamados", methods=['GET', 'POST'])
 def cadchamados():
@@ -183,7 +182,6 @@ def cadastroUsuario():
         nome_completo = request.form.get('nome_completo')
         email = request.form.get('nome_email')
         cargo = request.form.get('cargo')
-        data_nascimento = request.form.get('data_nascimento')
         numero = request.form.get('numero')
 
         try:
@@ -194,7 +192,7 @@ def cadastroUsuario():
             cursor.execute("""
                 INSERT INTO usuario (nomeUsuario, emailUsuario, idCargo, dataNascimento, numero)
                 VALUES (%s, %s, %s, %s, %s)
-            """, (nome_completo, email, cargo, data_nascimento, numero))
+            """, (nome_completo, email, cargo,  numero))
 
             conexao.commit()
             flash('Usuário cadastrado com sucesso!', 'success')
@@ -351,8 +349,23 @@ def perfil():
 # Rota para filtrarItemedicao
 @adm_blueprint.route("/filtrarItemedicao")
 def filtrarItemedicao():
+    conexao = conecta_database()
+    cursor = conexao.cursor(dictionary=True)
+
+    try:
+        # Consulta para obter todas as salas
+        query_salas = "SELECT idLocal, nomeLocal FROM local"
+        cursor.execute(query_salas)
+        salas = cursor.fetchall()
+
+    finally:
+        # Fecha a conexão com o banco de dados
+        conexao.close()
+
+    # Renderiza o template e passa a lista de salas
     title = "Filtrar Item Edição"
-    return render_template("filtrarItemedicao.html", title=title, login=True)
+    return render_template("filtrarItemedicao.html", title=title, salas=salas)
+
 
 # Rota para filtrarLocaledicao
 @adm_blueprint.route("/filtrarLocaledicao")
@@ -366,11 +379,23 @@ def edicaoLocal():
     title = "Edição de Local"
     return render_template("edicaoLocal.html", title=title, login=True)
 
-# Rota para edicaoItem
-@adm_blueprint.route("/edicaoItem")
-def edicaoItem():
+# Rota para editar um item específico
+@adm_blueprint.route("/edicaoItem/<int:id_item>")
+def edicaoItem(id_item):
+    conexao = conecta_database()
+    cursor = conexao.cursor(dictionary=True)
+
+    try:
+        # Confirme que o campo idItem está correto no banco de dados
+        query_item = "SELECT * FROM item WHERE idItem = %s"  # ou `id` se esse for o nome correto
+        cursor.execute(query_item, (id_item,))
+        item = cursor.fetchone()
+    finally:
+        conexao.close()
+
     title = "Edição de Item"
-    return render_template("edicaoItem.html", title=title, login=True)
+    return render_template("edicaoItem.html", title=title, item=item, login=True)
+
 
 @adm_blueprint.route("/chamadosSala")
 def ChamadosSala():
