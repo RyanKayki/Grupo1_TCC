@@ -517,10 +517,10 @@ def edicaoItem(id_item):
 @adm_blueprint.route("/chamadosSala")
 def ChamadosSala():
     title = "Chamados Da Sala"
-    return render_template("chamadosSala.html", title=title, login=True)
+    return render_template("chamadoSalas.html", title=title, login=True)
 
 # Registro de Chamados - Histórico de chamados agrupados por data
-@adm_blueprint.route("/registrochamados")
+@adm_blueprint.route("/registroChamados")
 def registroChamado():
     if verifica_sessao():
         try:
@@ -549,7 +549,7 @@ def registroChamado():
                 chamados_por_data[data].append(chamado)
 
             return render_template(
-                "listaChamado.html",
+                "listaChamados.html",
                 chamados_por_data=chamados_por_data,
                 title="Registro de Chamados",
                 login=True
