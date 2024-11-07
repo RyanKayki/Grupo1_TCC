@@ -8,7 +8,7 @@
     <!-- Verifica se existem chamados -->
     {% if chamados %}
         <div class="card-body">
-            {% set placeholder_image = url_for('tec.serve_image', filename='ImagemIcon.png') %}
+            {% set placeholder_image = url_for('tec.serve_imageApp', filename='ImagemIcon.png') %}
             <ul class="list-group list-group-flush" style="font-family: Poppins">
                 {% for chamado in chamados %}
                 <li class="list-group-item ps-3 rounded m-2 pt-1">

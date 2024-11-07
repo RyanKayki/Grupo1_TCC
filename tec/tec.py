@@ -242,4 +242,10 @@ def serve_image(filename):
         return send_from_directory(os.path.join(IMG_FOLDER, 'chamados'), filename)
     else:
         return send_from_directory(os.path.join(IMG_FOLDER, 'chamados'), 'ImagemIcon.png')
+    
+@tec_blueprint.route('/img/app/<path:filename>')
+def serve_imageApp(filename):
+    image_path = os.path.join(IMG_FOLDER, 'app', filename)
+    if os.path.exists(image_path):
+        return send_from_directory(os.path.join(IMG_FOLDER, 'app'), filename)
 

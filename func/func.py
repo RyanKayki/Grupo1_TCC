@@ -229,4 +229,15 @@ def serve_image(filename):
     else:
         # Se não existir, retorna a imagem placeholder
         return send_from_directory(os.path.join(IMG_FOLDER, 'chamados'), 'ImagemIcon.png')
+    
+
+# Rota para verificar a imagem do chamado
+@func_blueprint.route('/img/app/<path:filename>')
+def serve_imageApp(filename):
+    # Caminho completo para a imagem
+    image_path = os.path.join(IMG_FOLDER, 'app', filename)
+    
+    # Verifica se a imagem existe
+    if os.path.exists(image_path):
+        return send_from_directory(os.path.join(IMG_FOLDER, 'app'), filename)
 

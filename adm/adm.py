@@ -5,6 +5,7 @@ from session.session import verifica_sessao
 import uuid
 from datetime import datetime
 import ast # Biblioteca para converter string em dicionário
+from collections import defaultdict # permite renderizar o ano apenas uma vez quando o ano muda.
 
 # Definindo o blueprint para administração
 adm_blueprint = Blueprint("adm", __name__, template_folder="templates")
@@ -317,6 +318,61 @@ def cadastroItem():
         conexao.close()
     return render_template("cadItem.html", title="Cadastrar Item", categorias=categorias, login=True)
 
+#Rota para edição dos itens
+@adm_blueprint.route("/updateItem", methods=['GET', 'POST'])
+def updateItem():
+    conexao = conecta_database()
+    cursor = conexao.cursor(dictionary=True)
+
+    # Busca todas as categorias disponíveis
+    cursor.execute('SELECT * FROM categoria')
+    categorias = cursor.fetchall()
+
+    # Identifica o ID do item para edição
+    item_id = request.args.get("id")
+    if not item_id:
+        flash('Item não encontrado para edição.', 'error')
+        return redirect(url_for('adm.adm'))
+
+    # Busca os dados do item e suas categorias associadas
+    cursor.execute('SELECT * FROM item WHERE idItem = %s', (item_id,))
+    item = cursor.fetchone()
+
+    cursor.execute('SELECT idCategoria FROM item_categoria WHERE idItem = %s', (item_id,))
+    categorias_item = [cat['idCategoria'] for cat in cursor.fetchall()]
+
+    print("Categorias associadas ao item:", categorias_item)  # Verifique se a lista está correta
+
+    try:
+        if request.method == 'POST':
+            nome_item = request.form.get("nome_item")
+            categorias_selecionadas = request.form.getlist('categorias')
+
+            # Atualiza o item na tabela 'item'
+            cursor.execute("UPDATE item SET nomeItem = %s WHERE idItem = %s", (nome_item, item_id))
+            
+            # Atualiza as categorias associadas, removendo as antigas e inserindo as novas
+            cursor.execute("DELETE FROM item_categoria WHERE idItem = %s", (item_id,))
+            for idCategoria in categorias_selecionadas:
+                cursor.execute(
+                    "INSERT INTO item_categoria (idItem, idCategoria) VALUES (%s, %s)",
+                    (item_id, idCategoria)
+                )
+            conexao.commit()
+            flash('Item atualizado com sucesso!', 'success')
+            return redirect(url_for('adm.adm'))
+
+    except Exception as e:
+        flash(f'Erro ao atualizar item: {str(e)}', 'error')
+        return redirect(url_for('adm.adm'))
+
+    finally:
+        conexao.close()
+
+    return render_template("updateItem.html", title="Editar Item", item=item, categorias=categorias, categorias_item=categorias_item, login=True)
+
+
+
 # Rota para cadLocal
 @adm_blueprint.route("/cadLocal", methods=['GET', 'POST'])
 def cadLocal():
@@ -415,8 +471,25 @@ def filtrarItemedicao():
 # Rota para filtrarLocaledicao
 @adm_blueprint.route("/filtrarLocaledicao")
 def filtrarLocaledicao():
+    # Conectar ao banco de dados
+    conn = conecta_database()
+    cursor = conn.cursor()
+
+    # Consultar dados das areas
+    cursor.execute("SELECT idArea, nomeArea FROM `area`")
+    locais = cursor.fetchall()
+
+     # Consultar dados das categorias
+    cursor.execute("SELECT idCategoria, nomeCategoria FROM `categoria`")
+    categorias = cursor.fetchall()
+
+    # Fechar conexão
+    cursor.close()
+    conn.close()
+
+    # Renderizar template passando os locais
     title = "Filtrar Local Edição"
-    return render_template("filtrarLocaledicao.html", title=title, login=True)
+    return render_template("filtrarLocaledicao.html", title=title, login=True, salas=locais, categorias=categorias)
 
 # Rota para edicaoLocal
 @adm_blueprint.route("/edicaoLocal")
@@ -445,10 +518,51 @@ def edicaoItem(id_item):
 @adm_blueprint.route("/chamadosSala")
 def ChamadosSala():
     title = "Chamados Da Sala"
-    return render_template("chamadosSala.html", title=title, login=True)
+    return render_template("chamadoSalas.html", title=title, login=True)
+
+@adm_blueprint.route("/chamadoDetalhes/<int:id_chamado>")
+def DetalheChamado(id_chamado):
+    if verifica_sessao():
+        try:
+            conexao = conecta_database()
+            cursor = conexao.cursor(dictionary=True)
+
+            # Consulta para pegar os detalhes do chamado
+            query_chamado = """
+                SELECT c.descChamado, c.dataChamado, u.nomeUsuario, ca.nomeCargo, l.nomeLocal, i.nomeItem, c.imgChamado, s.nomeStatus, c.idChamado
+                FROM chamado c
+                JOIN usuario u ON c.idUsuario = u.idUsuario
+                JOIN local l ON c.idLocal = l.idLocal
+                JOIN item i ON c.idItem = i.idItem
+                JOIN status s ON c.idStatus = s.idStatus
+                JOIN cargo ca ON u.idCargo = ca.idCargo
+                WHERE c.idChamado = %s
+            """
+            cursor.execute(query_chamado, (id_chamado,))
+            chamado = cursor.fetchone()
+
+            # Consulta para pegar as respostas associadas ao chamado
+            query_respostas = """
+                SELECT r.descResposta, r.dataResposta
+                FROM resposta r
+                WHERE r.idChamado = %s
+            """
+            cursor.execute(query_respostas, (id_chamado,))
+            respostas = cursor.fetchall()
+
+            if chamado:
+                return render_template("chamadoDetalhes.html", chamado=chamado, respostas=respostas, title="Detalhes do Chamado", login=True)
+            else:
+                return "Chamado não encontrado", 404
+        finally:
+            conexao.close()
+    else:
+        return redirect("/login")
+
+
 
 # Registro de Chamados - Histórico de chamados agrupados por data
-@adm_blueprint.route("/registrochamados")
+@adm_blueprint.route("/registroChamados")
 def registroChamado():
     if verifica_sessao():
         try:
@@ -466,22 +580,134 @@ def registroChamado():
             """
             cursor.execute(query)
             chamados = cursor.fetchall()
+            title = "Registro de Chamados"
+            titulo_pagina = "Registro de Chamados"
+
+            # Organizando por ano e data formatada (sem o ano na chave de data)
+            chamados_por_ano = defaultdict(lambda: defaultdict(list))
+
+            # Verifica se há chamados para o usuário logado
+            if not chamados:
+                flash("Nenhum chamado cadastrado no momento.", "info")
+                return render_template("listaChamados.html", chamados_por_ano={}, title=title, titulo_pagina=titulo_pagina, login=True)
             
-
-            # Agrupar chamados por data
-            chamados_por_data = {}
             for chamado in chamados:
-                data = chamado['dataChamado'].strftime("%a, %d de %B")
-                if data not in chamados_por_data:
-                    chamados_por_data[data] = []
-                chamados_por_data[data].append(chamado)
+                data = chamado['dataChamado']
+                dia_semana = dias_da_semana[data.weekday()]
+                dia = data.day
+                mes = meses[data.month]
+                ano = data.year
 
-            return render_template(
-                "listaChamado.html",
-                chamados_por_data=chamados_por_data,
-                title="Registro de Chamados",
-                login=True
-            )
+                # Data formatada sem o ano
+                data_formatada = f"{dia_semana}, {dia} de {mes}"
+
+                # Agrupar chamados por ano e por data
+                chamados_por_ano[ano][data_formatada].append(chamado)
+
+            return render_template("listaChamados.html", chamados_por_ano=chamados_por_ano, titulo_pagina=titulo_pagina, title=title, login=True)
+        finally:
+            conexao.close()
+    else:
+        return redirect("/login")
+
+
+# Registro de Chamados - Histórico de chamados do usuario
+@adm_blueprint.route("/registroChamadosUsuario")
+def registroChamadosUsuario():
+    if verifica_sessao():
+        try:
+            conexao = conecta_database()
+            cursor = conexao.cursor(dictionary=True)
+
+            # Obtém o ID do usuário logado
+            id_usuario = session.get('idUsuario')
+
+            query = """
+                SELECT c.descChamado, c.dataChamado, u.nomeUsuario, l.nomeLocal, i.nomeItem, c.imgChamado, s.nomeStatus
+                FROM chamado c
+                JOIN usuario u ON c.idUsuario = u.idUsuario
+                JOIN local l ON c.idLocal = l.idLocal
+                JOIN item i ON c.idItem = i.idItem
+                JOIN status s ON c.idStatus = s.idStatus
+                WHERE c.idUsuario = %s
+                ORDER BY c.dataChamado DESC
+            """
+            cursor.execute(query, (id_usuario,))
+            chamados = cursor.fetchall()
+            title = "Meus Chamados"
+            titulo_pagina = "Meus Chamados"
+
+            # Verifica se há chamados para o usuário logado
+            if not chamados:
+                flash("Nenhum chamado cadastrado no momento.", "info")
+                return render_template("listaChamados.html", chamados_por_ano={}, title=title, titulo_pagina=titulo_pagina, login=True)
+
+            # Agrupar chamados por ano e data
+            chamados_por_ano = defaultdict(lambda: defaultdict(list))
+            for chamado in chamados:
+                data = chamado['dataChamado']
+                dia_semana = dias_da_semana[data.weekday()]
+                dia = data.day
+                mes = meses[data.month]
+                ano = data.year
+
+                # Formatação da data (sem o ano)
+                data_formatada = f"{dia_semana}, {dia} de {mes}"
+
+                # Agrupar chamados por ano e por data formatada
+                chamados_por_ano[ano][data_formatada].append(chamado)
+
+            return render_template("listaChamados.html", chamados_por_ano=chamados_por_ano, titulo_pagina=titulo_pagina, title=title, login=True)
+        finally:
+            conexao.close()
+    else:
+        return redirect("/login")
+
+
+@adm_blueprint.route("/registroChamados/status/<status>")
+def registroChamadoPorStatus(status):
+    if verifica_sessao():
+        try:
+            conexao = conecta_database()
+            cursor = conexao.cursor(dictionary=True)
+
+            # Filtra a consulta pelo status
+            query = """
+                SELECT c.descChamado, c.dataChamado, u.nomeUsuario, l.nomeLocal, i.nomeItem, c.imgChamado, s.nomeStatus
+                FROM chamado c
+                JOIN usuario u ON c.idUsuario = u.idUsuario
+                JOIN local l ON c.idLocal = l.idLocal
+                JOIN item i ON c.idItem = i.idItem
+                JOIN status s ON c.idStatus = s.idStatus
+                WHERE s.nomeStatus = %s
+                ORDER BY c.dataChamado DESC
+            """
+            cursor.execute(query, (status,))
+            chamados = cursor.fetchall()
+            title = "Registro de Chamados"
+            titulo_pagina = f"Chamados - {status.capitalize()}"
+
+            # Organizando por ano e data formatada (sem o ano na chave de data)
+            chamados_por_ano = defaultdict(lambda: defaultdict(list))
+
+            if not chamados:
+                flash(f"Nenhum chamado com o status '{status}' encontrado.", "info")
+                return render_template("listaChamados.html", chamados_por_ano={}, title=title, titulo_pagina=titulo_pagina, login=True)
+
+            for chamado in chamados:
+                data = chamado['dataChamado']
+                dia_semana = dias_da_semana[data.weekday()]
+                dia = data.day
+                mes = meses[data.month]
+                ano = data.year
+
+                # Data formatada sem o ano
+                data_formatada = f"{dia_semana}, {dia} de {mes}"
+
+                # Agrupar chamados por ano e por data
+                chamados_por_ano[ano][data_formatada].append(chamado)
+
+            return render_template("listaChamados.html", chamados_por_ano=chamados_por_ano, titulo_pagina=titulo_pagina, title=title, login=True)
         finally:
             conexao.close()
     else:
@@ -671,7 +897,7 @@ def excluir(idChamado):
 
 
 # Dicionários para formatação
-dias_da_semana = {0: 'Segunda-feira', 1: 'Terça-feira', 2: 'Quarta-feira', 3: 'Quinta-feira', 4: 'Sexta-feira', 5: 'Sábado', 6: 'Domingo'}
+dias_da_semana = {0: 'Seg', 1: 'Ter', 2: 'Qua', 3: 'Qui', 4: 'Sex', 5: 'Sáb', 6: 'Dom'}
 meses = {1: 'Janeiro', 2: 'Fevereiro', 3: 'Março', 4: 'Abril', 5: 'Maio', 6: 'Junho', 7: 'Julho', 8: 'Agosto', 9: 'Setembro', 10: 'Outubro', 11: 'Novembro', 12: 'Dezembro'}
 
 @adm_blueprint.app_template_filter('admData')
@@ -691,7 +917,6 @@ def data_formatada(data):
     dia_semana = dias_da_semana[data_datetime.weekday()]
     dia = data_datetime.day
     mes = meses[data_datetime.month]
-    ano = data_datetime.year
 
     return f"{dia_semana}, {dia} de {mes}"
 
@@ -714,4 +939,9 @@ def serve_image(filename):
     else:
         return send_from_directory(os.path.join(IMG_FOLDER, 'chamados'), 'ImagemIcon.png')
     
-
+#Salvar foto do App
+@adm_blueprint.route('/img/app/<path:filename>')
+def serve_imageApp(filename):
+    image_path = os.path.join(IMG_FOLDER, 'app', filename)
+    if os.path.exists(image_path):
+        return send_from_directory(os.path.join(IMG_FOLDER, 'app'), filename)

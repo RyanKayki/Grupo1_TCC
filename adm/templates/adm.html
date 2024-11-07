@@ -25,34 +25,42 @@
   <div class="row m-4">
     <!-- Meus Chamados -->
 <div class="col-12 col-md-4 col-lg-3 col-xl-2 mb-3">
-  <div class="card border-0 shadow-sm h-100">
-      <div class="card-body">
-          <h5 class="card-title fs-5 text-muted">Meus Ultimos Chamados</h5>
-          <ul class="list-group list-group-flush">
-            {% for chamado in ultimos_chamados %}
-              <li class="list-group-item ps-3 border">
-                  <span>{{ chamado.nomeItem }}</span>
-                  <br>
-                  <small class="text-muted">
-                      Sala: {{ chamado.nomeLocal }}
-                  </small>
-                  <span class="badge 
-                      {% if chamado.nomeStatus == 'Não Respondido' %}
-                          bg-danger
-                      {% elif chamado.nomeStatus == 'Respondido' %}
-                          bg-success
-                      {% else %}
-                          bg-primary
-                      {% endif %} 
-                      float-end">
-                      {{ chamado.nomeStatus }}
-                  </span>
-              </li>
-              {% endfor %}
-          </ul>
-          <button class="mt-5 minimal-button">Ver Mais</button>
-      </div>
-  </div>
+  <div class="card border-0 shadow-sm">
+    <div class="card-body">
+        <h5 class="card-title fs-5 text-muted">Meus Últimos Chamados</h5>
+        
+        {% if ultimos_chamados %}
+            <ul class="list-group list-group-flush">
+                {% for chamado in ultimos_chamados %}
+                    <li class="list-group-item ps-3 border">
+                        <span>{{ chamado.nomeItem }}</span>
+                        <br>
+                        <small class="text-muted">
+                            Sala: {{ chamado.nomeLocal }}
+                        </small>
+                        <span class="badge 
+                            {% if chamado.nomeStatus == 'Não Respondido' %}
+                                bg-danger
+                            {% elif chamado.nomeStatus == 'Respondido' %}
+                                bg-success
+                            {% else %}
+                                bg-primary
+                            {% endif %} 
+                            float-end">
+                            {{ chamado.nomeStatus }}
+                        </span>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p class="text-center text-muted mt-3">Nenhum chamado cadastrado no momento.</p>
+        {% endif %}
+        
+        <div class="d-flex justify-content-end mt-3">
+            <a href="{{ url_for('adm.registroChamadosUsuario') }}" class="btn minimal-button">Ver Mais</a>
+        </div>
+    </div>
+</div>
 </div>
 
     <!-- Chamados Overview -->
@@ -81,29 +89,29 @@
       <div class="row text-center mt-4">
         <div class="col-12 col-sm-4">
           <div class="card p-3 border-0 shadow-sm">
-            <a href="/" class="text-white">
-            <h6 class="text-muted">Não Respondidos</h6>
-          </a>
+            <a href="{{ url_for('adm.registroChamadoPorStatus', status='não respondido') }}" class="text-white">
+              <h6 class="text-muted">Não Respondidos</h6>
+            </a>
             <span class="badge bg-danger">{{ totais_chamados.nao_respondidos }}</span>
           </div>
         </div>
         <div class="col-12 col-sm-4">
           <div class="card p-3 border-0 shadow-sm">
-            <a href="/" class="text-white">
-            <h6 class="text-muted">Respondidos</h6>
-          </a>
+            <a href="{{ url_for('adm.registroChamadoPorStatus', status='respondido') }}" class="text-white">
+              <h6 class="text-muted">Respondidos</h6>
+            </a>
             <span class="badge bg-success">{{ totais_chamados.respondidos }}</span>
           </div>
         </div>
         <div class="col-12 col-sm-4">
           <div class="card p-3 border-0 shadow-sm">
-            <a href="/" class="text-white">
-            <h6 class="text-muted">Concluídos</h6>
-          </a>
+            <a href="{{ url_for('adm.registroChamadoPorStatus', status='concluído') }}" class="text-white">
+              <h6 class="text-muted">Concluídos</h6>
+            </a>
             <span class="badge bg-primary">{{ totais_chamados.concluidos }}</span>
           </div>
         </div>
-      </div>
+      </div>            
     </div>
 
     <!-- Ações Rápidas -->
@@ -136,7 +144,7 @@
     color: black;
 }
 
-button.minimal-button {
+.minimal-button {
     border: 0;
     border-radius: 12px;
     background-color: #29474b;
@@ -147,8 +155,9 @@ button.minimal-button {
     font-size: 1em; /* Tamanho da fonte para botões menores */
 }
 
-button.minimal-button:hover {
+.minimal-button:hover {
     background-color: #1f3b3f;
+    color: #fff;
 }
 
 .card {
