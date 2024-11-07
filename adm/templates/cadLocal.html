@@ -19,7 +19,7 @@
       border: none;
     }
     .form-control, .form-select {
-      background-color: #22565665;
+      background-color: #d3dddd;
     }
   </style>
 
@@ -49,9 +49,26 @@
                         <label for="nomeLocal" class="form-label">Nome do Local:</label>
                         <input type="text" class="form-control" id="nomeLocal" name="nome_local" required>
                     </div>
-                    <div class="mb-3">
-                        <label for="descricao" class="form-label">Descrição:</label>
-                        <textarea class="form-control" id="descricao" name="descricao" rows="3"></textarea>
+                    <div class="row">
+                      <div class="mb-3 col-md-6">
+                        <label for="area" class="form-label">Área:</label>
+                        <select class="form-select" id="area" name="area" required>
+                          <option disabled selected>Escolha...</option>
+                          {% for area in areas %}
+                          <option value="{{ area.idArea }}">{{ area.nomeArea }}</option>
+                          {% endfor %}
+                      </select>
+                      </div>
+
+                      <div class="mb-3 col-md-6">
+                        <label for="categoria" class="form-label">Categoria:</label>
+                        <select class="form-select" id="categoria" name="categoria" required>
+                          <option disabled selected>Escolha...</option>
+                          {% for categoria in categorias %}
+                          <option value="{{ categoria.idCategoria }}">{{ categoria.nomeCategoria }}</option>
+                          {% endfor %}
+                      </select>
+                      </div>
                     </div>
                     <div class="text-center pt-3">
                         <button type="submit" class="btn btn-success" style="width: 12rem; height: 2rem;">Cadastrar</button>

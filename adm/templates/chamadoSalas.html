@@ -1,9 +1,6 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bloco 1</title>
+{% extends 'modelAdm.html' %}
+{% block conteudo %}
+
     <style>
         * {
             margin: 0;
@@ -82,17 +79,17 @@
     </style>
 </head>
 <body>
-
-    <a href="#" class="back-arrow">&larr;</a>
-
+    
+    <!-- <a href="#" class="back-arrow">&larr;</a> -->
     <div class="container">
-        <h1>Bloco 1</h1>
+        <h1>{{area.nomeArea}}</h1>
 
         <div class="search">
             <input type="text" placeholder="Buscar...">
         </div>
 
-        <div class="row-title">Sala de aula</div>
+        {%for local in locais%}
+        <div class="row-title">{{local.nomeCategoria}}</div>
         <div class="row">
             <div>Sala 1</div>
             <div>Sala 2</div>
@@ -119,6 +116,4 @@
         </div>
 
     </div>
-
-</body>
-</html>
+{% endblock %}
