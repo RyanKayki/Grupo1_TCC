@@ -2,11 +2,11 @@
 {% block conteudo %}
 
 <a href="{{ url_for('tec.tec_home') if chamado.nomeStatus != 'Concluído' else url_for('tec.tec_task') }}" class="back-button">
-  <img src="{{ url_for('tec.serve_image', filename='ButtonBack.png') }}" alt="Voltar" class="button-image">
+  <img src="{{ url_for('tec.serve_imageApp', filename='ButtonBack.png') }}" alt="Voltar" class="button-image">
 </a>
 <div class="container">
 
-    {% set placeholder_image = url_for('tec.serve_image', filename='ImagemIcon.png') %}
+    {% set placeholder_image = url_for('tec.serve_imageApp', filename='ImagemIcon.png') %}
     <div class="imageText">
         <div class="image-container">
             <img src="{{ url_for('tec.serve_image', filename=chamado.imgChamado if chamado.imgChamado else 'ImagemIcon.png') }}" 

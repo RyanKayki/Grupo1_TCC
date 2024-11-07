@@ -6,7 +6,7 @@
 
         <div class="form-container">
             <a href="{{ url_for('func.func_home') }}" class="back-button">
-                <img src="{{ url_for('func.serve_image', filename='ButtonBack.png') }}" alt="Voltar" class="button-image">
+                <img src="{{ url_for('func.serve_imageApp', filename='ButtonBack.png') }}" alt="Voltar" class="button-image">
             </a>
             <div class="new-chamado">
                 <h1>Novo Chamado</h1>
@@ -15,7 +15,7 @@
             <form action="/novoChamado" method="POST" enctype="multipart/form-data">
                 <div class="photo-upload">
     <label for="imagem" class="photo-label">
-        {% set placeholder_image = url_for('func.serve_image', filename='ImagemIcon.png') %}
+        {% set placeholder_image = url_for('func.serve_imageApp', filename='ImagemIcon.png') %}
         <img
             id="chamadoImagem"
             src="{{ placeholder_image }}"

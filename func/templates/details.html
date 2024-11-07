@@ -61,7 +61,7 @@
     </style>
     <div class="container d-flex flex-column align-items-center content">
         <div class="d-flex flex-column align-items-center mt-3">
-            {% set placeholder_image = url_for('func.serve_image', filename='ImagemIcon.png') %}
+            {% set placeholder_image = url_for('func.serve_imageApp', filename='ImagemIcon.png') %}
             <div class="d-flex justify-content-center rounded shadow-sm mb-2 w-75 p-5">
                 {% if chamado.imgChamado %}
                     <img src="{{ url_for('func.serve_image', filename=chamado.imgChamado) }}" 

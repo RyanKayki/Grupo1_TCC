@@ -6,7 +6,7 @@
     <ul class="list-group list-group-flush" style="font-family: Poppins">
         {% for chamado in chamados %}
             <li class="list-group-item ps-3 rounded m-2 pt-1">
-                {% set placeholder_image = url_for('func.serve_image', filename='ImagemIcon.png') %}
+                {% set placeholder_image = url_for('func.serve_imageApp', filename='ImagemIcon.png') %}
                 <div class="chamado-card d-flex align-items-center">
                     {% if chamado.imgChamado %}
                         <img
