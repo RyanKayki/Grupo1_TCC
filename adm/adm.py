@@ -492,35 +492,6 @@ def filtrarItemedicao():
     return render_template("filtrarItemedicao.html", title=title, salas=salas)
 
 
-# Rota para filtrarLocaledicao
-@adm_blueprint.route("/filtrarLocaledicao")
-def filtrarLocaledicao():
-    # Conectar ao banco de dados
-    conn = conecta_database()
-    cursor = conn.cursor()
-
-    # Consultar dados das areas
-    cursor.execute("SELECT idArea, nomeArea FROM `area`")
-    locais = cursor.fetchall()
-
-     # Consultar dados das categorias
-    cursor.execute("SELECT idCategoria, nomeCategoria FROM `categoria`")
-    categorias = cursor.fetchall()
-
-    # Fechar conexão
-    cursor.close()
-    conn.close()
-
-    # Renderizar template passando os locais
-    title = "Filtrar Local Edição"
-    return render_template("filtrarLocaledicao.html", title=title, login=True, salas=locais, categorias=categorias)
-
-# Rota para edicaoLocal
-@adm_blueprint.route("/edicaoLocal")
-def edicaoLocal():
-    title = "Edição de Local"
-    return render_template("edicaoLocal.html", title=title, login=True)
-
 # Rota para editar um item específico
 @adm_blueprint.route("/edicaoItem/<int:id_item>")
 def edicaoItem(id_item):
@@ -528,15 +499,162 @@ def edicaoItem(id_item):
     cursor = conexao.cursor(dictionary=True)
 
     try:
-        # Confirme que o campo idItem está correto no banco de dados
-        query_item = "SELECT * FROM item WHERE idItem = %s"  # ou `id` se esse for o nome correto
+        # Obter os detalhes do item específico
+        query_item = "SELECT * FROM item WHERE idItem = %s"
         cursor.execute(query_item, (id_item,))
         item = cursor.fetchone()
+
+        # Obter todas as categorias disponíveis
+        query_categorias = "SELECT * FROM categoria"
+        cursor.execute(query_categorias)
+        categorias = cursor.fetchall()
+
+        # Obter as categorias associadas ao item
+        query_categorias_item = "SELECT idCategoria FROM item_categoria WHERE idItem = %s"
+        cursor.execute(query_categorias_item, (id_item,))
+        categorias_item = [categoria['idCategoria'] for categoria in cursor.fetchall()]
+
     finally:
         conexao.close()
 
     title = "Edição de Item"
-    return render_template("edicaoItem.html", title=title, item=item, login=True)
+    return render_template("edicaoItem.html", title=title, item=item, categorias=categorias, categorias_item=categorias_item, login=True)
+
+
+# Rota para filtrarLocaledicao
+@adm_blueprint.route("/filtrarLocaledicao", methods=["GET", "POST"])
+def filtrarLocaledicao():
+    # Conectar ao banco de dados
+    conn = conecta_database()
+    cursor = conn.cursor()
+
+    # Capturar parâmetros de filtro da requisição
+    filtro_area = request.args.get("area")
+    filtro_categoria = request.args.get("categoria")
+
+    # Consultar dados das áreas
+    cursor.execute("SELECT idArea, nomeArea FROM `area`")
+    salas = cursor.fetchall()
+
+    # Consultar dados das categorias
+    cursor.execute("SELECT idCategoria, nomeCategoria FROM `categoria`")
+    categorias = cursor.fetchall()
+
+    # Construir consulta SQL para locais com base nos filtros
+    query = "SELECT idLocal, nomeLocal FROM local WHERE 1=1"  # Inicia a query
+    params = []
+
+    if filtro_area:
+        query += " AND idArea = %s"
+        params.append(filtro_area)
+
+    if filtro_categoria:
+        query += " AND idCategoria = %s"
+        params.append(filtro_categoria)
+
+    cursor.execute(query, params)
+    locais_filtrados = cursor.fetchall()
+
+    # Fechar conexão
+    cursor.close()
+    conn.close()
+
+    # Renderizar o template passando os locais, categorias e resultados filtrados
+    title = "Filtrar Local Edição"
+    return render_template("filtrarLocaledicao.html", title=title, login=True, salas=salas, categorias=categorias, locais=locais_filtrados)
+
+
+
+@adm_blueprint.route("/edicaoLocal/<int:id_local>")
+def edicaoLocal(id_local):
+    conexao = conecta_database()
+    cursor = conexao.cursor(dictionary=True)
+
+    try:
+        # Obter detalhes do local específico
+        query_local = "SELECT * FROM `local` WHERE idLocal = %s"
+        cursor.execute(query_local, (id_local,))
+        local = cursor.fetchone()
+
+        # Obter todas as categorias disponíveis
+        query_categorias = "SELECT * FROM categoria"
+        cursor.execute(query_categorias)
+        categorias = cursor.fetchall()
+
+        # Obter todas as áreas
+        query_areas = "SELECT * FROM area"
+        cursor.execute(query_areas)
+        areas = cursor.fetchall()
+
+        # Obter os itens presentes no local
+        query_itens = """
+            SELECT item.nomeItem FROM item
+            JOIN item_categoria ON item.idItem = item_categoria.idItem
+            WHERE item_categoria.idCategoria = %s
+        """
+        cursor.execute(query_itens, (local['idCategoria'],))
+        itens = cursor.fetchall()
+
+    finally:
+        conexao.close()
+
+    title = "Edição de Local"
+    return render_template("edicaoLocal.html", title=title, local=local, areas=areas, categorias=categorias, itens=itens, login=True)
+
+
+@adm_blueprint.route("/updateLocal/<int:id_local>", methods=['GET', 'POST'])
+def updateLocal(id_local):
+    conexao = conecta_database()
+    cursor = conexao.cursor(dictionary=True)
+
+    try:
+        # Busca todas as categorias e áreas disponíveis
+        cursor.execute('SELECT * FROM categoria')
+        categorias = cursor.fetchall()
+
+        cursor.execute('SELECT * FROM area')
+        areas = cursor.fetchall()
+
+        # Identifica o ID do local para edição
+        if not id_local:
+            flash('Local não encontrado para edição.', 'error')
+            return redirect(url_for('adm.adm'))
+
+        # Busca os dados do local
+        cursor.execute('SELECT * FROM local WHERE idLocal = %s', (id_local,))
+        local = cursor.fetchone()
+
+        # Busca os itens associados à categoria do local
+        cursor.execute("""
+            SELECT item.* FROM item
+            JOIN item_categoria ON item.idItem = item_categoria.idItem
+            WHERE item_categoria.idCategoria = %s
+        """, (local['idCategoria'],))
+        itens = cursor.fetchall()
+
+        if request.method == 'POST':
+            nome_sala = request.form.get("nome_sala")
+            bloco = request.form.get("bloco")
+            categorias_selecionadas = request.form.getlist('categorias')
+
+            # Atualiza o local na tabela 'local'
+            cursor.execute("UPDATE local SET nomeLocal = %s, idArea = %s WHERE idLocal = %s", (nome_sala, bloco, id_local))
+
+            cursor.execute("UPDATE local SET idCategoria = %s WHERE idLocal = %s", (categorias_selecionadas[0], id_local))
+
+            conexao.commit()
+            flash('Local atualizado com sucesso!', 'success')
+            return redirect(url_for('adm.adm'))  # Redireciona para a página de administração
+
+    except Exception as e:
+        flash(f'Erro ao atualizar local: {str(e)}', 'error')
+        return redirect(url_for('adm.adm'))
+
+    finally:
+        conexao.close()
+
+    return render_template("updateLocal.html", title="Editar Local", local=local, categorias=categorias, areas=areas, itens=itens, login=True)
+
 
 
 @adm_blueprint.route("/chamadosBlocos")
