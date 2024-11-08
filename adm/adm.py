@@ -925,6 +925,11 @@ def data_formatada(data):
     return f"{dia_semana}, {dia} de {mes}"
 
 
+#Função de pesquisa
+@adm_blueprint.route('/pesquisa', methods=['post'])
+def pesquisa():
+    pass
+
 #Salvar foto do Usuario
 @adm_blueprint.route('/img/usuarios/<path:filename>')
 def serve_imageUser(filename):
