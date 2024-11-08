@@ -22,15 +22,6 @@
             margin-bottom: 100px;
         }
 
-        .back-arrow {
-            position: absolute;
-            left: 20px;
-            top: 20px;
-            font-size: 24px;
-            text-decoration: none;
-            color: #225656;
-        }
-
         .search {
             display: flex;
             justify-content: flex-end;
@@ -66,7 +57,7 @@
     <main>
         <div class="container my-5">
             <div class="d-flex flex-row">
-                <h1 class="col-8 text-center mb-5 text-bold">{{area.nomeArea}}</h1>
+                <h1 class="col-8 text-center mb-5 text-bold">Chamados por Item</h1>
 
                 <div  class="search col-4">
                     <input style="height: 3em; border-right: 0;" class="w-50 p-3 rounded-start-pill bg-light border-dark-subtle" type="text" placeholder="Buscar...">
@@ -74,20 +65,11 @@
                 </div>
             </div>
             
-
-            {%for local in locais%}
-            <div class="d-flex align-items-center mt-1">
-                <div class="fw-bold mb-2 me-3 fs-5">{{local.nomeCategoria}}</div>
-                <div style="border-top: 2px solid #000; flex-grow: 1;" class="pb-2"></div> 
-            </div>
-            
-            <div class="d-flex justify-content-between">
-                {%for itemLocais in local.listaLocais%}
-                <div class="col-4 mx-2 my-2"><a style="cursor: pointer; color:#000a" class="text-decoration-none" href="/filtrarChamados/local/{{itemLocais}}">{{itemLocais}}</a></div>
-                {% endfor %}
-            </div>
+            <div class="d-flex justify-content-between flex-row">
+            {%for item in itens%}
+                <div class="col-4 mx-2 my-2"><a style="cursor: pointer; color:#000a" class="text-decoration-none" href="/filtrarChamados/item/{{item.nomeItem}}">{{item.nomeItem}}</a></div>
             {% endfor %}
-
+            </div>
         </div>
     </main>
 {% endblock %}

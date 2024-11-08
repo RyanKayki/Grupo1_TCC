@@ -179,22 +179,31 @@ def filtrarItens(idLocal):
 
 
 # Rota para a página de lista de locais
-@adm_blueprint.route("/chamadosalas/<int:idArea>", methods=['GET'])
+@adm_blueprint.route("/chamadoSalas/<int:idArea>", methods=['GET'])
 def chamadoSalas(idArea):
     conexao = conecta_database()
     cursor = conexao.cursor(dictionary=True)
 
     query = """
-    SELECT c.nomeCategoria, GROUP_CONCAT(l.nomeLocal SEPARATOR ', ') AS locais
+    SELECT c.nomeCategoria, GROUP_CONCAT(l.nomeLocal SEPARATOR ', ') AS listaLocais
     FROM categoria c
     JOIN local l ON c.idCategoria = l.idCategoria
-    GROUP BY c.nomeCategoria
-    WHERE l.idArea = %s;
+    WHERE l.idArea = %s
+    GROUP BY c.nomeCategoria;
     """
 
     cursor.execute(query, (idArea,))
     locais = cursor.fetchall()
-
+    
+    resultados = []
+    for local in locais:  
+            print(local)      
+            lista_locais = local['listaLocais']
+            lista_locais = lista_locais.split(", ")
+            resultados.append({
+                'nomeCategoria': local['nomeCategoria'],
+                'listaLocais': lista_locais
+            })
     query = """
     SELECT nomeArea FROM area WHERE idArea = %s
     """
@@ -203,7 +212,22 @@ def chamadoSalas(idArea):
     area = cursor.fetchone()
     conexao.close()
 
-    return render_template("chamadoSalas.html", title="Lista de salas", locais=locais, area=area)
+    return render_template("chamadoSalas.html", title="Lista de salas", locais=resultados, area=area, login=True)
+
+@adm_blueprint.route("/chamadosItens", methods=['GET'])
+def chamadosItens():
+    conexao = conecta_database()
+    cursor = conexao.cursor(dictionary=True)
+
+    query = """
+    SELECT nomeItem FROM item
+    """
+
+    cursor.execute(query)
+    itens = cursor.fetchall()
+    conexao.close()
+
+    return render_template("chamadosItens.html", title="Lista de salas", itens=itens, login=True)
 
 # Rota para cadUsuario
 @adm_blueprint.route("/cadUsuario", methods=['GET', 'POST'])
@@ -468,35 +492,6 @@ def filtrarItemedicao():
     return render_template("filtrarItemedicao.html", title=title, salas=salas)
 
 
-# Rota para filtrarLocaledicao
-@adm_blueprint.route("/filtrarLocaledicao")
-def filtrarLocaledicao():
-    # Conectar ao banco de dados
-    conn = conecta_database()
-    cursor = conn.cursor()
-
-    # Consultar dados das areas
-    cursor.execute("SELECT idArea, nomeArea FROM `area`")
-    locais = cursor.fetchall()
-
-     # Consultar dados das categorias
-    cursor.execute("SELECT idCategoria, nomeCategoria FROM `categoria`")
-    categorias = cursor.fetchall()
-
-    # Fechar conexão
-    cursor.close()
-    conn.close()
-
-    # Renderizar template passando os locais
-    title = "Filtrar Local Edição"
-    return render_template("filtrarLocaledicao.html", title=title, login=True, salas=locais, categorias=categorias)
-
-# Rota para edicaoLocal
-@adm_blueprint.route("/edicaoLocal")
-def edicaoLocal():
-    title = "Edição de Local"
-    return render_template("edicaoLocal.html", title=title, login=True)
-
 # Rota para editar um item específico
 @adm_blueprint.route("/edicaoItem/<int:id_item>")
 def edicaoItem(id_item):
@@ -504,21 +499,168 @@ def edicaoItem(id_item):
     cursor = conexao.cursor(dictionary=True)
 
     try:
-        # Confirme que o campo idItem está correto no banco de dados
-        query_item = "SELECT * FROM item WHERE idItem = %s"  # ou `id` se esse for o nome correto
+        # Obter os detalhes do item específico
+        query_item = "SELECT * FROM item WHERE idItem = %s"
         cursor.execute(query_item, (id_item,))
         item = cursor.fetchone()
+
+        # Obter todas as categorias disponíveis
+        query_categorias = "SELECT * FROM categoria"
+        cursor.execute(query_categorias)
+        categorias = cursor.fetchall()
+
+        # Obter as categorias associadas ao item
+        query_categorias_item = "SELECT idCategoria FROM item_categoria WHERE idItem = %s"
+        cursor.execute(query_categorias_item, (id_item,))
+        categorias_item = [categoria['idCategoria'] for categoria in cursor.fetchall()]
+
     finally:
         conexao.close()
 
     title = "Edição de Item"
-    return render_template("edicaoItem.html", title=title, item=item, login=True)
+    return render_template("edicaoItem.html", title=title, item=item, categorias=categorias, categorias_item=categorias_item, login=True)
 
 
-@adm_blueprint.route("/chamadosSala")
-def ChamadosSala():
-    title = "Chamados Da Sala"
-    return render_template("chamadoSalas.html", title=title, login=True)
+# Rota para filtrarLocaledicao
+@adm_blueprint.route("/filtrarLocaledicao", methods=["GET", "POST"])
+def filtrarLocaledicao():
+    # Conectar ao banco de dados
+    conn = conecta_database()
+    cursor = conn.cursor()
+
+    # Capturar parâmetros de filtro da requisição
+    filtro_area = request.args.get("area")
+    filtro_categoria = request.args.get("categoria")
+
+    # Consultar dados das áreas
+    cursor.execute("SELECT idArea, nomeArea FROM `area`")
+    salas = cursor.fetchall()
+
+    # Consultar dados das categorias
+    cursor.execute("SELECT idCategoria, nomeCategoria FROM `categoria`")
+    categorias = cursor.fetchall()
+
+    # Construir consulta SQL para locais com base nos filtros
+    query = "SELECT idLocal, nomeLocal FROM local WHERE 1=1"  # Inicia a query
+    params = []
+
+    if filtro_area:
+        query += " AND idArea = %s"
+        params.append(filtro_area)
+
+    if filtro_categoria:
+        query += " AND idCategoria = %s"
+        params.append(filtro_categoria)
+
+    cursor.execute(query, params)
+    locais_filtrados = cursor.fetchall()
+
+    # Fechar conexão
+    cursor.close()
+    conn.close()
+
+    # Renderizar o template passando os locais, categorias e resultados filtrados
+    title = "Filtrar Local Edição"
+    return render_template("filtrarLocaledicao.html", title=title, login=True, salas=salas, categorias=categorias, locais=locais_filtrados)
+
+
+
+@adm_blueprint.route("/edicaoLocal/<int:id_local>")
+def edicaoLocal(id_local):
+    conexao = conecta_database()
+    cursor = conexao.cursor(dictionary=True)
+
+    try:
+        # Obter detalhes do local específico
+        query_local = "SELECT * FROM `local` WHERE idLocal = %s"
+        cursor.execute(query_local, (id_local,))
+        local = cursor.fetchone()
+
+        # Obter todas as categorias disponíveis
+        query_categorias = "SELECT * FROM categoria"
+        cursor.execute(query_categorias)
+        categorias = cursor.fetchall()
+
+        # Obter todas as áreas
+        query_areas = "SELECT * FROM area"
+        cursor.execute(query_areas)
+        areas = cursor.fetchall()
+
+        # Obter os itens presentes no local
+        query_itens = """
+            SELECT item.nomeItem FROM item
+            JOIN item_categoria ON item.idItem = item_categoria.idItem
+            WHERE item_categoria.idCategoria = %s
+        """
+        cursor.execute(query_itens, (local['idCategoria'],))
+        itens = cursor.fetchall()
+
+    finally:
+        conexao.close()
+
+    title = "Edição de Local"
+    return render_template("edicaoLocal.html", title=title, local=local, areas=areas, categorias=categorias, itens=itens, login=True)
+
+
+@adm_blueprint.route("/updateLocal/<int:id_local>", methods=['GET', 'POST'])
+def updateLocal(id_local):
+    conexao = conecta_database()
+    cursor = conexao.cursor(dictionary=True)
+
+    try:
+        # Busca todas as categorias e áreas disponíveis
+        cursor.execute('SELECT * FROM categoria')
+        categorias = cursor.fetchall()
+
+        cursor.execute('SELECT * FROM area')
+        areas = cursor.fetchall()
+
+        # Identifica o ID do local para edição
+        if not id_local:
+            flash('Local não encontrado para edição.', 'error')
+            return redirect(url_for('adm.adm'))
+
+        # Busca os dados do local
+        cursor.execute('SELECT * FROM local WHERE idLocal = %s', (id_local,))
+        local = cursor.fetchone()
+
+        # Busca os itens associados à categoria do local
+        cursor.execute("""
+            SELECT item.* FROM item
+            JOIN item_categoria ON item.idItem = item_categoria.idItem
+            WHERE item_categoria.idCategoria = %s
+        """, (local['idCategoria'],))
+        itens = cursor.fetchall()
+
+        if request.method == 'POST':
+            nome_sala = request.form.get("nome_sala")
+            bloco = request.form.get("bloco")
+            categorias_selecionadas = request.form.getlist('categorias')
+
+            # Atualiza o local na tabela 'local'
+            cursor.execute("UPDATE local SET nomeLocal = %s, idArea = %s WHERE idLocal = %s", (nome_sala, bloco, id_local))
+
+            cursor.execute("UPDATE local SET idCategoria = %s WHERE idLocal = %s", (categorias_selecionadas[0], id_local))
+
+            conexao.commit()
+            flash('Local atualizado com sucesso!', 'success')
+            return redirect(url_for('adm.adm'))  # Redireciona para a página de administração
+
+    except Exception as e:
+        flash(f'Erro ao atualizar local: {str(e)}', 'error')
+        return redirect(url_for('adm.adm'))
+
+    finally:
+        conexao.close()
+
+    return render_template("updateLocal.html", title="Editar Local", local=local, categorias=categorias, areas=areas, itens=itens, login=True)
+
+
+
+@adm_blueprint.route("/chamadosBlocos")
+def ChamBloco():
+    title = "Selecione o bloco"
+    return render_template("chamadosBlocos.html", title=title, login=True)
 
 @adm_blueprint.route("/chamadoDetalhes/<int:id_chamado>")
 def DetalheChamado(id_chamado):
@@ -611,111 +753,9 @@ def registroChamado():
         return redirect("/login")
 
 
-# Registro de Chamados - Histórico de chamados do usuario
-@adm_blueprint.route("/registroChamadosUsuario")
-def registroChamadosUsuario():
-    if verifica_sessao():
-        try:
-            conexao = conecta_database()
-            cursor = conexao.cursor(dictionary=True)
-
-            # Obtém o ID do usuário logado
-            id_usuario = session.get('idUsuario')
-
-            query = """
-                SELECT c.descChamado, c.dataChamado, u.nomeUsuario, l.nomeLocal, i.nomeItem, c.imgChamado, s.nomeStatus
-                FROM chamado c
-                JOIN usuario u ON c.idUsuario = u.idUsuario
-                JOIN local l ON c.idLocal = l.idLocal
-                JOIN item i ON c.idItem = i.idItem
-                JOIN status s ON c.idStatus = s.idStatus
-                WHERE c.idUsuario = %s
-                ORDER BY c.dataChamado DESC
-            """
-            cursor.execute(query, (id_usuario,))
-            chamados = cursor.fetchall()
-            title = "Meus Chamados"
-            titulo_pagina = "Meus Chamados"
-
-            # Verifica se há chamados para o usuário logado
-            if not chamados:
-                flash("Nenhum chamado cadastrado no momento.", "info")
-                return render_template("listaChamados.html", chamados_por_ano={}, title=title, titulo_pagina=titulo_pagina, login=True)
-
-            # Agrupar chamados por ano e data
-            chamados_por_ano = defaultdict(lambda: defaultdict(list))
-            for chamado in chamados:
-                data = chamado['dataChamado']
-                dia_semana = dias_da_semana[data.weekday()]
-                dia = data.day
-                mes = meses[data.month]
-                ano = data.year
-
-                # Formatação da data (sem o ano)
-                data_formatada = f"{dia_semana}, {dia} de {mes}"
-
-                # Agrupar chamados por ano e por data formatada
-                chamados_por_ano[ano][data_formatada].append(chamado)
-
-            return render_template("listaChamados.html", chamados_por_ano=chamados_por_ano, titulo_pagina=titulo_pagina, title=title, login=True)
-        finally:
-            conexao.close()
-    else:
-        return redirect("/login")
-
-
-@adm_blueprint.route("/registroChamados/status/<status>")
-def registroChamadoPorStatus(status):
-    if verifica_sessao():
-        try:
-            conexao = conecta_database()
-            cursor = conexao.cursor(dictionary=True)
-
-            # Filtra a consulta pelo status
-            query = """
-                SELECT c.descChamado, c.dataChamado, u.nomeUsuario, l.nomeLocal, i.nomeItem, c.imgChamado, s.nomeStatus
-                FROM chamado c
-                JOIN usuario u ON c.idUsuario = u.idUsuario
-                JOIN local l ON c.idLocal = l.idLocal
-                JOIN item i ON c.idItem = i.idItem
-                JOIN status s ON c.idStatus = s.idStatus
-                WHERE s.nomeStatus = %s
-                ORDER BY c.dataChamado DESC
-            """
-            cursor.execute(query, (status,))
-            chamados = cursor.fetchall()
-            title = "Registro de Chamados"
-            titulo_pagina = f"Chamados - {status.capitalize()}"
-
-            # Organizando por ano e data formatada (sem o ano na chave de data)
-            chamados_por_ano = defaultdict(lambda: defaultdict(list))
-
-            if not chamados:
-                flash(f"Nenhum chamado com o status '{status}' encontrado.", "info")
-                return render_template("listaChamados.html", chamados_por_ano={}, title=title, titulo_pagina=titulo_pagina, login=True)
-
-            for chamado in chamados:
-                data = chamado['dataChamado']
-                dia_semana = dias_da_semana[data.weekday()]
-                dia = data.day
-                mes = meses[data.month]
-                ano = data.year
-
-                # Data formatada sem o ano
-                data_formatada = f"{dia_semana}, {dia} de {mes}"
-
-                # Agrupar chamados por ano e por data
-                chamados_por_ano[ano][data_formatada].append(chamado)
-
-            return render_template("listaChamados.html", chamados_por_ano=chamados_por_ano, titulo_pagina=titulo_pagina, title=title, login=True)
-        finally:
-            conexao.close()
-    else:
-        return redirect("/login")
-    
 # Filtragem dos chamados por status, item, local ou chamados do usuário
-@adm_blueprint.route("/filtrarchamados/<filtro>/<id>")
-def filtrarChamados(filtro, id):
+@adm_blueprint.route("/filtrarChamados/<filtro>/<valor>")
+def filtrarChamados(filtro, valor):
     if verifica_sessao():
         try:
             conexao = conecta_database()
@@ -730,17 +770,13 @@ def filtrarChamados(filtro, id):
                     JOIN local l ON c.idLocal = l.idLocal
                     JOIN item i ON c.idItem = i.idItem
                     JOIN status s ON c.idStatus = s.idStatus
-                    WHERE c.idItem = %s
+                    WHERE c.idItem = (SELECT idItem FROM item WHERE nomeItem = %s)
                     ORDER BY c.dataChamado DESC
                 """
-                cursor.execute(query, (id,))
+                cursor.execute(query, (valor,))
                 chamados = cursor.fetchall()
 
-                query_item = "SELECT nomeItem FROM item WHERE idItem = %s"
-                cursor.execute(query_item, (id,))
-                nomeItem = cursor.fetchone()
-
-                title = "Chamados por item: " + nomeItem
+                title = "Chamados por item: " + valor
             
             elif filtro == "local":
 
@@ -751,18 +787,14 @@ def filtrarChamados(filtro, id):
                     JOIN local l ON c.idLocal = l.idLocal
                     JOIN item i ON c.idItem = i.idItem
                     JOIN status s ON c.idStatus = s.idStatus
-                    WHERE c.idLocal = %s
+                    WHERE c.idLocal = (SELECT idLocal FROM local WHERE nomeLocal = %s)
                     ORDER BY c.dataChamado DESC
                 """ 
 
-                cursor.execute(query, (id,))
+                cursor.execute(query, (valor,))
                 chamados = cursor.fetchall()
 
-                query_local = "SELECT nomeLocal FROM local WHERE idLocal = %s"
-                cursor.execute(query_local, (id,))
-                nomeLocal = cursor.fetchone()
-
-                title = "Chamados por Local: " + nomeLocal
+                title = "Chamados por Local: " + valor
             
             elif filtro == "status":
 
@@ -777,18 +809,20 @@ def filtrarChamados(filtro, id):
                     ORDER BY c.dataChamado DESC
                 """ 
 
-                cursor.execute(query, (id,))
+                cursor.execute(query, (valor,))
                 chamados = cursor.fetchall()
 
-                if id == 1:
+                if valor == "1":
                     title = "Chamados Não Respondidos"
-                elif id == 2:
+                elif valor == "2":
                     title = "Chamados Respondidos"
                 else:
                     title = "Chamados Concluídos"
 
             elif filtro == "usuario":
-
+                # Obtém o ID do usuário logado
+                valor = session.get('idUsuario')
+                
                 query = """
                     SELECT c.descChamado, c.dataChamado, u.nomeUsuario, l.nomeLocal, i.nomeItem, c.imgChamado, s.nomeStatus
                     FROM chamado c
@@ -800,21 +834,34 @@ def filtrarChamados(filtro, id):
                     ORDER BY c.dataChamado DESC
                 """ 
 
-                cursor.execute(query, (id,))
+                cursor.execute(query, (valor,))
                 chamados = cursor.fetchall()
 
                 title = "Meus chamados"
-            # Agrupar chamados por data
-            chamados_por_data = {}
+
+            # Organizando por ano e data formatada (sem o ano na chave de data)
+            chamados_por_ano = defaultdict(lambda: defaultdict(list))
+
             for chamado in chamados:
-                data = chamado['dataChamado'].strftime("%a, %d de %B")
-                if data not in chamados_por_data:
-                    chamados_por_data[data] = []
-                chamados_por_data[data].append(chamado)
+                data = chamado['dataChamado']
+                dia_semana = dias_da_semana[data.weekday()]
+                dia = data.day
+                mes = meses[data.month]
+                ano = data.year
+
+                # Data formatada sem o ano
+                data_formatada = f"{dia_semana}, {dia} de {mes}"
+
+                # Agrupar chamados por ano e por data
+                chamados_por_ano[ano][data_formatada].append(chamado)
+
+            if not chamados:
+                flash(f"Nenhum chamado encontrado.", "info")
+                chamados_por_ano = {}
 
             return render_template(
-                "listaChamado.html",
-                chamados_por_data=chamados_por_data,
+                "listaChamados.html",
+                chamados_por_ano=chamados_por_ano,
                 title=title,
                 login=True
             )
@@ -822,49 +869,6 @@ def filtrarChamados(filtro, id):
             conexao.close()
     else:
         return redirect("/login")
-
-
-# seleção dos blocos para o chamado por sala
-@adm_blueprint.route("/chamSalasBloco")
-def ChamBloco():
-    title = "Chamados Por Bloco"
-    
-    # Conexão com o banco de dados
-    conexao = conecta_database()
-    cursor = conexao.cursor()
-
-    # Executando os SELECTs necessários
-    try:
-        # SELECT para buscar apenas os nomes das áreas
-        cursor.execute("SELECT nomeArea FROM area")
-        areas = cursor.fetchall()
-
-        # SELECT para buscar apenas os nomes dos locais
-        cursor.execute("SELECT nomeLocal, idCategoria FROM local")
-        locais = cursor.fetchall()
-
-        # SELECT para buscar apenas os nomes das categorias
-        cursor.execute("SELECT nomeCategoria FROM Categoria")
-        categorias = cursor.fetchall()
-
-        # Fechar a conexão após as operações
-        conexao.close()
-
-    except Exception as e:
-        print(f"Erro ao executar SELECTs: {e}")
-        conexao.close()
-        return f"Erro ao carregar dados: {e}", 500
-
-    # Renderizar template com os dados
-    return render_template(
-        "chamSalasBloco.html",
-        title=title,
-        login=True,
-        areas=areas,
-        locais=locais,
-        categorias=categorias
-    )
-
 
 
 @adm_blueprint.route("/excluir/<int:idChamado>")
