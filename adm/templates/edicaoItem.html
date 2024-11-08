@@ -33,10 +33,10 @@
                         </div>
                     </div>
                     <p style="color: #225656">Categorias:</p>
-                    <div class="row d-flex justify-content-around mb-3 w-100">
+                    <div class="row d-flex justify-content-around mb-3 w-100 ">
                         {% if categorias %}
                         {% for categoria in categorias %}
-                        <div class="col-md-4 mx-1">
+                        <div class="col-md-4">
                             <input type="checkbox" name="categorias" value="{{ categoria['idCategoria'] }}"
                                    id="categoria_{{ categoria['idCategoria'] }}"
                                    style="accent-color: #225656; width: 15px; height: 15px; cursor: pointer;"
