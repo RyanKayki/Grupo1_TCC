@@ -31,17 +31,6 @@
             color: #225656;
         }
 
-        .search {
-            display: flex;
-            justify-content: flex-end;
-            margin-bottom: 20px;
-        }
-
-        .search input {
-            font-size: 16px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-        }
 
 
         .row-title {
@@ -68,10 +57,10 @@
             <div class="d-flex flex-row">
                 <h1 class="col-8 text-center mb-5 text-bold">{{area.nomeArea}}</h1>
 
-                <div  class="search col-4">
-                    <input style="height: 3em; border-right: 0;" class="w-50 p-3 rounded-start-pill bg-light border-dark-subtle" type="text" placeholder="Buscar...">
+                <form  class="d-flex justify-content-end mb-2 col-4" action="/pesquisa" method="post" role="search">
+                    <input style="height: 3em;" class="w-50 p-3 rounded-start-pill bg-light border border-end-0 border-dark-subtle" type="text" placeholder="Buscar...">
                     <button style="height: 3em;" class="rounded-end-pill bg-light p-2 border border-start-0 border-dark-subtle"><i class="bi bi-search"></i></button>
-                </div>
+                </form>
             </div>
             
 
