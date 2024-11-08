@@ -57,7 +57,7 @@
         {% endif %}
         
         <div class="d-flex justify-content-end mt-3">
-            <a href="{{ url_for('adm.filtrarChamados', filtro='usuario', id='0') }}" class="btn minimal-button">Ver Mais</a>
+            <a href="{{ url_for('adm.filtrarChamados', filtro='usuario', valor='0') }}" class="btn minimal-button">Ver Mais</a>
         </div>
     </div>
 </div>
@@ -75,21 +75,23 @@
         </div>
         <div class="col-12 col-sm-4">
           <div class="card p-3 mb-3 border-0 shadow-sm">
-            <a href="/chamadosSala" class="text-white">
-            <h5 class="text-muted">Chamados por Sala</h5>
-          </a>
+            <a href="/chamadosBlocos" class="text-white">
+              <h5 class="text-muted">Chamados por Sala</h5>
+            </a>
           </div>
         </div>
         <div class="col-12 col-sm-4">
           <div class="card p-3 mb-3 border-0 shadow-sm">
-            <h5 class="text-muted">Chamados por Item</h5>
+            <a href="/chamadosItens" class="text-white">
+              <h5 class="text-muted">Chamados por Item</h5>
+            </a>
           </div>
         </div>
       </div>
       <div class="row text-center mt-4">
         <div class="col-12 col-sm-4">
           <div class="card p-3 border-0 shadow-sm">
-            <a href="{{ url_for('adm.filtrarChamados', filtro='status', id='1') }}" class="text-white">
+            <a href="{{ url_for('adm.filtrarChamados', filtro='status', valor='1') }}" class="text-white">
               <h6 class="text-muted">Não Respondidos</h6>
             </a>
             <span class="badge bg-danger">{{ totais_chamados.nao_respondidos }}</span>
@@ -97,7 +99,7 @@
         </div>
         <div class="col-12 col-sm-4">
           <div class="card p-3 border-0 shadow-sm">
-            <a href="{{ url_for('adm.filtrarChamados', filtro='status', id='2') }}" class="text-white">
+            <a href="{{ url_for('adm.filtrarChamados', filtro='status', valor='2') }}" class="text-white">
               <h6 class="text-muted">Respondidos</h6>
             </a>
             <span class="badge bg-success">{{ totais_chamados.respondidos }}</span>
@@ -105,7 +107,7 @@
         </div>
         <div class="col-12 col-sm-4">
           <div class="card p-3 border-0 shadow-sm">
-            <a href="{{ url_for('adm.filtrarChamados', filtro='status', id='3') }}" class="text-white">
+            <a href="{{ url_for('adm.filtrarChamados', filtro='status', valor='3') }}" class="text-white">
               <h6 class="text-muted">Concluídos</h6>
             </a>
             <span class="badge bg-primary">{{ totais_chamados.concluidos }}</span>

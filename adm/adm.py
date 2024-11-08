@@ -179,22 +179,31 @@ def filtrarItens(idLocal):
 
 
 # Rota para a página de lista de locais
-@adm_blueprint.route("/chamadosalas/<int:idArea>", methods=['GET'])
+@adm_blueprint.route("/chamadoSalas/<int:idArea>", methods=['GET'])
 def chamadoSalas(idArea):
     conexao = conecta_database()
     cursor = conexao.cursor(dictionary=True)
 
     query = """
-    SELECT c.nomeCategoria, GROUP_CONCAT(l.nomeLocal SEPARATOR ', ') AS locais
+    SELECT c.nomeCategoria, GROUP_CONCAT(l.nomeLocal SEPARATOR ', ') AS listaLocais
     FROM categoria c
     JOIN local l ON c.idCategoria = l.idCategoria
-    GROUP BY c.nomeCategoria
-    WHERE l.idArea = %s;
+    WHERE l.idArea = %s
+    GROUP BY c.nomeCategoria;
     """
 
     cursor.execute(query, (idArea,))
     locais = cursor.fetchall()
-
+    
+    resultados = []
+    for local in locais:  
+            print(local)      
+            lista_locais = local['listaLocais']
+            lista_locais = lista_locais.split(", ")
+            resultados.append({
+                'nomeCategoria': local['nomeCategoria'],
+                'listaLocais': lista_locais
+            })
     query = """
     SELECT nomeArea FROM area WHERE idArea = %s
     """
@@ -203,7 +212,22 @@ def chamadoSalas(idArea):
     area = cursor.fetchone()
     conexao.close()
 
-    return render_template("chamadoSalas.html", title="Lista de salas", locais=locais, area=area)
+    return render_template("chamadoSalas.html", title="Lista de salas", locais=resultados, area=area, login=True)
+
+@adm_blueprint.route("/chamadosItens", methods=['GET'])
+def chamadosItens():
+    conexao = conecta_database()
+    cursor = conexao.cursor(dictionary=True)
+
+    query = """
+    SELECT nomeItem FROM item
+    """
+
+    cursor.execute(query)
+    itens = cursor.fetchall()
+    conexao.close()
+
+    return render_template("chamadosItens.html", title="Lista de salas", itens=itens, login=True)
 
 # Rota para cadUsuario
 @adm_blueprint.route("/cadUsuario", methods=['GET', 'POST'])
@@ -515,10 +539,10 @@ def edicaoItem(id_item):
     return render_template("edicaoItem.html", title=title, item=item, login=True)
 
 
-@adm_blueprint.route("/chamadosSala")
-def ChamadosSala():
-    title = "Chamados Da Sala"
-    return render_template("chamadoSalas.html", title=title, login=True)
+@adm_blueprint.route("/chamadosBlocos")
+def ChamBloco():
+    title = "Selecione o bloco"
+    return render_template("chamadosBlocos.html", title=title, login=True)
 
 @adm_blueprint.route("/chamadoDetalhes/<int:id_chamado>")
 def DetalheChamado(id_chamado):
@@ -612,8 +636,8 @@ def registroChamado():
 
 
 # Filtragem dos chamados por status, item, local ou chamados do usuário
-@adm_blueprint.route("/filtrarchamados/<filtro>/<id>")
-def filtrarChamados(filtro, id):
+@adm_blueprint.route("/filtrarChamados/<filtro>/<valor>")
+def filtrarChamados(filtro, valor):
     if verifica_sessao():
         try:
             conexao = conecta_database()
@@ -628,17 +652,13 @@ def filtrarChamados(filtro, id):
                     JOIN local l ON c.idLocal = l.idLocal
                     JOIN item i ON c.idItem = i.idItem
                     JOIN status s ON c.idStatus = s.idStatus
-                    WHERE c.idItem = %s
+                    WHERE c.idItem = (SELECT idItem FROM item WHERE nomeItem = %s)
                     ORDER BY c.dataChamado DESC
                 """
-                cursor.execute(query, (id,))
+                cursor.execute(query, (valor,))
                 chamados = cursor.fetchall()
 
-                query_item = "SELECT nomeItem FROM item WHERE idItem = %s"
-                cursor.execute(query_item, (id,))
-                nomeItem = cursor.fetchone()
-
-                title = "Chamados por item: " + nomeItem
+                title = "Chamados por item: " + valor
             
             elif filtro == "local":
 
@@ -649,18 +669,14 @@ def filtrarChamados(filtro, id):
                     JOIN local l ON c.idLocal = l.idLocal
                     JOIN item i ON c.idItem = i.idItem
                     JOIN status s ON c.idStatus = s.idStatus
-                    WHERE c.idLocal = %s
+                    WHERE c.idLocal = (SELECT idLocal FROM local WHERE nomeLocal = %s)
                     ORDER BY c.dataChamado DESC
                 """ 
 
-                cursor.execute(query, (id,))
+                cursor.execute(query, (valor,))
                 chamados = cursor.fetchall()
 
-                query_local = "SELECT nomeLocal FROM local WHERE idLocal = %s"
-                cursor.execute(query_local, (id,))
-                nomeLocal = cursor.fetchone()
-
-                title = "Chamados por Local: " + nomeLocal
+                title = "Chamados por Local: " + valor
             
             elif filtro == "status":
 
@@ -675,19 +691,19 @@ def filtrarChamados(filtro, id):
                     ORDER BY c.dataChamado DESC
                 """ 
 
-                cursor.execute(query, (id,))
+                cursor.execute(query, (valor,))
                 chamados = cursor.fetchall()
 
-                if id == "1":
+                if valor == "1":
                     title = "Chamados Não Respondidos"
-                elif id == "2":
+                elif valor == "2":
                     title = "Chamados Respondidos"
                 else:
                     title = "Chamados Concluídos"
 
             elif filtro == "usuario":
                 # Obtém o ID do usuário logado
-                id = session.get('idUsuario')
+                valor = session.get('idUsuario')
                 
                 query = """
                     SELECT c.descChamado, c.dataChamado, u.nomeUsuario, l.nomeLocal, i.nomeItem, c.imgChamado, s.nomeStatus
@@ -700,7 +716,7 @@ def filtrarChamados(filtro, id):
                     ORDER BY c.dataChamado DESC
                 """ 
 
-                cursor.execute(query, (id,))
+                cursor.execute(query, (valor,))
                 chamados = cursor.fetchall()
 
                 title = "Meus chamados"
@@ -735,49 +751,6 @@ def filtrarChamados(filtro, id):
             conexao.close()
     else:
         return redirect("/login")
-
-
-# seleção dos blocos para o chamado por sala
-@adm_blueprint.route("/chamSalasBloco")
-def ChamBloco():
-    title = "Chamados Por Bloco"
-    
-    # Conexão com o banco de dados
-    conexao = conecta_database()
-    cursor = conexao.cursor()
-
-    # Executando os SELECTs necessários
-    try:
-        # SELECT para buscar apenas os nomes das áreas
-        cursor.execute("SELECT nomeArea FROM area")
-        areas = cursor.fetchall()
-
-        # SELECT para buscar apenas os nomes dos locais
-        cursor.execute("SELECT nomeLocal, idCategoria FROM local")
-        locais = cursor.fetchall()
-
-        # SELECT para buscar apenas os nomes das categorias
-        cursor.execute("SELECT nomeCategoria FROM Categoria")
-        categorias = cursor.fetchall()
-
-        # Fechar a conexão após as operações
-        conexao.close()
-
-    except Exception as e:
-        print(f"Erro ao executar SELECTs: {e}")
-        conexao.close()
-        return f"Erro ao carregar dados: {e}", 500
-
-    # Renderizar template com os dados
-    return render_template(
-        "chamSalasBloco.html",
-        title=title,
-        login=True,
-        areas=areas,
-        locais=locais,
-        categorias=categorias
-    )
-
 
 
 @adm_blueprint.route("/excluir/<int:idChamado>")
