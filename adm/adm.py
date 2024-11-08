@@ -611,108 +611,6 @@ def registroChamado():
         return redirect("/login")
 
 
-# Registro de Chamados - Histórico de chamados do usuario
-@adm_blueprint.route("/registroChamadosUsuario")
-def registroChamadosUsuario():
-    if verifica_sessao():
-        try:
-            conexao = conecta_database()
-            cursor = conexao.cursor(dictionary=True)
-
-            # Obtém o ID do usuário logado
-            id_usuario = session.get('idUsuario')
-
-            query = """
-                SELECT c.descChamado, c.dataChamado, u.nomeUsuario, l.nomeLocal, i.nomeItem, c.imgChamado, s.nomeStatus
-                FROM chamado c
-                JOIN usuario u ON c.idUsuario = u.idUsuario
-                JOIN local l ON c.idLocal = l.idLocal
-                JOIN item i ON c.idItem = i.idItem
-                JOIN status s ON c.idStatus = s.idStatus
-                WHERE c.idUsuario = %s
-                ORDER BY c.dataChamado DESC
-            """
-            cursor.execute(query, (id_usuario,))
-            chamados = cursor.fetchall()
-            title = "Meus Chamados"
-            titulo_pagina = "Meus Chamados"
-
-            # Verifica se há chamados para o usuário logado
-            if not chamados:
-                flash("Nenhum chamado cadastrado no momento.", "info")
-                return render_template("listaChamados.html", chamados_por_ano={}, title=title, titulo_pagina=titulo_pagina, login=True)
-
-            # Agrupar chamados por ano e data
-            chamados_por_ano = defaultdict(lambda: defaultdict(list))
-            for chamado in chamados:
-                data = chamado['dataChamado']
-                dia_semana = dias_da_semana[data.weekday()]
-                dia = data.day
-                mes = meses[data.month]
-                ano = data.year
-
-                # Formatação da data (sem o ano)
-                data_formatada = f"{dia_semana}, {dia} de {mes}"
-
-                # Agrupar chamados por ano e por data formatada
-                chamados_por_ano[ano][data_formatada].append(chamado)
-
-            return render_template("listaChamados.html", chamados_por_ano=chamados_por_ano, titulo_pagina=titulo_pagina, title=title, login=True)
-        finally:
-            conexao.close()
-    else:
-        return redirect("/login")
-
-
-@adm_blueprint.route("/registroChamados/status/<status>")
-def registroChamadoPorStatus(status):
-    if verifica_sessao():
-        try:
-            conexao = conecta_database()
-            cursor = conexao.cursor(dictionary=True)
-
-            # Filtra a consulta pelo status
-            query = """
-                SELECT c.descChamado, c.dataChamado, u.nomeUsuario, l.nomeLocal, i.nomeItem, c.imgChamado, s.nomeStatus
-                FROM chamado c
-                JOIN usuario u ON c.idUsuario = u.idUsuario
-                JOIN local l ON c.idLocal = l.idLocal
-                JOIN item i ON c.idItem = i.idItem
-                JOIN status s ON c.idStatus = s.idStatus
-                WHERE s.nomeStatus = %s
-                ORDER BY c.dataChamado DESC
-            """
-            cursor.execute(query, (status,))
-            chamados = cursor.fetchall()
-            title = "Registro de Chamados"
-            titulo_pagina = f"Chamados - {status.capitalize()}"
-
-            # Organizando por ano e data formatada (sem o ano na chave de data)
-            chamados_por_ano = defaultdict(lambda: defaultdict(list))
-
-            if not chamados:
-                flash(f"Nenhum chamado com o status '{status}' encontrado.", "info")
-                return render_template("listaChamados.html", chamados_por_ano={}, title=title, titulo_pagina=titulo_pagina, login=True)
-
-            for chamado in chamados:
-                data = chamado['dataChamado']
-                dia_semana = dias_da_semana[data.weekday()]
-                dia = data.day
-                mes = meses[data.month]
-                ano = data.year
-
-                # Data formatada sem o ano
-                data_formatada = f"{dia_semana}, {dia} de {mes}"
-
-                # Agrupar chamados por ano e por data
-                chamados_por_ano[ano][data_formatada].append(chamado)
-
-            return render_template("listaChamados.html", chamados_por_ano=chamados_por_ano, titulo_pagina=titulo_pagina, title=title, login=True)
-        finally:
-            conexao.close()
-    else:
-        return redirect("/login")
-    
 # Filtragem dos chamados por status, item, local ou chamados do usuário
 @adm_blueprint.route("/filtrarchamados/<filtro>/<id>")
 def filtrarChamados(filtro, id):
@@ -780,15 +678,17 @@ def filtrarChamados(filtro, id):
                 cursor.execute(query, (id,))
                 chamados = cursor.fetchall()
 
-                if id == 1:
+                if id == "1":
                     title = "Chamados Não Respondidos"
-                elif id == 2:
+                elif id == "2":
                     title = "Chamados Respondidos"
                 else:
                     title = "Chamados Concluídos"
 
             elif filtro == "usuario":
-
+                # Obtém o ID do usuário logado
+                id = session.get('idUsuario')
+                
                 query = """
                     SELECT c.descChamado, c.dataChamado, u.nomeUsuario, l.nomeLocal, i.nomeItem, c.imgChamado, s.nomeStatus
                     FROM chamado c
@@ -804,17 +704,30 @@ def filtrarChamados(filtro, id):
                 chamados = cursor.fetchall()
 
                 title = "Meus chamados"
-            # Agrupar chamados por data
-            chamados_por_data = {}
+
+            # Organizando por ano e data formatada (sem o ano na chave de data)
+            chamados_por_ano = defaultdict(lambda: defaultdict(list))
+
             for chamado in chamados:
-                data = chamado['dataChamado'].strftime("%a, %d de %B")
-                if data not in chamados_por_data:
-                    chamados_por_data[data] = []
-                chamados_por_data[data].append(chamado)
+                data = chamado['dataChamado']
+                dia_semana = dias_da_semana[data.weekday()]
+                dia = data.day
+                mes = meses[data.month]
+                ano = data.year
+
+                # Data formatada sem o ano
+                data_formatada = f"{dia_semana}, {dia} de {mes}"
+
+                # Agrupar chamados por ano e por data
+                chamados_por_ano[ano][data_formatada].append(chamado)
+
+            if not chamados:
+                flash(f"Nenhum chamado encontrado.", "info")
+                chamados_por_ano = {}
 
             return render_template(
-                "listaChamado.html",
-                chamados_por_data=chamados_por_data,
+                "listaChamados.html",
+                chamados_por_ano=chamados_por_ano,
                 title=title,
                 login=True
             )
