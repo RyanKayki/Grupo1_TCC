@@ -80,6 +80,72 @@ def detalhe_chamado(idChamado):
             return redirect("/login")
         
 
+# Rota para apagar um chamado
+@func_blueprint.route('/apagarChamado/<int:idChamado>', methods=['DELETE'])
+def apagar_chamado(idChamado):
+    if verifica_sessao():
+        try:
+            conexao = conecta_database()
+            cursor = conexao.cursor()
+            
+            # Executa a exclusão do chamado pelo idChamado
+            cursor.execute("DELETE FROM chamado WHERE idChamado = %s", (idChamado,))
+            conexao.commit()
+            
+            return jsonify({"message": "Chamado apagado com sucesso."}), 200
+        except Exception as e:
+            return jsonify({"message": "Erro ao apagar o chamado.", "error": str(e)}), 500
+        finally:
+            conexao.close()
+    else:
+        return jsonify({"message": "Usuário não autenticado."}), 401
+
+# Rota para exibir o formulário de edição de um chamado
+@func_blueprint.route('/editarChamado/<int:idChamado>', methods=['GET', 'POST'])
+def editar_chamado(idChamado):
+    if verifica_sessao():
+        try:
+            conexao = conecta_database()
+            cursor = conexao.cursor(dictionary=True)
+
+            # Carregar o chamado que será editado
+            cursor.execute("""
+                SELECT * FROM chamado WHERE idChamado = %s
+            """, (idChamado,))
+            chamado = cursor.fetchone()
+
+            # Carregar dados adicionais, como areas, locais e itens
+            cursor.execute("SELECT * FROM `local`")
+            locais = cursor.fetchall()
+
+            cursor.execute("SELECT * FROM item")
+            itens = cursor.fetchall()
+
+            if request.method == 'POST':
+                # Atualizar os dados do chamado com os novos valores
+                novo_desc = request.form.get('descChamado')
+                novo_local = request.form.get('local')
+                novo_item = request.form.get('item')
+
+                # Atualizar os dados do chamado
+                cursor.execute("""
+                    UPDATE chamado
+                    SET descChamado = %s, idItem = %s, idLocal = %s
+                    WHERE idChamado = %s
+                """, (novo_desc, novo_item, novo_local, idChamado))
+
+                conexao.commit()
+                flash('Chamado atualizado com sucesso!', 'success')
+                return redirect(url_for('func.func_home'))
+
+            return render_template('editarCham.html', chamado=chamado, title='Editar chamado', locais=locais, itens=itens)
+
+        finally:
+            conexao.close()
+    else:
+        return redirect(url_for('login'))
+
+
 # Rota para novoChamado
 @func_blueprint.route("/novoChamado", methods=['GET', 'POST'])
 def novoChamado():
@@ -190,11 +256,41 @@ def filtrarItens(idLocal):
     # Retorna os itens como JSON
     return jsonify(itens)
 
-# Rota do perfil do funcionário
-@func_blueprint.route("/Perfil_funcionario", methods=['POST'])
+# Rota do perfil do funcionário com GET e POST
+@func_blueprint.route("/Perfil_funcionario", methods=['GET', 'POST'])
 def perfil_func():
-    # Implementar lógica da tela de perfil
-    pass
+    if verifica_sessao():
+        if request.method == 'POST':
+            imagem = request.files.get('imagem')
+            if imagem:
+                # Gera nome de arquivo único para imagem
+                id_foto = str(uuid.uuid4().hex)
+                filename = f"{id_foto}.png"
+                caminho_imagem = os.path.join(IMG_FOLDER, 'usuarios', filename)
+                imagem.save(caminho_imagem)
+
+                # Atualiza o campo de imagem no banco de dados
+                conexao = conecta_database()
+                cursor = conexao.cursor()
+                id_usuario = session.get('idUsuario')
+                cursor.execute("UPDATE usuario SET imgUsuario = %s WHERE idUsuario = %s", (filename, id_usuario))
+                conexao.commit()
+                conexao.close()
+
+                flash('Foto de perfil atualizada com sucesso!', 'success')
+            else:
+                flash('Nenhuma imagem foi selecionada.', 'error')
+        elif request.method == 'GET':
+            conexao = conecta_database()
+            cursor = conexao.cursor(dictionary=True)
+            id_usuario = session.get('idUsuario')
+            cursor.execute("SELECT * FROM usuario WHERE idUsuario = %s", (id_usuario,))
+            usuario = cursor.fetchone()
+            conexao.close()
+
+            return render_template('perfil_func.html', usuario=usuario)
+    else:
+        return redirect(url_for('login'))
 
 
 # Dicionários para formatação
@@ -240,4 +336,13 @@ def serve_imageApp(filename):
     # Verifica se a imagem existe
     if os.path.exists(image_path):
         return send_from_directory(os.path.join(IMG_FOLDER, 'app'), filename)
+    
+#Salvar foto do Usuario
+@func_blueprint.route('/img/usuarios/<path:filename>')
+def serve_imageUser(filename):
+    image_path = os.path.join(IMG_FOLDER, 'usuarios', filename)
+    if os.path.exists(image_path):
+        return send_from_directory(os.path.join(IMG_FOLDER, 'usuarios'), filename)
+    else:
+        return send_from_directory(os.path.join(IMG_FOLDER, 'usuarios'), 'userPlaceHolder.png')
 
