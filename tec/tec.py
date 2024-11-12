@@ -1,4 +1,4 @@
-from flask import render_template, Blueprint, redirect, send_from_directory, request, jsonify
+from flask import render_template, Blueprint, redirect, send_from_directory, request, jsonify, abort
 from session.session import verifica_sessao
 from connection.connection import conecta_database  # Importando corretamente
 import os
@@ -13,7 +13,7 @@ IMG_FOLDER = os.path.join('src', 'img')
 def tec_home():
     if verifica_sessao():
         try:
-            conexao = conecta_database()  # Agora chama a função aqui, no momento apropriado
+            conexao = conecta_database()
             cursor = conexao.cursor(dictionary=True)
 
             query = """
@@ -30,12 +30,42 @@ def tec_home():
             chamados = cursor.fetchall()
             title = "Manutenção"
 
-            return render_template("tecHome.html", chamados=chamados, title=title, login=True)
+            # Armazena a quantidade inicial de chamados
+            quantidade_inicial = len(chamados)
+
+            return render_template("tecHome.html", chamados=chamados, title=title, login=True, quantidade_inicial=quantidade_inicial)
         finally:
             conexao.close()
     else:
         return redirect("/login")
-    
+
+@tec_blueprint.route('/tecHome/novosChamados')
+def novos_chamados():
+    if verifica_sessao():
+        try:
+            conexao = conecta_database()
+            cursor = conexao.cursor(dictionary=True)
+
+            # Consulta para contar chamados ativos
+            query = """
+                SELECT COUNT(*) AS total
+                FROM chamado
+                WHERE idStatus != 3
+            """
+            cursor.execute(query)
+            resultado = cursor.fetchone()
+            total_chamados = resultado['total']
+
+            # Compare com a quantidade inicial (armazenada na sessão ou passada como parâmetro)
+            quantidade_inicial = request.args.get('quantidade_inicial', 0, type=int)
+
+            return jsonify(novosChamados=total_chamados > quantidade_inicial)
+        finally:
+            conexao.close()
+    else:
+        return jsonify(novosChamados=False)
+
+
 @tec_blueprint.route('/tecTask')
 def tec_task():
     if verifica_sessao():
@@ -44,7 +74,7 @@ def tec_task():
             cursor = conexao.cursor(dictionary=True)
 
             query = """
-                SELECT c.descChamado, c.concChamado, u.nomeUsuario, ca.nomeCargo, l.nomeLocal, i.nomeItem, c.imgChamado, s.nomeStatus, c.idChamado
+                SELECT c.descChamado, c.concChamado, c.dataChamado, u.nomeUsuario, ca.nomeCargo, l.nomeLocal, i.nomeItem, c.imgChamado, s.nomeStatus, c.idChamado
                 FROM chamado c
                 JOIN usuario u ON c.idUsuario = u.idUsuario
                 JOIN local l ON c.idLocal = l.idLocal
@@ -150,14 +180,17 @@ def add_response(idChamado):
         data = request.get_json()
         resposta = data.get('resposta')
 
+        # Recupera o idUsuario da sessão
+        idUsuario = verifica_sessao()  # Ou outra maneira de recuperar o ID do usuário logado
+
         # Define a data atual
         data_atual = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
-        # Insere a resposta no banco de dados
+        # Insere a resposta no banco de dados, agora com idUsuario
         cursor.execute("""
-            INSERT INTO resposta (descResposta, dataResposta, idChamado)
-            VALUES (%s, %s, %s)
-        """, (resposta, data_atual, idChamado))
+            INSERT INTO resposta (descResposta, dataResposta, idChamado, idUsuario)
+            VALUES (%s, %s, %s, %s)
+        """, (resposta, data_atual, idChamado, idUsuario))
 
         # Atualiza o idStatus do chamado para "respondido"
         cursor.execute("""
@@ -200,6 +233,19 @@ def detalhe(id):
 
     return render_template('chamado.html', chamado=chamado, respostas=respostas)
 
+
+
 @tec_blueprint.route('/img/chamados/<path:filename>')
 def serve_image(filename):
-    return send_from_directory(IMG_FOLDER, filename)
+    image_path = os.path.join(IMG_FOLDER, 'chamados', filename)
+    if os.path.exists(image_path):
+        return send_from_directory(os.path.join(IMG_FOLDER, 'chamados'), filename)
+    else:
+        return send_from_directory(os.path.join(IMG_FOLDER, 'chamados'), 'ImagemIcon.png')
+    
+@tec_blueprint.route('/img/app/<path:filename>')
+def serve_imageApp(filename):
+    image_path = os.path.join(IMG_FOLDER, 'app', filename)
+    if os.path.exists(image_path):
+        return send_from_directory(os.path.join(IMG_FOLDER, 'app'), filename)
+
