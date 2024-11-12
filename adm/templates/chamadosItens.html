@@ -59,15 +59,26 @@
             <div class="d-flex flex-row">
                 <h1 class="col-8 text-center mb-5 text-bold">Chamados por Item</h1>
 
-                <div  class="search col-4">
-                    <input style="height: 3em; border-right: 0;" class="w-50 p-3 rounded-start-pill bg-light border-dark-subtle" type="text" placeholder="Buscar...">
+                <form class="d-flex justify-content-end mb-2 col-4" action="/pesquisaItem" method="post" role="search">
+                    <input style="height: 3em;" class="w-50 p-3 rounded-start-pill bg-light border border-end-0 border-dark-subtle" type="text" name="termo" placeholder="Buscar...">
                     <button style="height: 3em;" class="rounded-end-pill bg-light p-2 border border-start-0 border-dark-subtle"><i class="bi bi-search"></i></button>
-                </div>
+                </form>
             </div>
             
-            <div class="d-flex justify-content-between flex-row">
+            <!-- Exibição das mensagens flash -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="container">
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }}">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+            {% endwith %}
+
+            <div class="d-flex justify-content-between flex-row w-100 flex-wrap">
             {%for item in itens%}
-                <div class="col-4 mx-2 my-2"><a style="cursor: pointer; color:#000a" class="text-decoration-none" href="/filtrarChamados/item/{{item.nomeItem}}">{{item.nomeItem}}</a></div>
+                <div class="col-3 mx-2 my-4"><a style="cursor: pointer; color:#265555" class="text-decoration-none fw-bold" href="/filtrarChamados/item/{{item.nomeItem}}">{{item.nomeItem}}</a></div>
             {% endfor %}
             </div>
         </div>
