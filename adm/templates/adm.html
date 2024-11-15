@@ -32,6 +32,7 @@
         {% if ultimos_chamados %}
             <ul class="list-group list-group-flush">
                 {% for chamado in ultimos_chamados %}
+                <a href="/chamadoDetalhes/{{chamado['idChamado']}}" class="text-decoration-none" style="color: #225656">
                     <li class="list-group-item ps-3 border">
                         <span>{{ chamado.nomeItem }}</span>
                         <br>
@@ -50,6 +51,7 @@
                             {{ chamado.nomeStatus }}
                         </span>
                     </li>
+                  </a>
                 {% endfor %}
             </ul>
         {% else %}
