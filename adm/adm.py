@@ -129,6 +129,73 @@ def cadchamados():
         conexao.close()
 
 
+# Rota para apagar um chamado
+@adm_blueprint.route('/apagarChamado/<int:idChamado>', methods=['DELETE'])
+def apagar_chamado(idChamado):
+    if verifica_sessao():
+        try:
+            conexao = conecta_database()
+            cursor = conexao.cursor()
+            
+            # Executa a exclusão do chamado pelo idChamado
+            cursor.execute("DELETE FROM chamado WHERE idChamado = %s", (idChamado,))
+            conexao.commit()
+            
+            return jsonify({"message": "Chamado apagado com sucesso."}), 200
+        except Exception as e:
+            return jsonify({"message": "Erro ao apagar o chamado.", "error": str(e)}), 500
+        finally:
+            conexao.close()
+    else:
+        return jsonify({"message": "Usuário não autenticado."}), 401
+
+
+# Rota para exibir o formulário de edição de um chamado
+@adm_blueprint.route('/editarChamado/<int:idChamado>', methods=['GET', 'POST'])
+def editar_chamado(idChamado):
+    if verifica_sessao():
+        try:
+            conexao = conecta_database()
+            cursor = conexao.cursor(dictionary=True)
+
+            # Carregar o chamado que será editado
+            cursor.execute("""
+                SELECT * FROM chamado WHERE idChamado = %s
+            """, (idChamado,))
+            chamado = cursor.fetchone()
+
+            # Carregar dados adicionais, como areas, locais e itens
+            cursor.execute("SELECT * FROM `local`")
+            locais = cursor.fetchall()
+
+            cursor.execute("SELECT * FROM item")
+            itens = cursor.fetchall()
+
+            if request.method == 'POST':
+                # Atualizar os dados do chamado com os novos valores
+                novo_desc = request.form.get('descChamado')
+                novo_local = request.form.get('local')
+                novo_item = request.form.get('item')
+
+                # Atualizar os dados do chamado
+                cursor.execute("""
+                    UPDATE chamado
+                    SET descChamado = %s, idItem = %s, idLocal = %s
+                    WHERE idChamado = %s
+                """, (novo_desc, novo_item, novo_local, idChamado))
+
+                conexao.commit()
+                flash('Chamado atualizado com sucesso!', 'success')
+                return redirect(url_for('func.func_home'))
+
+            return render_template('editarChamados.html', chamado=chamado, title='Editar chamado', locais=locais, itens=itens)
+
+        finally:
+            conexao.close()
+    else:
+        return redirect(url_for('login'))
+
+
 @adm_blueprint.route("/filtrarLocais/<int:idArea>", methods=['GET'])
 def filtrarLocais(idArea):
     conexao = conecta_database()
