@@ -11,7 +11,7 @@
   <title>TCC | {{title}}</title>
 </head>
 
-<body class="d-flex flex-column" style="min-height: 100vh; background-color: #225656;"> 
+<body class="d-flex flex-column" style="min-height: 100vh;"> 
   <header style="background-color: #225656;">
     <nav class="navbar" data-bs-theme="dark">
       <div class="container-fluid">
@@ -24,11 +24,11 @@
             <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
           </div>
           <div class="offcanvas-body">
-            <ul class="navbar-nav me-auto mb-2 mb-lg-0 fs-1">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0 fs-4">
               {% if login %}
               <li class="nav-item semi-bold row mb-4">
-                <div class="rounded-circle col-2 d-flex align-items-center" style="width: 64px; height: 64px; background-image: url('../../static/IMG/users/Adillindo.jpg'); background-size: cover; background-position: center;"></div>  
-                <a class="nav-link text-light col-10 d-flex align-items-center ps-2" aria-current="page" href="/">Perfil</a>
+                <div class="rounded-circle col-2 d-flex align-items-center" style="width: 64px; height: 64px; background-image: url('../../static/IMG/users/person.png'); background-size: cover; background-position: center;"></div>  
+                <a class="nav-link text-light col-10 d-flex align-items-center ps-2" aria-current="page" href="/Perfil_funcionario">Perfil</a>
               </li>
               <li class="nav-item semi-bold mb-4">
                   <a class="nav-link text-light" aria-current="page" href="/cadastro"><i class="bi bi-house-door-fill me-2"></i> Novo Chamado</a>
@@ -81,7 +81,5 @@
         })
       })()
   </script>
-
-    
 </body>
 </html>

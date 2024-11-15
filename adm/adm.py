@@ -27,7 +27,7 @@ def adm():
 
             # Consulta para obter os últimos 3 chamados do usuário logado
             query_ultimos_chamados = """
-                SELECT c.descChamado, c.dataChamado, u.nomeUsuario, l.nomeLocal, i.nomeItem, c.imgChamado, s.nomeStatus
+                SELECT c.idChamado, c.descChamado, c.dataChamado, u.nomeUsuario, l.nomeLocal, i.nomeItem, c.imgChamado, s.nomeStatus
                 FROM chamado c
                 JOIN usuario u ON c.idUsuario = u.idUsuario
                 JOIN local l ON c.idLocal = l.idLocal
@@ -691,9 +691,10 @@ def DetalheChamado(id_chamado):
 
             # Consulta para pegar as respostas associadas ao chamado
             query_respostas = """
-                SELECT r.descResposta, r.dataResposta
-                FROM resposta r
-                WHERE r.idChamado = %s
+                    SELECT r.descResposta, r.dataResposta, u.nomeUsuario
+                    FROM resposta r
+                    JOIN usuario u ON r.idUsuario = u.idUsuario
+                    WHERE r.idChamado = %s
             """
             cursor.execute(query_respostas, (id_chamado,))
             respostas = cursor.fetchall()
