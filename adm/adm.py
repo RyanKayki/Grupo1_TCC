@@ -744,13 +744,12 @@ def DetalheChamado(id_chamado):
 
             # Consulta para pegar os detalhes do chamado
             query_chamado = """
-                SELECT c.descChamado, c.dataChamado, u.nomeUsuario, ca.nomeCargo, l.nomeLocal, i.nomeItem, c.imgChamado, s.nomeStatus, c.idChamado
+                SELECT c.descChamado, c.dataChamado, u.nomeUsuario, l.nomeLocal, i.nomeItem, c.imgChamado, s.nomeStatus, c.idChamado
                 FROM chamado c
                 JOIN usuario u ON c.idUsuario = u.idUsuario
                 JOIN local l ON c.idLocal = l.idLocal
                 JOIN item i ON c.idItem = i.idItem
                 JOIN status s ON c.idStatus = s.idStatus
-                JOIN cargo ca ON u.idCargo = ca.idCargo
                 WHERE c.idChamado = %s
             """
             cursor.execute(query_chamado, (id_chamado,))
@@ -758,7 +757,7 @@ def DetalheChamado(id_chamado):
 
             # Consulta para pegar as respostas associadas ao chamado
             query_respostas = """
-                    SELECT r.descResposta,   u.nomeUsuario
+                    SELECT r.descResposta, r.dataResposta, u.nomeUsuario
                     FROM resposta r
                     JOIN usuario u ON r.idUsuario = u.idUsuario
                     WHERE r.idChamado = %s

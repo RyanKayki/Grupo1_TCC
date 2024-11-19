@@ -6,13 +6,9 @@
 </button>
 
 <div class="detalhes-chamado">
-    
-    <a href="{{ url_for('adm.adm') }}" class="back-button">
-        <img src="{{ url_for('adm.serve_imageApp', filename='ButtonBack.png') }}" alt="Voltar" class="button-image">
-      </a>
-    <h2 class="titulo-chamado">Chamado</h2>
+    <h2 class="titulo-chamado">Detalhes do Chamado</h2>
 
-    <div class="chamado-detalhes">
+    <div class="d-flex flex-column align-items-center">
         {% set placeholder_image = url_for('adm.serve_imageApp', filename='ImagemIcon.png') %}
         {% if chamado.imgChamado %}
             <img
@@ -24,8 +20,10 @@
        {% endif %}
 
         <h3 class="chamado-item mt-2 fs-4">{{ chamado.nomeItem }}</h3>
-        <p class="descricao-chamado">{{ chamado.descChamado }}</p>
-        <p class="usuario-cargo fs-6">{{ chamado.nomeCargo }}</p>
+        <div class="text-start">
+            <p class="local-chamado fs-6 mb-1">{{ chamado.nomeLocal }}</p>
+            <p class="descricao-chamado mb-2">{{ chamado.descChamado }}</p>
+        </div>
         
     <div class="resposta-card">
         <h4 class="titulo-resposta">Resposta:</h4>
@@ -78,13 +76,6 @@
         margin-bottom: 20px;
     }
 
-    .chamado-detalhes {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        text-align: center;
-    }
-
     .chamado-imagem-detalhes {
         width: 160px;
         height: 160px;
@@ -103,13 +94,11 @@
     .descricao-chamado {
         font-size: 16px;
         color: #333333;
-        margin-bottom: 10px;
     }
 
-    .usuario-cargo {
+    .local-chamado {
         font-size: 14px;
         color: #555555;
-        margin-bottom: 20px;
     }
 
     .resposta-card {
