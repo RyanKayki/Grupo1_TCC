@@ -1,5 +1,6 @@
 from flask import render_template, session, redirect, request, Flask, Blueprint, flash
 import mysql.connector
+from datetime import timedelta
 
 app = Flask(__name__)
 app.secret_key = "Rhzin"
@@ -45,72 +46,83 @@ def index():
 @session_blueprint.route('/login')
 def login_page():
     # Página de login
+    conexao = conecta_database()
+    cursor = conexao.cursor(dictionary=True)
+    cursor.execute('SELECT * FROM usuario')
+    conexao.close()
     title = "Login"
-    return render_template("login.html", title=title)  # Exibe página de login caso não esteja logado
+    login = verifica_sessao()
+    if login:
+        cargo = session['cargo']
+        if cargo == "Administração":
+            return redirect("/adm")
+        elif cargo == "Manutenção":
+            return redirect("/tecHome")
+        else:
+            return redirect("/funcHome")
+    else:
+        return render_template("login.html", title=title)
+
 
 
 
 @session_blueprint.route("/acesso", methods=['POST'])
 def acesso():
-    # Validação de login
     usuario_informado = request.form["usuario"]
     senha_informada = request.form["senha"]
+    lembrar = 'chklembrar' in request.form
 
     # Conectando ao banco de dados
     conexao = conecta_database()
     cursor = conexao.cursor(dictionary=True)
     
-    # Buscando usuário no banco de dados
     cursor.execute('SELECT * FROM usuario WHERE nomeUsuario = %s', (usuario_informado,))
     usuario = cursor.fetchone()
 
     if usuario is None:
-        # Usuário não cadastrado
         flash("Usuário não cadastrado", "usuario")
-        cursor.close()  # Fechando o cursor antes de redirecionar
+        cursor.close()
         conexao.close()
         return redirect("/login")
 
     if not senha_informada:
-        # Se a senha não for informada
         flash("Informe a senha", "senha")
-        cursor.close()  # Fechando o cursor antes de redirecionar
+        cursor.close()
         conexao.close()
         return redirect("/login")
 
-    # Verificando a senha
     if usuario['senhaUsuario'] != senha_informada:
-        # Senha incorreta
         flash("Senha incorreta", "senha")
-        cursor.close()  # Fechando o cursor antes de redirecionar
+        cursor.close()
         conexao.close()
         return redirect("/login")
 
-    # Se as credenciais estiverem corretas
     session["login"] = True
     session["usuario"] = usuario_informado
 
-    # Query para pegar o nome do cargo e o ID do usuário
+    # Se "lembrar de mim" for marcado, define um cookie
+    if lembrar:
+        resp = redirect("/")
+        resp.set_cookie('usuario', usuario_informado, max_age=timedelta(days=30))  # O cookie dura 30 dias
+        return resp
+
+    # Restante do código para carregar cargo do usuário
     query = """
     SELECT c.nomeCargo, u.idUsuario
     FROM Cargo c
     JOIN usuario u ON c.idCargo = u.idCargo
     WHERE u.nomeUsuario = %s
     """
-
     cursor.execute(query, (usuario_informado,))
-    cargo_data = cursor.fetchone()  # Mudamos para fetchone() para pegar apenas uma linha
+    cargo_data = cursor.fetchone()
 
     if cargo_data:
-        session["cargo"] = cargo_data["nomeCargo"]  # Salvando o nome do cargo na sessão
-        session["idUsuario"] = cargo_data["idUsuario"]  # Armazenando o ID do usuário na sessão
-    else:
-        session["cargo"] = None
+        session["cargo"] = cargo_data["nomeCargo"]
+        session["idUsuario"] = cargo_data["idUsuario"]
+    
+    cursor.close()
+    conexao.close()
 
-    cursor.close()  # Fechando o cursor
-    conexao.close()  # Fechando a conexão
-
-    # Redirecionando com base no cargo
     if session["cargo"] == "Administração":
         return redirect("/adm")
     elif session["cargo"] == "Manutenção":
@@ -143,11 +155,13 @@ def mostrasenha():
 
 @session_blueprint.route("/logout")
 def logout():
-    # Encerrando sessão
     session.pop("login", None)
     session.pop("usuario", None)
     session.pop("cargo", None)
-    return redirect("/login")
+    
+    resp = redirect("/login")
+    resp.delete_cookie('usuario')  # Remove o cookie
+    return resp
 
 # Registrando o blueprint no app
 app.register_blueprint(session_blueprint)
