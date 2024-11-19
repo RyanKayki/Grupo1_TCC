@@ -34,7 +34,7 @@
                                 <a href="/chamadoDetalhes/{{chamado['idChamado']}}" style="text-decoration: none; color: #225656" class="col-9 d-flex">
                                     <div class="col-4 rounded" style="overflow:hidden; max-width: 100px; max-height: 100px;">
                                         {% set placeholder_image = url_for('adm.serve_imageApp', filename='ImagemIcon.png') %}
-                                        {% if chamado.imgChamado %}  
+                                        {% if chamado.imgChamado %}
                                             <img
                                                 src="{{ url_for('adm.serve_image', filename=chamado.imgChamado) }}" 
                                                 class="rounded w-100" style="background-color: #e1e1e1;"
@@ -45,10 +45,14 @@
                                     </div>
                                     <div class="ms-2 fs-6">{{ chamado['nomeItem'] }}<br><small>{{ chamado['nomeLocal'] }}</small></div>
                                 </a>
+                                {% if chamado.nomeStatus == 'Não Respondido' %}
                                 <div class="d-flex justify-content-between">
                                     <div><i class="bi bi-pencil-square mx-2 fs-5" style="cursor: pointer;" onclick="editarChamado('{{ chamado.idChamado }}');"></i></div>
                                     <div><i class="bi bi-trash mx-2 fs-5" style="cursor: pointer;" onclick="apagarChamado('{{ chamado.idChamado }}')"></i></div>
-                            </div>
+                                </div>
+                                {% else %}
+                            <div class="ms-auto d-none"></div> <!-- Oculta os botões quando o status não for "Não Respondido" -->
+                            {% endif %}
                             </div>
                         
                         <div class="col-12 mt-2">
