@@ -1,0 +1,74 @@
+{% extends 'modelAdm.html' %}
+{% block conteudo %}
+
+<button id="toggleButton" class="btn">
+    <ion-icon name="menu-outline"></ion-icon>
+</button>
+<main>
+    <div class="container">
+        <!-- Seção de Seleção de Setor -->
+        <h2 class="section-title pt-4 pb-2">Editar Local</h2>
+        <form method="GET" action="/filtrarLocaledicao">
+            <div class="d-flex justify-content-center mb-3">
+                <div class="me-3">
+                    <label for="setorSelect" class="form-label">Filtrar Por Área:</label>
+                    <select class="form-select" id="setorSelect" name="area" style="width: 200px;">
+                        <option value="" selected disabled>Áreas</option>
+                        {% for sala in salas %}
+                            <option value="{{ sala[0] }}">{{ sala[1] }}</option>
+                        {% endfor %}
+                    </select>                
+                </div>
+                <div class="me-3">
+                    <label for="categoriaSelect" class="form-label">Filtrar Por Categoria:</label>
+                    <select class="form-select" id="categoriaSelect" name="categoria" style="width: 200px;">
+                        <option value="" selected disabled>Categorias</option>
+                        {% for categoria in categorias %}
+                            <option value="{{ categoria[0] }}">{{ categoria[1] }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <button style="height: 3em;" type="submit" class="btn btn-dark mt-4"><i class="bi bi-search"></i> Buscar</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Exibição de resultados filtrados -->
+<div class="container text-center pt-4">
+    {% if locais %}
+        <div class="row">
+            {% for local in locais %}
+                <a href="/edicaoLocal/{{ local[0] }}" class="col-sm-12 col-md-4 mb-3">{{ local[1] }}</a>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p>Nenhum resultado encontrado.</p>
+    {% endif %}
+</div>
+</main>
+
+<style>
+    main {
+        background-color: #F7FCFC;
+        font-family: 'Open Sans', sans-serif;
+    }
+    .card {
+        border: none;
+        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+    }
+    
+    .section-title {
+        color: #225656;
+        font-size: 1.5rem;
+        margin-bottom: 1.5rem;
+        text-align: center;
+    }
+    a {
+        text-decoration: none;
+        color: #225656;
+        font-weight: bold
+    }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+{% endblock %}

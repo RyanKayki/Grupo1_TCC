@@ -1,0 +1,166 @@
+{% extends 'modelTec.html' %}
+
+{% block conteudo %}
+<div class="container">
+    <h1 class="titulo">Manutenções <span class="recuo">Finalizadas</span></h1>
+
+    <!-- Verifica se há chamados finalizados -->
+    {% if chamados %}
+        <div class="card" style="border: 0;">
+            <div class="card-body">
+                <!-- Criando uma lista para armazenar chamados por data -->
+                {% set chamados_por_data = chamados | sort(attribute='concChamado', reverse=true) %}
+
+                <!-- Loop para agrupar chamados por data -->
+                {% for chamado in chamados_por_data %}
+                    {% set data_chamado = chamado.concChamado | data_formatada %}
+
+                    <!-- Verifica se a data já foi adicionada à lista -->
+                    {% if loop.index == 1 or chamados_por_data[loop.index - 2].concChamado | data_formatada != data_chamado %}
+                        <div class="data-container">
+                            <p class="data">{{ data_chamado }}</p>
+                            <div class="linha-separacao"></div> 
+                        </div>
+                    {% endif %}
+
+                    <div class="chamado-grupo">
+                        {% set placeholder_image = url_for('tec.serve_imageApp', filename='ImagemIcon.png') %}
+                        <div class="chamado-card">
+                            <!-- Puxando a imagem do banco de dados -->
+                            <img
+                                src="{{ url_for('tec.serve_image', filename=chamado.imgChamado) }}" 
+                                class="chamado-imagem"
+                                onerror="this.onerror=null; this.src='{{ placeholder_image }}';">
+                            <a href="{{ url_for('tec.tec_more', idChamado=chamado.idChamado) }}" class="verMais">   
+                                <div class="chamado-conteudo">
+                                    <span class="descricao">{{ chamado.nomeItem }}</span>
+                                    <p class="local">Local: {{ chamado.nomeLocal }}</p>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    {% else %}
+        <p class="sem-chamados">Nenhum chamado finalizado até o momento.</p>
+    {% endif %}
+</div>
+<style>
+    body {
+        margin: 0; /* Remove a margem padrão do body */
+        padding: 0; /* Remove o padding padrão do body */
+        height: 100vh; /* Define a altura do body para 100% da altura da tela */
+        display: flex; /* Usado para centralizar o conteúdo */
+        justify-content: center; /* Centraliza horizontalmente */
+        align-items: center; /* Centraliza verticalmente */
+        overflow: hidden;
+    }
+
+    .container {
+        max-width: 100%;
+        width: 100%; /* Faz o contêiner ocupar toda a largura disponível */
+        position: absolute;
+        top: 0; /* Mantém o padding desejado */
+        padding-top: 10px;
+        display: flex; /* Usado para centralizar o conteúdo interno */
+        flex-direction: column; /* Coloca o conteúdo em coluna */
+        align-items: center; /* Centraliza o conteúdo horizontalmente */
+        justify-content: center; /* Centraliza o conteúdo verticalmente */
+        text-align: center; /* Centraliza o texto */
+    }
+
+    .card {
+        max-width: 360px; /* Limita a largura máxima do card */
+        width: 100%; /* Faz o card ocupar toda a largura disponível do contêiner */
+        height: calc(100vh - 260px); /* Define a altura do card */
+        overflow-y: auto; /* Permite rolagem vertical dentro do card */
+        background-color: #e9efef;
+        padding: 10px; /* Adiciona um padding interno */
+    }
+
+    /* Estilização opcional para a barra de rolagem */
+    .card::-webkit-scrollbar {
+        width: 8px;
+    }
+
+    .card::-webkit-scrollbar-thumb {
+        background-color: #225656; /* Cor da barra de rolagem */
+        border-radius: 10px;
+    }
+
+    .verMais {
+        text-decoration: none;
+    }
+
+    .titulo {
+        font-size: 39px;
+        color: #225656;
+        margin-bottom: 20px;
+        font-weight: bold;
+    }
+
+    .recuo {
+        display: inline-block;
+        text-indent: 20px; 
+    }
+
+    .data-container {
+        display: flex;
+        align-items: center;
+        margin-top: 20px; 
+    }
+
+    .data {
+        font-size: 18px; /* Aumenta o tamanho da fonte */
+        color: #333; /* Deixa o texto mais escuro */
+        margin-right: 10px; /* Um pouco mais de espaço */
+        font-weight: bold; /* Torna o texto mais destacado */
+    }
+
+    .linha-separacao {
+        flex-grow: 1; 
+        border-top: 2px solid #000; /* Linha mais espessa e mais escura */
+        padding-bottom: 13px;
+    }
+
+    .chamado-card {
+        display: flex; /* Alinha imagem e texto horizontalmente */
+        align-items: center; /* Centraliza verticalmente */
+        background-color: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        margin-bottom: 15px;
+        padding: 12px;
+        transition: background-color 0.3s;
+    }
+
+    .chamado-imagem {
+        width: 100px; /* Mantém a largura fixa */
+        height: 80px; /* Define uma altura fixa para manter a proporção */
+        background-color: #E0E0E0;
+        border-radius: 8px;
+        margin-right: 15px; /* Espaço entre imagem e texto */
+    }
+
+    .descricao {
+        font-size: 26px;
+        color: #225656;
+        margin-bottom: 2px;
+    }
+
+    .local {
+        font-size: 18px;
+        color: #777;
+        padding-top: 2px;
+    }
+
+    .sem-chamados {
+        text-align: center;
+        font-size: 16px;
+        color: #225656;
+        margin-top: 50%;
+    }
+</style>
+
+{% endblock %}

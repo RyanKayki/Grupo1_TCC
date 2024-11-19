@@ -5,7 +5,7 @@ app = Flask(__name__)
 app.secret_key = "Rhzin"
 
 # Definindo o blueprint
-session_blueprint = Blueprint("session", __name__, template_folder="templates")
+session_blueprint = Blueprint("session", __name__, template_folder="templates", static_folder='src')
 
 #DB CLOUD
 def conecta_database():
@@ -36,11 +36,9 @@ def index():
         if cargo == "Administração":
             return redirect("/adm")
         elif cargo == "Manutenção":
-            return redirect("/TecHome")
-        elif cargo == "Funcionário":
-            return redirect("/FuncHome")
+            return redirect("/tecHome")
         else:
-            return redirect("/login")
+            return redirect("/funcHome")
     else:
         return redirect("/login")
 
@@ -50,48 +48,76 @@ def login_page():
     title = "Login"
     return render_template("login.html", title=title)  # Exibe página de login caso não esteja logado
 
+
+
 @session_blueprint.route("/acesso", methods=['POST'])
 def acesso():
     # Validação de login
     usuario_informado = request.form["usuario"]
     senha_informada = request.form["senha"]
 
+    # Conectando ao banco de dados
     conexao = conecta_database()
     cursor = conexao.cursor(dictionary=True)
+    
+    # Buscando usuário no banco de dados
     cursor.execute('SELECT * FROM usuario WHERE nomeUsuario = %s', (usuario_informado,))
     usuario = cursor.fetchone()
-    cursor.close()  # Fechando o cursor
-    conexao.close()
 
     if usuario is None:
-    # Usuário não cadastrado
+        # Usuário não cadastrado
         flash("Usuário não cadastrado", "usuario")
+        cursor.close()  # Fechando o cursor antes de redirecionar
+        conexao.close()
         return redirect("/login")
 
     if not senha_informada:
-    # Se a senha não for informada
+        # Se a senha não for informada
         flash("Informe a senha", "senha")
+        cursor.close()  # Fechando o cursor antes de redirecionar
+        conexao.close()
         return redirect("/login")
 
+    # Verificando a senha
     if usuario['senhaUsuario'] != senha_informada:
-    # Senha incorreta
+        # Senha incorreta
         flash("Senha incorreta", "senha")
+        cursor.close()  # Fechando o cursor antes de redirecionar
+        conexao.close()
         return redirect("/login")
 
     # Se as credenciais estiverem corretas
     session["login"] = True
     session["usuario"] = usuario_informado
-    session["cargo"] = usuario['cargoUsuario']
 
-    cargo = session['cargo']
-    if cargo == "Administração":
-        return redirect("/adm")
-    elif cargo == "Manutenção":
-        return redirect("/TecHome")
-    elif cargo == "Funcionário":
-        return redirect("/FuncHome")
+    # Query para pegar o nome do cargo e o ID do usuário
+    query = """
+    SELECT c.nomeCargo, u.idUsuario
+    FROM Cargo c
+    JOIN usuario u ON c.idCargo = u.idCargo
+    WHERE u.nomeUsuario = %s
+    """
+
+    cursor.execute(query, (usuario_informado,))
+    cargo_data = cursor.fetchone()  # Mudamos para fetchone() para pegar apenas uma linha
+
+    if cargo_data:
+        session["cargo"] = cargo_data["nomeCargo"]  # Salvando o nome do cargo na sessão
+        session["idUsuario"] = cargo_data["idUsuario"]  # Armazenando o ID do usuário na sessão
     else:
-        return redirect("/login")
+        session["cargo"] = None
+
+    cursor.close()  # Fechando o cursor
+    conexao.close()  # Fechando a conexão
+
+    # Redirecionando com base no cargo
+    if session["cargo"] == "Administração":
+        return redirect("/adm")
+    elif session["cargo"] == "Manutenção":
+        return redirect("/tecHome")
+    else:
+        return redirect("/funcHome")
+
 
 # Rota para recuperação de senha
 @session_blueprint.route('/recupsenha')

@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.8.1/font/bootstrap-icons.min.css" rel="stylesheet">
+    <title>Perfil</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            font-family: Arial, sans-serif; 
+            background-color: #f4f4f4; 
+        }
+        header {
+            background-color: #005c56; 
+            padding: 2%;
+            color: white;
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            width: 100%; 
+            position: fixed;
+            top: 0; 
+            left: 0; 
+        }
+        header h1 {
+            font-size: 25px; 
+            margin: 0; 
+        }
+        header .back-icon {
+            font-size: 24px;
+            cursor: pointer;
+        }
+        .profile-picture {
+            text-align: center; 
+            margin: 80px 0; 
+        }
+        .profile-picture img {
+            width: 10%; 
+            height: 10%; 
+            border-radius: 50%; 
+            border: 0.2% solid #f4f4f4; 
+        }
+        h2 {
+            color: #005c56;
+            margin-top: 8%; 
+            margin-bottom: 2%;
+            font-size: 28px; 
+        }
+        .profile-field {
+            background-color: #e0edeb; 
+            border-radius: 10px; 
+            padding: 1.5%; 
+            margin-bottom: 1%;
+            text-align: left;
+            font-size: 18px; 
+            margin-left: 3%; 
+            margin-right: 3%;
+        }
+        .profile-field label {
+            font-weight: bold; 
+            display: block; 
+            margin-bottom: 1%; 
+        }
+        .profile-field p {
+            margin: 0;
+        }
+        .profile-info {
+            display: flex; 
+            flex-direction: column; 
+        }
+        header img{
+            width: 2.7%;
+            height: 2.7%;
+        }
+        .camera-icon:hover {
+            width: 20px;
+            
+        }
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 18px; 
+            }
+            .profile-field {
+                font-size: 16px; 
+            }
+        }
+
+        @media (max-width: 480px) {
+            header {
+                flex-direction: column;
+                text-align: center;
+            }
+            header h1 {
+                font-size: 16px;
+            }
+            .profile-picture img {
+                width: 80px;
+                height: 80px; 
+            }
+            .profile-field {
+                font-size: 14px;
+                padding: 10px;
+                margin: 5px 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <span class="back-icon">&#8592;</span>
+            <h1>Tio Carlos Conserta</h1> 
+            <img src="../../static/IMG/app/logo_branca.png" alt="">
+        </header>
+        <div class="profile-picture">
+            <h2>Perfil</h2> 
+            <img src="https://via.placeholder.com/120" alt="Foto de perfil"> 
+            <i class="bi bi-camera camera-icon"></i>
+        </div>
+
+        <div class="profile-info">
+            
+            <div class="profile-field full-width">
+                <label>Nome</label>
+                <p>Fernanda Aparecida Almeida Lima</p>
+            </div>
+
+            
+            <div class="profile-field">
+                <label>E-mail</label>
+                <p>fernanda.lima@gmail.com</p>
+            </div>
+
+            
+            <div class="profile-field">
+                <label>Senha</label>
+                <p>********</p>
+            </div>
+
+            
+            <div class="profile-field">
+                <label>Número de telefone</label>
+                <p>15997979799</p>
+            </div>
+
+            
+            <div class="profile-field">
+                <label>Cargo</label>
+                <p>Diretora</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
