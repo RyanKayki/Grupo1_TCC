@@ -29,30 +29,49 @@
 
             <div class="row">
                 {% for chamado in chamados %}
-                <a href="/chamadoDetalhes/{{chamado['idChamado']}}" class="text-decoration-none d-flex col-12 col-md-3 mx-2 my-3 align-items-center justify-content-between" style="color: #225656">
-                    <div class="d-flex flex-column w-100 rounded p-2 justify-content-center align-items-end" style="box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);">
-                        <div class="d-flex">
-                            {% set placeholder_image = url_for('adm.serve_imageApp', filename='ImagemIcon.png') %}
-                            {% if chamado.imgChamado %}
-                                <img
-                                    src="{{ url_for('adm.serve_image', filename=chamado.imgChamado) }}" 
-                                    class="col-4 rounded" style="background-color: #e1e1e1;"
-                                    onerror="this.onerror=null; this.src='{{ placeholder_image }}';">
-                            {% else %}
-                                <img src="{{ placeholder_image }}" alt="Imagem placeholder" class="col-4 rounded" style="background-color: #e1e1e1;">
-                            {% endif %}
-                            <div class="col-8 ms-2 fs-6">{{ chamado['nomeItem'] }}<br><small>{{ chamado['nomeLocal'] }}</small></div>
+                    <div class="d-flex flex-wrap col-12 col-md-3 rounded me-1 p-2 my-3 justify-content-between align-items-center" style="box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);">
+                            <div class="d-flex justify-content-between">
+                                <a href="/chamadoDetalhes/{{chamado['idChamado']}}" style="text-decoration: none; color: #225656" class="col-9 d-flex">
+                                    <div class="col-4 rounded" style="overflow:hidden; max-width: 100px; max-height: 100px;">
+                                        {% set placeholder_image = url_for('adm.serve_imageApp', filename='ImagemIcon.png') %}
+                                        {% if chamado.imgChamado %}  
+                                            <img
+                                                src="{{ url_for('adm.serve_image', filename=chamado.imgChamado) }}" 
+                                                class="rounded w-100" style="background-color: #e1e1e1;"
+                                                onerror="this.onerror=null; this.src='{{ placeholder_image }}';">
+                                        {% else %}
+                                            <img src="{{ placeholder_image }}" alt="Imagem placeholder" class="rounded w-100" style="background-color: #e1e1e1;">
+                                        {% endif %}
+                                    </div>
+                                    <div class="ms-2 fs-6">{{ chamado['nomeItem'] }}<br><small>{{ chamado['nomeLocal'] }}</small></div>
+                                </a>
+                                <div class="d-flex justify-content-between">
+                                    <div><i class="bi bi-pencil-square mx-2 fs-5" style="cursor: pointer;" onclick="editarChamado('{{ chamado.idChamado }}');"></i></div>
+                                    <div><i class="bi bi-trash mx-2 fs-5" style="cursor: pointer;" onclick="apagarChamado('{{ chamado.idChamado }}')"></i></div>
+                            </div>
+                            </div>
+                        
+                        <div class="col-12 mt-2">
+                            <a href="/chamadoDetalhes/{{chamado['idChamado']}}" style="text-decoration: none; color: #225656" class="d-flex justify-content-around">
+                                <div class="col-6">
+                                    {% if chamado.nomeStatus == 'Concluído' %}
+                                        <p style="font-size: 0.9em">{{ chamado.concChamado | admCardData }}</p>
+                                    {% endif %}
+                                </div>
+                                <div class="col-6">
+                                    <span class="badge
+                                        {% if chamado.nomeStatus == 'Não Respondido' %} bg-danger
+                                        {% elif chamado.nomeStatus == 'Respondido' %} bg-success
+                                        {% else %} bg-primary
+                                        {% endif %}
+                                        w-100" style="font-size: 12px;">
+                                        {{ chamado.nomeStatus }}
+                                    </span>
+                                </div>
+                            </a>
                         </div>
-                        <span class="badge 
-                                    {% if chamado.nomeStatus == 'Não Respondido' %} bg-danger
-                                    {% elif chamado.nomeStatus == 'Respondido' %} bg-success
-                                    {% else %} bg-primary
-                                    {% endif %} 
-                                    py-1" style="font-size: 12px;">
-                                    {{ chamado.nomeStatus }}
-                        </span>
+                        </a>
                     </div>
-                </a>
                 {% endfor %}
             </div>
         {% endfor %}
@@ -96,15 +115,6 @@
         margin-bottom: 20px;
     }
 
-    .box-details {
-        display: flex;
-        align-items: center;
-    }
-
-    .box-status {
-        font-size: 14px;
-    }
-
     .box-status.concluido {
         color: green;
     }
@@ -136,5 +146,36 @@
         margin-right: 10px;
     }
 </style>
+<script>
+    function editarChamado(idChamado) {
+        // Verifica se o idChamado é um número válido
+        if (idChamado) {
+            window.location.href = `/editarChamado/${idChamado}`;
+        } else {
+            console.error('ID do chamado inválido para edição');
+        }
+    }
 
+    function apagarChamado(idChamado) {
+        if (idChamado && confirm("Tem certeza que deseja apagar este chamado?")) {
+            fetch(`/apagarChamado/${idChamado}`, {
+                method: 'DELETE'
+            })
+            .then(response => {
+                if (response.ok) {
+                    alert("Chamado apagado com sucesso.");
+                    location.reload(); // Atualiza a página para refletir a mudança
+                } else {
+                    alert("Erro ao apagar o chamado.");
+                }
+            })
+            .catch(error => {
+                console.error('Erro ao apagar o chamado:', error);
+                alert("Erro ao tentar apagar o chamado.");
+            });
+        } else {
+            console.error('ID do chamado inválido para exclusão');
+        }
+    }
+</script>
 {% endblock %}

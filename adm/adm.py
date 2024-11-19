@@ -758,7 +758,7 @@ def DetalheChamado(id_chamado):
 
             # Consulta para pegar as respostas associadas ao chamado
             query_respostas = """
-                    SELECT r.descResposta, r.dataResposta, u.nomeUsuario
+                    SELECT r.descResposta,   u.nomeUsuario
                     FROM resposta r
                     JOIN usuario u ON r.idUsuario = u.idUsuario
                     WHERE r.idChamado = %s
@@ -786,7 +786,7 @@ def registroChamado():
             cursor = conexao.cursor(dictionary=True)
 
             query = """
-                SELECT c.idChamado, c.descChamado, c.dataChamado, u.nomeUsuario, l.nomeLocal, i.nomeItem, c.imgChamado, s.nomeStatus
+                SELECT c.idChamado, c.descChamado, c.dataChamado, u.nomeUsuario, l.nomeLocal, i.nomeItem, c.imgChamado, c.concChamado, s.nomeStatus
                 FROM chamado c
                 JOIN usuario u ON c.idUsuario = u.idUsuario
                 JOIN local l ON c.idLocal = l.idLocal
@@ -838,7 +838,7 @@ def filtrarChamados(filtro, valor):
             if filtro == "item":
             
                 query = """
-                    SELECT c.idChamado, c.descChamado, c.dataChamado, u.nomeUsuario, l.nomeLocal, i.nomeItem, c.imgChamado, s.nomeStatus
+                    SELECT c.idChamado, c.descChamado, c.dataChamado, u.nomeUsuario, l.nomeLocal, i.nomeItem, c.imgChamado, c.concChamado, s.nomeStatus
                     FROM chamado c
                     JOIN usuario u ON c.idUsuario = u.idUsuario
                     JOIN local l ON c.idLocal = l.idLocal
@@ -855,7 +855,7 @@ def filtrarChamados(filtro, valor):
             elif filtro == "local":
 
                 query = """
-                    SELECT c.idChamado, c.descChamado, c.dataChamado, u.nomeUsuario, l.nomeLocal, i.nomeItem, c.imgChamado, s.nomeStatus
+                    SELECT c.idChamado, c.descChamado, c.dataChamado, u.nomeUsuario, l.nomeLocal, i.nomeItem, c.imgChamado, c.concChamado, s.nomeStatus
                     FROM chamado c
                     JOIN usuario u ON c.idUsuario = u.idUsuario
                     JOIN local l ON c.idLocal = l.idLocal
@@ -873,7 +873,7 @@ def filtrarChamados(filtro, valor):
             elif filtro == "status":
 
                 query = """
-                    SELECT c.idChamado, c.descChamado, c.dataChamado, u.nomeUsuario, l.nomeLocal, i.nomeItem, c.imgChamado, s.nomeStatus
+                    SELECT c.idChamado, c.descChamado, c.dataChamado, u.nomeUsuario, l.nomeLocal, i.nomeItem, c.imgChamado, c.concChamado, s.nomeStatus
                     FROM chamado c
                     JOIN usuario u ON c.idUsuario = u.idUsuario
                     JOIN local l ON c.idLocal = l.idLocal
@@ -898,7 +898,7 @@ def filtrarChamados(filtro, valor):
                 valor = session.get('idUsuario')
                 
                 query = """
-                    SELECT c.idChamado, c.descChamado, c.dataChamado, u.nomeUsuario, l.nomeLocal, i.nomeItem, c.imgChamado, s.nomeStatus
+                    SELECT c.idChamado, c.descChamado, c.dataChamado, u.nomeUsuario, l.nomeLocal, i.nomeItem, c.imgChamado, c.concChamado, s.nomeStatus
                     FROM chamado c
                     JOIN usuario u ON c.idUsuario = u.idUsuario
                     JOIN local l ON c.idLocal = l.idLocal
@@ -910,7 +910,7 @@ def filtrarChamados(filtro, valor):
 
                 cursor.execute(query, (valor,))
                 chamados = cursor.fetchall()
-
+                
                 title = "Meus chamados"
 
             # Organizando por ano e data formatada (sem o ano na chave de data)
@@ -998,6 +998,21 @@ def data_formatada(data):
 
     return f"{dia_semana}, {dia} de {mes}"
 
+
+@adm_blueprint.app_template_filter('admCardData')  # Use app_template_filter para registrar no Blueprint
+def data_formatada_card(data):
+    if isinstance(data, str):
+        if data == 'Data não disponível':
+            return data  # Retorna a mensagem diretamente
+        try:
+            data_datetime = datetime.strptime(data, "%Y-%m-%d")  # Converte para datetime
+        except ValueError:
+            return 'Data inválida'  # Retorna uma mensagem de erro caso a conversão falhe
+    else:
+        data_datetime = data
+
+    # Formata a data como xx/xx/xx às xx:xx
+    return data_datetime.strftime("%d/%m/%y às %H:%M")
 ################### PESQUISAS ###############################
 #Função de pesquisar locais
 @adm_blueprint.route('/pesquisaLocal/<idArea>', methods=['POST'])
