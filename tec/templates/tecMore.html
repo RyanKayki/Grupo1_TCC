@@ -10,10 +10,10 @@
 <a href="{{ url_for('tec.tec_home') if chamado.nomeStatus != 'Concluído' else url_for('tec.tec_task') }}" class="back-button">
   <img src="{{ url_for('tec.serve_imageApp', filename='ButtonBack.png') }}" alt="Voltar" class="button-image">
 </a>
-<div class="container" style="display: none;">
+<div class="w-100 d-flex flex-column align-items-center mt-3 p-2" style="display: none; overflow-y: auto; max-height: 90vh;">
 
     {% set placeholder_image = url_for('tec.serve_imageApp', filename='ImagemIcon.png') %}
-    <div class="imageText">
+    <div class="rounded py-3 px-1 text-center w-100 mb-2" style="max-width: 400px; background-color: #e9efef;">
         <div class="image-container">
             <img src="{{ url_for('tec.serve_image', filename=chamado.imgChamado if chamado.imgChamado else 'ImagemIcon.png') }}" 
                  alt="{{ chamado.tituloChamado }}" 
@@ -155,6 +155,10 @@
   }
 }
 
+body{
+    background-color: #fff;
+}
+
 .content {
   display: none;
 }
@@ -167,21 +171,9 @@
   display: block;
 }
 
-  .container {
-      max-width: 100%;
-      margin: auto;
-      padding: 20px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      position: relative;
-      overflow-y: auto;
-      max-height: 90vh;
-      margin-top: 40px;
-  }
-  .respostas-list {
-    list-style-type: none;
-    padding: 0;
+.respostas-list {
+list-style-type: none;
+padding: 0;
 }
 
 .resposta-item {
@@ -189,16 +181,6 @@
     padding: 10px;
     margin-bottom: 10px;
     border-radius: 5px;
-}
-
-  .imageText {
-    border-radius: 20px;
-    padding: 1rem;
-    text-align: center;
-    width: 100%;
-    max-width: 400px;
-    background-color: #8cb1b1;
-    margin-bottom: 20px; /* Manter a margem inferior se necessário */
 }
 
 .image-container {
