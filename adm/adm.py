@@ -159,21 +159,18 @@ def editar_chamado(idChamado):
             cursor = conexao.cursor(dictionary=True)
 
             # Carregar o chamado que será editado
-            cursor.execute("""
-                SELECT * FROM chamado WHERE idChamado = %s
-            """, (idChamado,))
+            cursor.execute("SELECT * FROM chamado WHERE idChamado = %s", (idChamado,))
             chamado = cursor.fetchone()
 
-            # Carregar dados adicionais, como areas, locais e itens
-            cursor.execute("SELECT * FROM `local`")
+            # Carregar dados adicionais, como áreas, locais e itens
+            cursor.execute("SELECT * FROM local")
             locais = cursor.fetchall()
 
             cursor.execute("SELECT * FROM item")
             itens = cursor.fetchall()
 
             if request.method == 'POST':
-                # Atualizar os dados do chamado com os novos valores
-                novo_desc = request.form.get('descChamado')
+                novo_desc = request.form.get('descricao')
                 novo_local = request.form.get('local')
                 novo_item = request.form.get('item')
 
@@ -186,9 +183,9 @@ def editar_chamado(idChamado):
 
                 conexao.commit()
                 flash('Chamado atualizado com sucesso!', 'success')
-                return redirect(url_for('func.func_home'))
+                return redirect(url_for('adm.adm'))
 
-            return render_template('editarChamados.html', chamado=chamado, title='Editar chamado', locais=locais, itens=itens)
+            return render_template('editarChamados.html', chamado=chamado, locais=locais, itens=itens)
 
         finally:
             conexao.close()
@@ -785,27 +782,31 @@ def registroChamado():
             cursor = conexao.cursor(dictionary=True)
 
             query = """
-                SELECT c.idChamado, c.descChamado, c.dataChamado, u.nomeUsuario, l.nomeLocal, i.nomeItem, c.imgChamado, c.concChamado, s.nomeStatus
+                SELECT c.idChamado, c.descChamado, c.dataChamado, u.nomeUsuario, l.nomeLocal, i.nomeItem, c.imgChamado, c.concChamado, s.nomeStatus,u.idUsuario, r.dataResposta
                 FROM chamado c
                 JOIN usuario u ON c.idUsuario = u.idUsuario
                 JOIN local l ON c.idLocal = l.idLocal
                 JOIN item i ON c.idItem = i.idItem
                 JOIN status s ON c.idStatus = s.idStatus
-                ORDER BY c.dataChamado DESC
+                LEFT JOIN resposta r ON r.idChamado = c.idChamado
+                ORDER BY c.dataChamado DESC          
             """
             cursor.execute(query)
             chamados = cursor.fetchall()
             title = "Registro de Chamados"
             titulo_pagina = "Registro de Chamados"
 
+            idUsuario_logado = session.get("idUsuario")
+            
             # Organizando por ano e data formatada (sem o ano na chave de data)
             chamados_por_ano = defaultdict(lambda: defaultdict(list))
 
             # Verifica se há chamados para o usuário logado
             if not chamados:
                 flash("Nenhum chamado cadastrado no momento.", "info")
-                return render_template("listaChamados.html", chamados_por_ano={}, title=title, titulo_pagina=titulo_pagina, login=True)
-            
+                return render_template("listaChamados.html", chamados_por_ano={}, title=title, titulo_pagina=titulo_pagina,idUsuario_logado=idUsuario_logado, login=True)
+
+
             for chamado in chamados:
                 data = chamado['dataChamado']
                 dia_semana = dias_da_semana[data.weekday()]
@@ -819,7 +820,7 @@ def registroChamado():
                 # Agrupar chamados por ano e por data
                 chamados_por_ano[ano][data_formatada].append(chamado)
 
-            return render_template("listaChamados.html", chamados_por_ano=chamados_por_ano, titulo_pagina=titulo_pagina, title=title, login=True)
+            return render_template("listaChamados.html", chamados_por_ano=chamados_por_ano, titulo_pagina=titulo_pagina, idUsuario_logado=idUsuario_logado, title=title, login=True)
         finally:
             conexao.close()
     else:
@@ -837,12 +838,13 @@ def filtrarChamados(filtro, valor):
             if filtro == "item":
             
                 query = """
-                    SELECT c.idChamado, c.descChamado, c.dataChamado, u.nomeUsuario, l.nomeLocal, i.nomeItem, c.imgChamado, c.concChamado, s.nomeStatus
+                    SELECT c.idChamado, c.descChamado, c.dataChamado, u.nomeUsuario, l.nomeLocal, i.nomeItem, c.imgChamado, c.concChamado, s.nomeStatus, r.dataResposta
                     FROM chamado c
                     JOIN usuario u ON c.idUsuario = u.idUsuario
                     JOIN local l ON c.idLocal = l.idLocal
                     JOIN item i ON c.idItem = i.idItem
                     JOIN status s ON c.idStatus = s.idStatus
+                    LEFT JOIN resposta r ON r.idChamado = c.idChamado
                     WHERE c.idItem = (SELECT idItem FROM item WHERE nomeItem = %s)
                     ORDER BY c.dataChamado DESC
                 """
@@ -854,12 +856,13 @@ def filtrarChamados(filtro, valor):
             elif filtro == "local":
 
                 query = """
-                    SELECT c.idChamado, c.descChamado, c.dataChamado, u.nomeUsuario, l.nomeLocal, i.nomeItem, c.imgChamado, c.concChamado, s.nomeStatus
+                    SELECT c.idChamado, c.descChamado, c.dataChamado, u.nomeUsuario, l.nomeLocal, i.nomeItem, c.imgChamado, c.concChamado, s.nomeStatus, r.dataResposta
                     FROM chamado c
                     JOIN usuario u ON c.idUsuario = u.idUsuario
                     JOIN local l ON c.idLocal = l.idLocal
                     JOIN item i ON c.idItem = i.idItem
                     JOIN status s ON c.idStatus = s.idStatus
+                    LEFT JOIN resposta r ON r.idChamado = c.idChamado
                     WHERE c.idLocal = (SELECT idLocal FROM local WHERE nomeLocal = %s)
                     ORDER BY c.dataChamado DESC
                 """ 
@@ -872,12 +875,13 @@ def filtrarChamados(filtro, valor):
             elif filtro == "status":
 
                 query = """
-                    SELECT c.idChamado, c.descChamado, c.dataChamado, u.nomeUsuario, l.nomeLocal, i.nomeItem, c.imgChamado, c.concChamado, s.nomeStatus
+                    SELECT c.idChamado, c.descChamado, c.dataChamado, u.nomeUsuario, l.nomeLocal, i.nomeItem, c.imgChamado, c.concChamado, s.nomeStatus, r.dataResposta
                     FROM chamado c
                     JOIN usuario u ON c.idUsuario = u.idUsuario
                     JOIN local l ON c.idLocal = l.idLocal
                     JOIN item i ON c.idItem = i.idItem
                     JOIN status s ON c.idStatus = s.idStatus
+                    LEFT JOIN resposta r ON r.idChamado = c.idChamado
                     WHERE c.idStatus = %s
                     ORDER BY c.dataChamado DESC
                 """ 
@@ -897,12 +901,13 @@ def filtrarChamados(filtro, valor):
                 valor = session.get('idUsuario')
                 
                 query = """
-                    SELECT c.idChamado, c.descChamado, c.dataChamado, u.nomeUsuario, l.nomeLocal, i.nomeItem, c.imgChamado, c.concChamado, s.nomeStatus
+                    SELECT c.idChamado, c.descChamado, c.dataChamado, u.nomeUsuario, l.nomeLocal, i.nomeItem, c.imgChamado, c.concChamado, s.nomeStatus, r.dataResposta
                     FROM chamado c
                     JOIN usuario u ON c.idUsuario = u.idUsuario
                     JOIN local l ON c.idLocal = l.idLocal
                     JOIN item i ON c.idItem = i.idItem
                     JOIN status s ON c.idStatus = s.idStatus
+                    LEFT JOIN resposta r ON r.idChamado = c.idChamado
                     WHERE c.idUsuario = %s
                     ORDER BY c.dataChamado DESC
                 """ 
@@ -911,6 +916,8 @@ def filtrarChamados(filtro, valor):
                 chamados = cursor.fetchall()
                 
                 title = "Meus chamados"
+
+            idUsuario_logado = session.get("idUsuario")
 
             # Organizando por ano e data formatada (sem o ano na chave de data)
             chamados_por_ano = defaultdict(lambda: defaultdict(list))
@@ -932,12 +939,7 @@ def filtrarChamados(filtro, valor):
                 flash(f"Nenhum chamado encontrado.", "info")
                 chamados_por_ano = {}
 
-            return render_template(
-                "listaChamados.html",
-                chamados_por_ano=chamados_por_ano,
-                title=title,
-                login=True
-            )
+            return render_template("listaChamados.html", chamados_por_ano=chamados_por_ano, idUsuario_logado=idUsuario_logado, title=title, login=True)
         finally:
             conexao.close()
     else:

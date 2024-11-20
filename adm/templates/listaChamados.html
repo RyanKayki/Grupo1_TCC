@@ -45,23 +45,29 @@
                                     </div>
                                     <div class="ms-2 fs-6">{{ chamado['nomeItem'] }}<br><small>{{ chamado['nomeLocal'] }}</small></div>
                                 </a>
-                                {% if chamado.nomeStatus == 'Não Respondido' %}
+                            {% if chamado.idUsuario == idUsuario_logado and chamado.nomeStatus == 'Não Respondido' %}
                                 <div class="d-flex justify-content-between">
-                                    <div><i class="bi bi-pencil-square mx-2 fs-5" style="cursor: pointer;" onclick="editarChamado('{{ chamado.idChamado }}');"></i></div>
-                                    <div><i class="bi bi-trash mx-2 fs-5" style="cursor: pointer;" onclick="apagarChamado('{{ chamado.idChamado }}')"></i></div>
+                                    <div>
+                                        <i class="bi bi-pencil-square mx-2 fs-5" style="cursor: pointer;" onclick="editarChamado('{{ chamado.idChamado }}');"></i>
+                                    </div>
+                                    <div>
+                                        <i class="bi bi-trash mx-2 fs-5" style="cursor: pointer;" onclick="apagarChamado('{{ chamado.idChamado }}')"></i>
+                                    </div>
                                 </div>
-                                {% else %}
-                            <div class="ms-auto d-none"></div> <!-- Oculta os botões quando o status não for "Não Respondido" -->
-                            {% endif %}
+                            {% else %}
+                                <div class="ms-auto d-none"></div> <!-- Oculta os botões -->
+                            {% endif %}                                
                             </div>
-                        
                         <div class="col-12 mt-2">
                             <a href="/chamadoDetalhes/{{chamado['idChamado']}}" style="text-decoration: none; color: #225656" class="d-flex justify-content-around">
                                 <div class="col-6">
                                     {% if chamado.nomeStatus == 'Concluído' %}
                                         <p style="font-size: 0.9em">{{ chamado.concChamado | admCardData }}</p>
                                     {% endif %}
-                                </div>
+                                    {% if chamado.nomeStatus == 'Respondido' and chamado.dataResposta is not none %}
+                                        <p style="font-size: 0.9em">{{ chamado.dataResposta | admCardData }}</p>
+                                    {% endif %}
+                                </div>                            
                                 <div class="col-6">
                                     <span class="badge
                                         {% if chamado.nomeStatus == 'Não Respondido' %} bg-danger
