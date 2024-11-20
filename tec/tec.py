@@ -1,6 +1,7 @@
-from flask import render_template, Blueprint, redirect, send_from_directory, request, jsonify, abort
+from flask import render_template, Blueprint, redirect, send_from_directory, request, jsonify, session
 from session.session import verifica_sessao
 from connection.connection import conecta_database  # Importando corretamente
+from session.session import verifica_sessao
 import os
 from datetime import datetime
 
@@ -181,7 +182,7 @@ def add_response(idChamado):
         resposta = data.get('resposta')
 
         # Recupera o idUsuario da sessão
-        idUsuario = verifica_sessao()  # Ou outra maneira de recuperar o ID do usuário logado
+        idUsuario = session.get('idUsuario')  # Ou outra maneira de recuperar o ID do usuário logado
 
         # Define a data atual
         data_atual = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
