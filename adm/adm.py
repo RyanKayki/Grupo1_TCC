@@ -834,11 +834,12 @@ def filtrarChamados(filtro, valor):
         try:
             conexao = conecta_database()
             cursor = conexao.cursor(dictionary=True)
+            idUsuario_logado = session.get("idUsuario")
 
             if filtro == "item":
             
                 query = """
-                    SELECT c.idChamado, c.descChamado, c.dataChamado, u.nomeUsuario, l.nomeLocal, i.nomeItem, c.imgChamado, c.concChamado, s.nomeStatus, r.dataResposta
+                    SELECT c.idChamado, c.descChamado, c.dataChamado, u.nomeUsuario, l.nomeLocal, i.nomeItem, c.imgChamado, c.concChamado, s.nomeStatus, r.dataResposta, c.idUsuario
                     FROM chamado c
                     JOIN usuario u ON c.idUsuario = u.idUsuario
                     JOIN local l ON c.idLocal = l.idLocal
@@ -856,7 +857,7 @@ def filtrarChamados(filtro, valor):
             elif filtro == "local":
 
                 query = """
-                    SELECT c.idChamado, c.descChamado, c.dataChamado, u.nomeUsuario, l.nomeLocal, i.nomeItem, c.imgChamado, c.concChamado, s.nomeStatus, r.dataResposta
+                    SELECT c.idChamado, c.descChamado, c.dataChamado, u.nomeUsuario, l.nomeLocal, i.nomeItem, c.imgChamado, c.concChamado, s.nomeStatus, r.dataResposta, c.idUsuario
                     FROM chamado c
                     JOIN usuario u ON c.idUsuario = u.idUsuario
                     JOIN local l ON c.idLocal = l.idLocal
@@ -875,7 +876,7 @@ def filtrarChamados(filtro, valor):
             elif filtro == "status":
 
                 query = """
-                    SELECT c.idChamado, c.descChamado, c.dataChamado, u.nomeUsuario, l.nomeLocal, i.nomeItem, c.imgChamado, c.concChamado, s.nomeStatus, r.dataResposta
+                    SELECT c.idChamado, c.descChamado, c.dataChamado, u.nomeUsuario, l.nomeLocal, i.nomeItem, c.imgChamado, c.concChamado, s.nomeStatus, r.dataResposta, c.idUsuario
                     FROM chamado c
                     JOIN usuario u ON c.idUsuario = u.idUsuario
                     JOIN local l ON c.idLocal = l.idLocal
@@ -901,7 +902,7 @@ def filtrarChamados(filtro, valor):
                 valor = session.get('idUsuario')
                 
                 query = """
-                    SELECT c.idChamado, c.descChamado, c.dataChamado, u.nomeUsuario, l.nomeLocal, i.nomeItem, c.imgChamado, c.concChamado, s.nomeStatus, r.dataResposta
+                    SELECT c.idChamado, c.descChamado, c.dataChamado, u.nomeUsuario, l.nomeLocal, i.nomeItem, c.imgChamado, c.concChamado, s.nomeStatus, r.dataResposta, c.idUsuario
                     FROM chamado c
                     JOIN usuario u ON c.idUsuario = u.idUsuario
                     JOIN local l ON c.idLocal = l.idLocal
@@ -917,7 +918,6 @@ def filtrarChamados(filtro, valor):
                 
                 title = "Meus chamados"
 
-            idUsuario_logado = session.get("idUsuario")
 
             # Organizando por ano e data formatada (sem o ano na chave de data)
             chamados_por_ano = defaultdict(lambda: defaultdict(list))
