@@ -6,6 +6,7 @@ import uuid
 from datetime import datetime
 import ast # Biblioteca para converter string em dicionário
 from collections import defaultdict # permite renderizar o ano apenas uma vez quando o ano muda.
+from werkzeug.utils import secure_filename
 
 # Definindo o blueprint para administração
 adm_blueprint = Blueprint("adm", __name__, template_folder="templates")
@@ -508,35 +509,46 @@ def cadLocal():
 
 
 # Rota para perfil
-@adm_blueprint.route("/perfil")
+@adm_blueprint.route("/perfil", methods=["GET", "POST"])
 def perfil():
     if verifica_sessao():
-        # Obter o idUsuario da sessão
-        id_usuario = session.get('idUsuario')
-        if id_usuario is None:
-            flash('Você precisa estar logado para acessar o perfil.', 'error')
-            return redirect('/login')
-
-        # Conectar ao banco e buscar dados do usuário logado
         conexao = conecta_database()
         cursor = conexao.cursor(dictionary=True)
 
-        try:
-            query_usuario = """
-                SELECT u.nomeUsuario, u.emailUsuario, u.numeroUsuario, u.imgUsuario, c.nomeCargo
-                FROM usuario u
-                JOIN cargo c ON u.idCargo = c.idCargo
-                WHERE u.idUsuario = %s
-            """
-            cursor.execute(query_usuario, (id_usuario,))
-            usuario = cursor.fetchone()  # Obtemos um dicionário com os dados do usuário
+        if request.method == "POST":
+            # Processar atualização da foto de perfil
+            nova_foto = request.files.get("fotoPerfil")
+            if nova_foto and nova_foto.filename:
+                # Buscar a foto atual do perfil
+                cursor.execute('SELECT imgUsuario FROM usuario WHERE idUsuario = %s', (session['idUsuario'],))
+                usuario = cursor.fetchone()
 
-            # Renderizar o template com os dados do usuário
-            title = "Perfil"
-            return render_template("perfil.html", title=title, login=True, usuario=usuario)
+                # Excluir a foto antiga
+                if usuario and usuario['imgUsuario']:
+                    try:
+                        os.remove(os.path.join("src/img/usuarios", usuario['imgUsuario']))
+                    except FileNotFoundError:
+                        pass  # Continua mesmo se o arquivo não existir
 
-        finally:
+                # Salvar a nova foto
+                nome_foto = f"{session['idUsuario']}_{secure_filename(nova_foto.filename)}"
+                caminho_foto = os.path.join("src/img/usuarios", nome_foto)
+                nova_foto.save(caminho_foto)
+
+                # Atualizar o banco de dados com o novo caminho da foto
+                cursor.execute('UPDATE usuario SET imgUsuario = %s WHERE idUsuario = %s', (nome_foto, session['idUsuario']))
+                conexao.commit()
+
             conexao.close()
+            return redirect("/perfil")
+
+        elif request.method == "GET":
+            # Buscar dados do perfil para exibir
+            cursor.execute('SELECT u.nomeUsuario, u.emailUsuario, u.numeroUsuario, u.imgUsuario, u.senhaUsuario, c.nomeCargo FROM usuario u LEFT JOIN cargo c ON u.idCargo = c.idCargo WHERE idUsuario = %s', (session['idUsuario'],))
+            usuario = cursor.fetchone()
+            conexao.close()
+            return render_template("perfil.html", usuario=usuario, login=True)
+
     else:
         return redirect("/login")
 

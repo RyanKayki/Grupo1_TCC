@@ -1,11 +1,16 @@
 {% extends 'modelAdm.html' %}
 {% block conteudo %}
 
-<button id="toggleButton" class="btn" style="margin: 0; padding: 0;">
+<div class="loader-container">
+    <div class="loader"></div>
+    <div class="loader-text">Carregando...</div>
+  </div>
+
+<button id="toggleButton" class="btn-menu" style="margin: 0; padding: 0; display: none;">
     <ion-icon name="menu-outline"></ion-icon>
 </button>
 
-<div class="container">
+<div class="container" style="display: none;">
     <h1>{{ title }}</h1>
 
     <!-- Mensagem de flash para o caso de não haver chamados -->
@@ -157,6 +162,13 @@
     }
 </style>
 <script>
+    window.addEventListener('load', function() {
+        setTimeout(function() {
+            document.querySelector('.loader-container').style.display = 'none';
+            document.querySelector('.container').style.display = 'block';
+            document.querySelector('.btn-menu').style.display = 'flex';
+        }, 500); 
+    });
     function editarChamado(idChamado) {
         // Verifica se o idChamado é um número válido
         if (idChamado) {
