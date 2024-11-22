@@ -7,29 +7,29 @@
   <div class="loader-text">Carregando...</div>
 </div>
 
-<a href="{{ url_for('tec.tec_home') if chamado.nomeStatus != 'Concluído' else url_for('tec.tec_task') }}" class="back-button">
+<a href="{{ url_for('tec.tec_home') if chamado.nomeStatus != 'Concluído' else url_for('tec.tec_task') }}" class="pt-2 px-1">
   <img src="{{ url_for('tec.serve_imageApp', filename='ButtonBack.png') }}" alt="Voltar" class="button-image">
 </a>
-<div class="w-100 d-flex flex-column align-items-center mt-3 p-2" style="display: none; overflow-y: auto; max-height: 90vh;">
+<div class="w-100 container-show flex-column align-items-center" style="display: none; overflow-y: auto; max-height: 90vh;">
 
     {% set placeholder_image = url_for('tec.serve_imageApp', filename='ImagemIcon.png') %}
     <div class="rounded py-3 px-1 text-center w-100 mb-2" style="max-width: 400px; background-color: #e9efef;">
-        <div class="image-container">
+        <div class="image-container p-1">
             <img src="{{ url_for('tec.serve_image', filename=chamado.imgChamado if chamado.imgChamado else 'ImagemIcon.png') }}" 
                  alt="{{ chamado.tituloChamado }}" 
-                 class="bulb-image" 
+                 class="bulb-image w-100" 
                  onerror="this.onerror=null; this.src='{{ placeholder_image }}';">
         </div>
-        <h2 class="title pt-2">{{ chamado.nomeItem }}</h2>
+        <h2 style="color:#225656;" class="fw-bold fs-1 pt-2">{{ chamado.nomeItem }}</h2>
     </div>
 
     <!-- Detalhes da manutenção -->
-    <div class="details-container">
-        <p class="descricao">{{ chamado.descChamado }}</p>
-        <p class="local">Sala: {{ chamado.nomeLocal }}</p>
+    <div class="text-center w-75">
+        <p class="descricao fs-2">{{ chamado.descChamado }}</p>
+        <p class="local fs-2">Sala: {{ chamado.nomeLocal }}</p>
 
         <!-- Botão para exibir/ocultar respostas -->
-        <button id="toggle-responses-btn" class="button-show-answer" onclick="toggleResponses()">
+        <button id="toggle-responses-btn" class="button-show-answer w-100" onclick="toggleResponses()">
             Mostrar Respostas
         </button>
         <div id="responses-list" style="display: none;">
@@ -51,9 +51,12 @@
     <!-- Campo para adicionar resposta -->
     <div id="responses-container"></div>
 
-    <div class="response-section">
+    <div class="w-75">
         {% if chamado.nomeStatus != 'Concluído' %}
-            <button class="btn-add" onclick="addResponseField()">Adicionar Resposta <i class="plus-icon">+</i></button>
+            <div>
+                <button class="btn-add" onclick="addResponseField()">Adicionar Resposta</button>
+                <i class="plus-icon">+</i>
+            </div>
         {% endif %}
     </div>
 
@@ -196,27 +199,18 @@ padding: 0;
       border: 1px solid #225656;
   }
   .button-show-answer {
-    background-color: #225656;
-      color: white;
+    background-color: #d3dddd;
       border: none;
       border-radius: 10px;
       padding: 10px 20px;
-      font-size: 16px;
+      font-size: 24px;
       cursor: pointer;
-      width: 100%;
-      max-width: 250px;
       margin-top: 10px;
   }
   .details-container {
       text-align: center;
-      max-width: 400px;
   }
 
-  .title {
-      font-size: 24px;
-      color: #225656;
-      font-weight: bold;
-  }
 
   .descricao {
       font-size: 18px;
@@ -230,16 +224,19 @@ padding: 0;
   }
 
   .btn-add, .btn-finalizar, .btn-finalizar-confirm, .btn-cancel {
-      background-color: #225656; /* Cor do fundo */
-      color: white; /* Cor do texto */
+      background-color: #d3dddd; /* Cor do fundo */
       border: none; /* Sem borda */
       border-radius: 10px; /* Bordas arredondadas */
       padding: 10px 20px; /* Espaçamento interno */
-      font-size: 16px; /* Tamanho da fonte */
+      font-size: 24px; /* Tamanho da fonte */
       cursor: pointer; /* Cursor de ponteiro */
       width: 100%; /* Largura total */
-      max-width: 250px; /* Largura máxima */
       margin-top: 10px; /* Margem superior */
+  }
+
+  .btn-finalizar{
+    background-color: #225656;
+    color: #fff;
   }
 
   .response-input {
@@ -285,12 +282,6 @@ padding: 0;
       margin-top: 20px;
   }
 
-  .back-button {
-      position: absolute;
-      top: 20px;
-      left: 20px;
-  }
-
   .button-image {
       width: 40px;
       height: auto;
@@ -332,7 +323,7 @@ padding: 0;
 window.addEventListener('load', function() {
         setTimeout(function() {
             document.querySelector('.loader-container').style.display = 'none';
-            document.querySelector('.container').style.display = 'flex';
+            document.querySelector('.container-show').style.display = 'flex';
         }, 1000); 
     });
 
