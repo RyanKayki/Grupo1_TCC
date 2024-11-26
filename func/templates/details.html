@@ -1,6 +1,11 @@
 {% extends 'modelFunc.html' %}
 {% block conteudo %}
-    
+
+<div class="loader-container">
+    <div class="loader"></div>
+    <div class="loader-text">Carregando...</div>
+  </div>
+  
     <div class="container d-flex flex-column align-items-center content">
         <div class="d-flex flex-column align-items-center mt-3">
             {% set placeholder_image = url_for('func.serve_imageApp', filename='ImagemIcon.png') %}

@@ -3,6 +3,8 @@ from session.session import verifica_sessao
 from connection.connection import conecta_database  # Importando corretamente
 import os, uuid
 from datetime import datetime
+from werkzeug.utils import secure_filename
+
 
 func_blueprint = Blueprint("func", __name__, template_folder="templates")
 
@@ -138,7 +140,7 @@ def editar_chamado(idChamado):
                 flash('Chamado atualizado com sucesso!', 'success')
                 return redirect(url_for('func.func_home'))
 
-            return render_template('editarCham.html', chamado=chamado, title='Editar chamado', locais=locais, itens=itens)
+            return render_template('editarCham.html', chamado=chamado, title='Editar chamado', locais=locais, itens=itens, login=True)
 
         finally:
             conexao.close()
@@ -256,43 +258,54 @@ def filtrarItens(idLocal):
     # Retorna os itens como JSON
     return jsonify(itens)
 
-# Rota do perfil do funcionário com GET e POST
-@func_blueprint.route("/Perfil_funcionario", methods=['GET', 'POST'])
+
+@func_blueprint.route("/Perfil_funcionario", methods=["GET", "POST"])
 def perfil_func():
     if verifica_sessao():
-        if request.method == 'POST':
-            imagem = request.files.get('imagem')
-            if imagem:
-                # Gera nome de arquivo único para imagem
-                id_foto = str(uuid.uuid4().hex)
-                filename = f"{id_foto}.png"
-                caminho_imagem = os.path.join(IMG_FOLDER, 'usuarios', filename)
-                imagem.save(caminho_imagem)
+        conexao = conecta_database()
+        cursor = conexao.cursor(dictionary=True)
+        id_usuario = session.get("idUsuario")
 
-                # Atualiza o campo de imagem no banco de dados
-                conexao = conecta_database()
-                cursor = conexao.cursor()
-                id_usuario = session.get('idUsuario')
-                cursor.execute("UPDATE usuario SET imgUsuario = %s WHERE idUsuario = %s", (filename, id_usuario))
+        if request.method == "POST":
+            nova_foto = request.files.get("fotoPerfil")
+            if nova_foto and nova_foto.filename:
+                # Buscar a foto atual
+                cursor.execute("SELECT imgUsuario FROM usuario WHERE idUsuario = %s", (id_usuario,))
+                usuario = cursor.fetchone()
+
+                # Remover a foto antiga
+                if usuario and usuario["imgUsuario"]:
+                    try:
+                        os.remove(os.path.join("src/img/usuarios", usuario["imgUsuario"]))
+                    except FileNotFoundError:
+                        pass
+
+                # Salvar a nova foto
+                nome_foto = f"{id_usuario}_{secure_filename(nova_foto.filename)}"
+                caminho_foto = os.path.join("src/img/usuarios", nome_foto)
+                nova_foto.save(caminho_foto)
+
+                # Atualizar o banco
+                cursor.execute("UPDATE usuario SET imgUsuario = %s WHERE idUsuario = %s", (nome_foto, id_usuario))
                 conexao.commit()
-                conexao.close()
 
-                flash('Foto de perfil atualizada com sucesso!', 'success')
+                flash("Foto de perfil atualizada com sucesso!", "success")
             else:
-                flash('Nenhuma imagem foi selecionada.', 'error')
-        elif request.method == 'GET':
-            conexao = conecta_database()
-            cursor = conexao.cursor(dictionary=True)
-            id_usuario = session.get('idUsuario')
-            cursor.execute("SELECT * FROM usuario WHERE idUsuario = %s", (id_usuario,))
+                flash("Nenhuma imagem foi selecionada.", "error")
+
+        if request.method == "GET":
+            # Buscar dados do perfil para exibir
+            cursor.execute('SELECT u.nomeUsuario, u.emailUsuario, u.numeroUsuario, u.imgUsuario, u.senhaUsuario, c.nomeCargo FROM usuario u LEFT JOIN cargo c ON u.idCargo = c.idCargo WHERE idUsuario = %s', (session['idUsuario'],))
             usuario = cursor.fetchone()
             conexao.close()
+            return render_template("perfil_func.html", usuario=usuario, login=True)
 
-            return render_template('perfil_func.html', usuario=usuario)
+        conexao.close()
+        return redirect("/Perfil_funcionario")
     else:
-        return redirect(url_for('login'))
+        return redirect(url_for("login"))
 
-
+        
 # Dicionários para formatação
 dias_da_semana = {0: 'Segunda-feira', 1: 'Terça-feira', 2: 'Quarta-feira', 3: 'Quinta-feira', 4: 'Sexta-feira', 5: 'Sábado', 6: 'Domingo'}
 meses = {1: 'Janeiro', 2: 'Fevereiro', 3: 'Março', 4: 'Abril', 5: 'Maio', 6: 'Junho', 7: 'Julho', 8: 'Agosto', 9: 'Setembro', 10: 'Outubro', 11: 'Novembro', 12: 'Dezembro'}
