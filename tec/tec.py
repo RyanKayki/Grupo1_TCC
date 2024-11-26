@@ -233,7 +233,39 @@ def detalhe(id):
 
     return render_template('chamado.html', chamado=chamado, respostas=respostas)
 
+meses = {
+    1: "Janeiro", 2: "Fevereiro", 3: "Março", 4: "Abril",
+    5: "Maio", 6: "Junho", 7: "Julho", 8: "Agosto",
+    9: "Setembro", 10: "Outubro", 11: "Novembro", 12: "Dezembro"
+}
 
+# Dicionário para mapear números dos dias da semana para nomes em português
+dias_da_semana = {
+    0: "Seg", 1: "Ter", 2: "Qua", 
+    3: "Qui", 4: "Sex", 5: "Sáb", 6: "Dom"
+}
+
+@tec_blueprint.app_template_filter('data_formatada')
+def data_formatada(data):
+    if isinstance(data, str):
+        if data == 'Data não disponível':
+            return data  # Retorna a mensagem diretamente
+        try:
+            data_datetime = datetime.strptime(data, "%Y-%m-%d")  # Converte para datetime
+        except ValueError:
+            return 'Data inválida'  # Retorna uma mensagem de erro caso a conversão falhe
+    else:
+        data_datetime = data
+    
+    # Obtém o dia da semana e o formata
+    dia_semana = dias_da_semana[data_datetime.weekday()]
+    
+    # Formata a data manualmente usando o dicionário de meses
+    dia = data_datetime.day
+    mes = meses[data_datetime.month]
+    ano = data_datetime.year
+
+    return f"{dia_semana}, {dia} de {mes}"
 
 @tec_blueprint.route('/img/chamados/<path:filename>')
 def serve_image(filename):

@@ -16,8 +16,8 @@
                     {% else %}
                         <img src="{{ placeholder_image }}" class="chamado-imagem">
                     {% endif %}
-                    <a href="{{ url_for('func.detalhe_chamado', idChamado=chamado.idChamado) }}" class="verMais text-decoration-none">
-                        <div class="chamado-conteudo ms-3">
+                    <a href="{{ url_for('func.detalhe_chamado', idChamado=chamado.idChamado) }}" class="verMais w-100 text-decoration-none">
+                        <div class="ms-1">
                             <span class="item fw-bold">{{ chamado.nomeItem }}</span>
                             <br>
                             <p class="local">Local: {{ chamado.nomeLocal }}</p>
@@ -36,6 +36,19 @@
                             </span>
                         </div>
                     </a>
+                    <!-- Botões Editar e Apagar, visíveis apenas se o status for "Não Respondido" -->
+                    {% if chamado.nomeStatus == 'Não Respondido' %}
+                    <div class="ms-auto">
+                        <button class="btn me-2 fs-4" onclick="editarChamado('{{ chamado.idChamado }}')">
+                            <i class="bi bi-pencil-square"></i>
+                        </button>
+                        <button class="btn fs-4" onclick="apagarChamado('{{ chamado.idChamado }}')">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </div>
+                    {% else %}
+                    <div class="ms-auto d-none"></div> <!-- Oculta os botões quando o status não for "Não Respondido" -->
+                    {% endif %}
                 </div>
             </li>
         {% endfor %}
@@ -47,7 +60,7 @@
 
 <style>
     .container {
-        max-width: 360px;
+        max-width: 490px;
         border-radius: 10px;
     }
 
@@ -98,7 +111,7 @@
         color: #225656;
         margin-bottom: 2px;
     }
-
+    
     .verMais {
         text-decoration: none;
     }
@@ -175,4 +188,37 @@
         background-color: #cde1e0;
     }
 </style>
+
+<script>
+    function editarChamado(idChamado) {
+        // Verifica se o idChamado é um número válido
+        if (idChamado) {
+            window.location.href = `/editarChamado/${idChamado}`;
+        } else {
+            console.error('ID do chamado inválido para edição');
+        }
+    }
+
+    function apagarChamado(idChamado) {
+        if (idChamado && confirm("Tem certeza que deseja apagar este chamado?")) {
+            fetch(`/apagarChamado/${idChamado}`, {
+                method: 'DELETE'
+            })
+            .then(response => {
+                if (response.ok) {
+                    alert("Chamado apagado com sucesso.");
+                    location.reload(); // Atualiza a página para refletir a mudança
+                } else {
+                    alert("Erro ao apagar o chamado.");
+                }
+            })
+            .catch(error => {
+                console.error('Erro ao apagar o chamado:', error);
+                alert("Erro ao tentar apagar o chamado.");
+            });
+        } else {
+            console.error('ID do chamado inválido para exclusão');
+        }
+    }
+</script>
 {% endblock %}

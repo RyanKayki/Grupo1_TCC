@@ -29,28 +29,30 @@
 
             <div class="row">
                 {% for chamado in chamados %}
-                    <div class="box">
-                        <div class="box-details">
+                <a href="/chamadoDetalhes/{{chamado['idChamado']}}" class="text-decoration-none d-flex col-12 col-md-3 mx-2 my-3 align-items-center justify-content-between" style="color: #225656">
+                    <div class="d-flex flex-column w-100 rounded p-2 justify-content-center align-items-end" style="box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);">
+                        <div class="d-flex">
                             {% set placeholder_image = url_for('adm.serve_imageApp', filename='ImagemIcon.png') %}
                             {% if chamado.imgChamado %}
                                 <img
                                     src="{{ url_for('adm.serve_image', filename=chamado.imgChamado) }}" 
-                                    class="chamado-imagem"
+                                    class="col-4 rounded" style="background-color: #e1e1e1;"
                                     onerror="this.onerror=null; this.src='{{ placeholder_image }}';">
                             {% else %}
-                                <img src="{{ placeholder_image }}" alt="Imagem placeholder" class="chamado-imagem">
+                                <img src="{{ placeholder_image }}" alt="Imagem placeholder" class="col-4 rounded" style="background-color: #e1e1e1;">
                             {% endif %}
-                            <div class="box-text">{{ chamado['nomeItem'] }}<br><small>{{ chamado['nomeLocal'] }}</small></div>
+                            <div class="col-8 ms-2 fs-6">{{ chamado['nomeItem'] }}<br><small>{{ chamado['nomeLocal'] }}</small></div>
                         </div>
                         <span class="badge 
                                     {% if chamado.nomeStatus == 'Não Respondido' %} bg-danger
                                     {% elif chamado.nomeStatus == 'Respondido' %} bg-success
                                     {% else %} bg-primary
                                     {% endif %} 
-                                    float-end mb-1">
+                                    py-1" style="font-size: 12px;">
                                     {{ chamado.nomeStatus }}
-                                </span>
+                        </span>
                     </div>
+                </a>
                 {% endfor %}
             </div>
         {% endfor %}
@@ -94,38 +96,9 @@
         margin-bottom: 20px;
     }
 
-    .box {
-        background-color: white;
-        width: 350px;
-        border-radius: 10px;
-        padding: 20px;
-        box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        margin-bottom: 10px;
-        margin-left: 10px;
-        margin-right: 10px;
-    }
-
-    .box img {
-        width: 55px;
-        height: 50px;
-        border-radius: 10%;
-        background-color: #e1e1e1;
-        margin-right: 10px;
-        margin-left: -11px;
-        margin-top: -11px;
-    }
-
     .box-details {
         display: flex;
         align-items: center;
-    }
-
-    .box-text {
-        font-size: 14px;
-        margin-right: 10px;
     }
 
     .box-status {

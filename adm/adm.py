@@ -27,7 +27,7 @@ def adm():
 
             # Consulta para obter os últimos 3 chamados do usuário logado
             query_ultimos_chamados = """
-                SELECT c.descChamado, c.dataChamado, u.nomeUsuario, l.nomeLocal, i.nomeItem, c.imgChamado, s.nomeStatus
+                SELECT c.idChamado, c.descChamado, c.dataChamado, u.nomeUsuario, l.nomeLocal, i.nomeItem, c.imgChamado, s.nomeStatus
                 FROM chamado c
                 JOIN usuario u ON c.idUsuario = u.idUsuario
                 JOIN local l ON c.idLocal = l.idLocal
@@ -129,6 +129,73 @@ def cadchamados():
         conexao.close()
 
 
+# Rota para apagar um chamado
+@adm_blueprint.route('/apagarChamado/<int:idChamado>', methods=['DELETE'])
+def apagar_chamado(idChamado):
+    if verifica_sessao():
+        try:
+            conexao = conecta_database()
+            cursor = conexao.cursor()
+            
+            # Executa a exclusão do chamado pelo idChamado
+            cursor.execute("DELETE FROM chamado WHERE idChamado = %s", (idChamado,))
+            conexao.commit()
+            
+            return jsonify({"message": "Chamado apagado com sucesso."}), 200
+        except Exception as e:
+            return jsonify({"message": "Erro ao apagar o chamado.", "error": str(e)}), 500
+        finally:
+            conexao.close()
+    else:
+        return jsonify({"message": "Usuário não autenticado."}), 401
+
+
+# Rota para exibir o formulário de edição de um chamado
+@adm_blueprint.route('/editarChamado/<int:idChamado>', methods=['GET', 'POST'])
+def editar_chamado(idChamado):
+    if verifica_sessao():
+        try:
+            conexao = conecta_database()
+            cursor = conexao.cursor(dictionary=True)
+
+            # Carregar o chamado que será editado
+            cursor.execute("""
+                SELECT * FROM chamado WHERE idChamado = %s
+            """, (idChamado,))
+            chamado = cursor.fetchone()
+
+            # Carregar dados adicionais, como areas, locais e itens
+            cursor.execute("SELECT * FROM `local`")
+            locais = cursor.fetchall()
+
+            cursor.execute("SELECT * FROM item")
+            itens = cursor.fetchall()
+
+            if request.method == 'POST':
+                # Atualizar os dados do chamado com os novos valores
+                novo_desc = request.form.get('descChamado')
+                novo_local = request.form.get('local')
+                novo_item = request.form.get('item')
+
+                # Atualizar os dados do chamado
+                cursor.execute("""
+                    UPDATE chamado
+                    SET descChamado = %s, idItem = %s, idLocal = %s
+                    WHERE idChamado = %s
+                """, (novo_desc, novo_item, novo_local, idChamado))
+
+                conexao.commit()
+                flash('Chamado atualizado com sucesso!', 'success')
+                return redirect(url_for('func.func_home'))
+
+            return render_template('editarChamados.html', chamado=chamado, title='Editar chamado', locais=locais, itens=itens)
+
+        finally:
+            conexao.close()
+    else:
+        return redirect(url_for('login'))
+
+
 @adm_blueprint.route("/filtrarLocais/<int:idArea>", methods=['GET'])
 def filtrarLocais(idArea):
     conexao = conecta_database()
@@ -195,6 +262,9 @@ def chamadoSalas(idArea):
     cursor.execute(query, (idArea,))
     locais = cursor.fetchall()
     
+    if not locais:
+        flash(f"Nenhum local encontrado nessa área.", "info")
+
     resultados = []
     for local in locais:  
             print(local)      
@@ -205,7 +275,7 @@ def chamadoSalas(idArea):
                 'listaLocais': lista_locais
             })
     query = """
-    SELECT nomeArea FROM area WHERE idArea = %s
+    SELECT idArea, nomeArea FROM area WHERE idArea = %s
     """
 
     cursor.execute(query, (idArea,))
@@ -225,6 +295,9 @@ def chamadosItens():
 
     cursor.execute(query)
     itens = cursor.fetchall()
+    if not itens:
+        flash(f"Nenhum item encontrado.", "info")
+
     conexao.close()
 
     return render_template("chamadosItens.html", title="Lista de salas", itens=itens, login=True)
@@ -685,9 +758,10 @@ def DetalheChamado(id_chamado):
 
             # Consulta para pegar as respostas associadas ao chamado
             query_respostas = """
-                SELECT r.descResposta, r.dataResposta
-                FROM resposta r
-                WHERE r.idChamado = %s
+                    SELECT r.descResposta, r.dataResposta, u.nomeUsuario
+                    FROM resposta r
+                    JOIN usuario u ON r.idUsuario = u.idUsuario
+                    WHERE r.idChamado = %s
             """
             cursor.execute(query_respostas, (id_chamado,))
             respostas = cursor.fetchall()
@@ -712,7 +786,7 @@ def registroChamado():
             cursor = conexao.cursor(dictionary=True)
 
             query = """
-                SELECT c.descChamado, c.dataChamado, u.nomeUsuario, l.nomeLocal, i.nomeItem, c.imgChamado, s.nomeStatus
+                SELECT c.idChamado, c.descChamado, c.dataChamado, u.nomeUsuario, l.nomeLocal, i.nomeItem, c.imgChamado, s.nomeStatus
                 FROM chamado c
                 JOIN usuario u ON c.idUsuario = u.idUsuario
                 JOIN local l ON c.idLocal = l.idLocal
@@ -764,7 +838,7 @@ def filtrarChamados(filtro, valor):
             if filtro == "item":
             
                 query = """
-                    SELECT c.descChamado, c.dataChamado, u.nomeUsuario, l.nomeLocal, i.nomeItem, c.imgChamado, s.nomeStatus
+                    SELECT c.idChamado, c.descChamado, c.dataChamado, u.nomeUsuario, l.nomeLocal, i.nomeItem, c.imgChamado, s.nomeStatus
                     FROM chamado c
                     JOIN usuario u ON c.idUsuario = u.idUsuario
                     JOIN local l ON c.idLocal = l.idLocal
@@ -781,7 +855,7 @@ def filtrarChamados(filtro, valor):
             elif filtro == "local":
 
                 query = """
-                    SELECT c.descChamado, c.dataChamado, u.nomeUsuario, l.nomeLocal, i.nomeItem, c.imgChamado, s.nomeStatus
+                    SELECT c.idChamado, c.descChamado, c.dataChamado, u.nomeUsuario, l.nomeLocal, i.nomeItem, c.imgChamado, s.nomeStatus
                     FROM chamado c
                     JOIN usuario u ON c.idUsuario = u.idUsuario
                     JOIN local l ON c.idLocal = l.idLocal
@@ -799,7 +873,7 @@ def filtrarChamados(filtro, valor):
             elif filtro == "status":
 
                 query = """
-                    SELECT c.descChamado, c.dataChamado, u.nomeUsuario, l.nomeLocal, i.nomeItem, c.imgChamado, s.nomeStatus
+                    SELECT c.idChamado, c.descChamado, c.dataChamado, u.nomeUsuario, l.nomeLocal, i.nomeItem, c.imgChamado, s.nomeStatus
                     FROM chamado c
                     JOIN usuario u ON c.idUsuario = u.idUsuario
                     JOIN local l ON c.idLocal = l.idLocal
@@ -824,7 +898,7 @@ def filtrarChamados(filtro, valor):
                 valor = session.get('idUsuario')
                 
                 query = """
-                    SELECT c.descChamado, c.dataChamado, u.nomeUsuario, l.nomeLocal, i.nomeItem, c.imgChamado, s.nomeStatus
+                    SELECT c.idChamado, c.descChamado, c.dataChamado, u.nomeUsuario, l.nomeLocal, i.nomeItem, c.imgChamado, s.nomeStatus
                     FROM chamado c
                     JOIN usuario u ON c.idUsuario = u.idUsuario
                     JOIN local l ON c.idLocal = l.idLocal
@@ -924,11 +998,70 @@ def data_formatada(data):
 
     return f"{dia_semana}, {dia} de {mes}"
 
+################### PESQUISAS ###############################
+#Função de pesquisar locais
+@adm_blueprint.route('/pesquisaLocal/<idArea>', methods=['POST'])
+def pesquisaLocal(idArea):
+    termo = request.form.get('termo')
+    conexao = conecta_database()
+    cursor = conexao.cursor(dictionary=True)
 
-#Função de pesquisa
-@adm_blueprint.route('/pesquisa', methods=['post'])
+    query = """
+        SELECT c.nomeCategoria, GROUP_CONCAT(l.nomeLocal SEPARATOR ', ') AS listaLocais
+        FROM categoria c
+        JOIN local l ON c.idCategoria = l.idCategoria
+        WHERE l.nomeLocal LIKE %s AND l.idArea = %s
+        GROUP BY c.nomeCategoria;
+    """
+    # Adiciona '%' ao redor do termo para realizar a busca com LIKE
+    cursor.execute(query, ('%' + termo + '%', idArea,))
+    locais = cursor.fetchall()
+    
+    if not locais:
+        flash(f"Nenhum local encontrado nessa área.", "info")
+
+    resultados = []
+    for local in locais:
+        lista_locais = local['listaLocais'].split(", ")
+        resultados.append({
+            'nomeCategoria': local['nomeCategoria'],
+            'listaLocais': lista_locais
+        })
+
+    query = """
+    SELECT idArea, nomeArea FROM area WHERE idArea = %s
+    """
+
+    cursor.execute(query, (idArea,))
+    area = cursor.fetchone()
+
+    cursor.close()
+    conexao.close()
+
+    return render_template("chamadoSalas.html", title="Lista de salas", locais=resultados, area=area, login=True)
+
+
+#Função de pesquisar item
+@adm_blueprint.route('/pesquisaItem', methods=['POST'])
 def pesquisa():
-    pass
+    termo = request.form.get('termo')
+    conexao = conecta_database()
+    cursor = conexao.cursor(dictionary=True)
+    query = """
+        SELECT i.idItem, i.nomeItem
+        FROM item i
+        WHERE i.nomeItem LIKE %s;
+        """
+    
+    # Adiciona '%' ao redor do termo para realizar a busca com LIKE
+    cursor.execute(query, ('%' + termo + '%',))
+    itens = cursor.fetchall()
+
+    if not itens:
+        flash(f"Nenhum item encontrado.", "info")
+    
+    return render_template("chamadosItens.html", title="Lista de salas", itens=itens, login=True)
+
 
 #Salvar foto do Usuario
 @adm_blueprint.route('/img/usuarios/<path:filename>')
