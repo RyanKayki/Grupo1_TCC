@@ -7,10 +7,10 @@
   <div class="loader-text">Carregando...</div>
 </div>
 
-<a href="{{ url_for('tec.tec_home') if chamado.nomeStatus != 'Concluído' else url_for('tec.tec_task') }}" class="pt-2 px-1">
+<a href="{{ url_for('tec.tec_home') if chamado.nomeStatus != 'Concluído' else url_for('tec.tec_task') }}" class="py-3 px-3">
   <img src="{{ url_for('tec.serve_imageApp', filename='ButtonBack.png') }}" alt="Voltar" class="button-image">
 </a>
-<div class="w-100 container-show flex-column align-items-center" style="display: none; overflow-y: auto; max-height: 90vh;">
+<div class="w-100 container-show flex-column align-items-center mb-5 pb-4" style="display: none; overflow-y: auto;">
 
     {% set placeholder_image = url_for('tec.serve_imageApp', filename='ImagemIcon.png') %}
     <div class="rounded py-3 px-1 text-center w-100 mb-2" style="max-width: 400px; background-color: #e9efef;">
@@ -29,14 +29,14 @@
         <p class="local fs-2">Sala: {{ chamado.nomeLocal }}</p>
 
         <!-- Botão para exibir/ocultar respostas -->
-        <button id="toggle-responses-btn" class="button-show-answer w-100" onclick="toggleResponses()">
+        <button id="toggle-responses-btn" class="button-show-answer shadow-sm w-100" onclick="toggleResponses()">
             Mostrar Respostas
         </button>
         <div id="responses-list" style="display: none;">
             {% if respostas %}
                 <ul class="respostas-list">
                     {% for resposta in respostas %}
-                        <li class="resposta-item">
+                        <li class="resposta-item fs-3">
                             <p>{{ resposta.dataResposta | data_formatada }}</p>
                             <p>{{ resposta.descResposta }}</p>
                         </li>
@@ -49,16 +49,16 @@
     </div>
 
     <!-- Campo para adicionar resposta -->
-    <div id="responses-container"></div>
-
-    <div class="w-75">
+    <div class="w-75 d-flex justify-content-center">
         {% if chamado.nomeStatus != 'Concluído' %}
-            <div>
-                <button class="btn-add" onclick="addResponseField()">Adicionar Resposta</button>
-                <i class="plus-icon">+</i>
+            <div class="d-flex justify-content-end row w-100 shadow-sm my-3" style="cursor: pointer; border-radius: 15px; max-width: 400px; background-color: #d3dddd" onclick="addResponseField()">
+                <div class="col-10 fs-2 p-3">Adicionar Resposta</div>
+                <div class="col-2 bg-black d-flex justify-content-center align-items-center" style="border-radius: 15px; font-size: 48px"><i class="bi bi-plus text-light"></i></div>
             </div>
         {% endif %}
     </div>
+
+    <div id="responses-container"></div>
 
     <!-- Modal de confirmação para finalizar -->
     <div class="bottom-buttons mb-5">
@@ -73,9 +73,9 @@
     <div id="chamado-id" data-id="{{ chamado.idChamado }}"></div>
 
     <div id="confirmation-modal" class="modal" style="display: none;">
-        <div class="modal-content">
-            <p>Tem certeza que deseja finalizar o chamado?</p>
-            <p>Se finalizar, não será possível adicionar outras respostas ao problema.</p>
+        <div class="modal-content fw-bold">
+            <p class="fs-3" style="color: #225656;">Tem certeza que deseja finalizar o chamado?</p>
+            <p class="fs-3">Se finalizar, não será possível adicionar outras respostas ao problema.</p>
             <div class="modal-actions">
                 <button class="btn-finalizar-confirm me-2" onclick="finalizarChamado()">FINALIZAR</button>
                 <button class="btn-cancel" onclick="toggleConfirmationModal()">CANCELAR</button>
@@ -223,9 +223,8 @@ padding: 0;
       color: #777;
   }
 
-  .btn-add, .btn-finalizar, .btn-finalizar-confirm, .btn-cancel {
-      background-color: #d3dddd; /* Cor do fundo */
-      border: none; /* Sem borda */
+    .btn-finalizar, .btn-finalizar-confirm, .btn-cancel {
+      border: 1px solid #225656; /* Borda verde-escura com 1px de espessura */ 
       border-radius: 10px; /* Bordas arredondadas */
       padding: 10px 20px; /* Espaçamento interno */
       font-size: 24px; /* Tamanho da fonte */
@@ -234,9 +233,14 @@ padding: 0;
       margin-top: 10px; /* Margem superior */
   }
 
-  .btn-finalizar{
+  .btn-finalizar, .btn-cancel{
     background-color: #225656;
     color: #fff;
+  }
+
+  .btn-finalizar-confirm{
+    background-color: #fff;
+    color: #225656;
   }
 
   .response-input {
@@ -283,7 +287,7 @@ padding: 0;
   }
 
   .button-image {
-      width: 40px;
+      width: 50px;
       height: auto;
       cursor: pointer;
   }
@@ -340,16 +344,23 @@ window.addEventListener('load', function() {
             return;
         }
 
-        const responseDiv = document.createElement('div');
-        responseDiv.className = 'response-input';
+        responsesContainer.className = "w-100 d-flex justify-content-center"
+
+        const responseDiv = document.createElement('div')
+        responseDiv.className = "ps-3 row d-flex col-12"
 
         const textarea = document.createElement('textarea');
-        textarea.className = 'input-textarea';
+        textarea.className = 'col-10 p-3 fs-2';
+        textarea.style = 'resize: none; border-radius: 10px; border: 1px solid #225656;'
         textarea.placeholder = 'Digite sua resposta aqui...';
 
+        const buttonsDiv = document.createElement('div')
+        buttonsDiv.className = 'col-2 d-flex flex-column justify-content-center'
+
         const saveButton = document.createElement('button');
-        saveButton.className = 'btn-save-response btn-add';
-        saveButton.innerHTML = 'Salvar <i class="save-icon">✔️</i>';
+        saveButton.className = 'border border-0 d-flex justify-content-center align-items-center bg-transparent';
+        saveButton.style = 'font-size: 48px;';
+        saveButton.innerHTML = '<i class="bi bi-check-lg text-success"></i>';
         saveButton.onclick = function() {
             const resposta = textarea.value;
             const idChamado = getIdChamado(); // Obtém o idChamado
@@ -384,16 +395,18 @@ window.addEventListener('load', function() {
         };
 
         const cancelButton = document.createElement('button');
-        cancelButton.className = 'btn-cancel btn-add';
-        cancelButton.innerHTML = 'Cancelar <i class="cancel-icon">❌</i>';
+        cancelButton.className = 'border border-0 d-flex justify-content-center align-items-center bg-transparent';
+        cancelButton.style = "font-size: 48px";
+        cancelButton.innerHTML = '<i class="bi bi-x-lg text-danger"></i>';
         cancelButton.onclick = function() {
             responsesContainer.removeChild(responseDiv); // Remove o campo ao cancelar
         };
 
+        buttonsDiv.appendChild(saveButton);
+        buttonsDiv.appendChild(cancelButton);
         responseDiv.appendChild(textarea);
-        responseDiv.appendChild(saveButton);
-        responseDiv.appendChild(cancelButton);
-        responsesContainer.appendChild(responseDiv);
+        responseDiv.appendChild(buttonsDiv);
+        responsesContainer.appendChild(responseDiv)
     }
 
     function toggleResponses() {
