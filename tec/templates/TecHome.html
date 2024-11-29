@@ -16,13 +16,13 @@
                         {% if chamado.imgChamado %}
                             <img
                                 src="{{ url_for('tec.serve_image', filename=chamado.imgChamado) }}" 
-                                class="chamado-imagem"
+                                class="chamado-imagem col-5"
                                 onerror="this.onerror=null; this.src='{{ placeholder_image }}';">
                         {% else %}
-                            <img src="{{ placeholder_image }}" alt="Imagem placeholder" class="chamado-imagem">
+                            <img src="{{ placeholder_image }}" alt="Imagem placeholder" class="chamado-imagem col-5">
                         {% endif %}
                         <!-- Link para a página de detalhes do chamado -->
-                        <a href="{{ url_for('tec.tec_more', idChamado=chamado.idChamado) }}" class="verMais">
+                        <a href="{{ url_for('tec.tec_more', idChamado=chamado.idChamado) }}" class="verMais col-7">
                             <div class="chamado-conteudo ms-3"> <!-- Adiciona margem esquerda -->
                                 <span class="item fw-bold">{{ chamado.nomeItem }}</span>
                                 <br>
@@ -117,11 +117,8 @@
   }
   
   .chamado-imagem {
-      width: 160px; /* A largura será definida de acordo com o texto */
-      height: 110px; /* Define uma altura fixa para manter a proporção */
       background-color: #E0E0E0;
       border-radius: 8px;
-      margin-right: 15px; /* Espaço entre imagem e texto */
   }
 
   .chamado-card {
