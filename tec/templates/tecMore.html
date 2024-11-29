@@ -29,7 +29,7 @@
         <p class="local fs-2">Sala: {{ chamado.nomeLocal }}</p>
 
         <!-- Botão para exibir/ocultar respostas -->
-        <button id="toggle-responses-btn" class="button-show-answer shadow-sm w-100" onclick="toggleResponses()">
+        <button id="toggle-responses-btn" class="button-show-answer shadow-sm w-100 fs-2" style="max-width: 400px" onclick="toggleResponses()">
             Mostrar Respostas
         </button>
         <div id="responses-list" style="display: none;">
@@ -43,7 +43,7 @@
                     {% endfor %}
                 </ul>
             {% else %}
-                <p>Nenhuma resposta adicionada ainda.</p>
+                <p class="fs-2 mt-1">Nenhuma resposta adicionada ainda.</p>
             {% endif %}
         </div>
     </div>
@@ -203,7 +203,6 @@ padding: 0;
       border: none;
       border-radius: 10px;
       padding: 10px 20px;
-      font-size: 24px;
       cursor: pointer;
       margin-top: 10px;
   }
