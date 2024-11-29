@@ -24,10 +24,9 @@
     body {
         font-family: 'Arial', sans-serif;
         background-color: #e9efef; /* Cor de fundo padrão */
-        padding: 20px;
         transition: background-color 0.3s; /* Transição suave */
     }
-  
+
     .footer {
         display: flex;
         justify-content: space-around; /* Espaçar os botões uniformemente */
@@ -79,7 +78,7 @@
   
 </head>
 <body class="d-flex" style="min-height: 100vh;">
-  <main style="flex-grow: 1; display: flex; flex-direction: column; justify-content: space-between;">
+  <main style="flex-grow: 1; display: flex; flex-direction: column;">
     {% block conteudo %}
     {% endblock %}
   </main>
