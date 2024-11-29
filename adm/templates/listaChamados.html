@@ -180,23 +180,27 @@
 
     function apagarChamado(idChamado) {
         if (idChamado && confirm("Tem certeza que deseja apagar este chamado?")) {
-            fetch(`/apagarChamado/${idChamado}`, {
+            fetch(`/excluir/${idChamado}`, {
                 method: 'DELETE'
             })
-            .then(response => {
+            .then(async (response) => {
                 if (response.ok) {
-                    alert("Chamado apagado com sucesso.");
-                    location.reload(); // Atualiza a página para refletir a mudança
+                    const result = await response.json(); // Obtém a mensagem JSON do servidor
+                    alert(result.message); // Exibe a mensagem de sucesso
+                    location.reload(); // Atualiza a página
                 } else {
-                    alert("Erro ao apagar o chamado.");
+                    const errorData = await response.json(); // Obtém a mensagem de erro do servidor
+                    alert(errorData.message || "Erro ao tentar apagar o chamado.");
+                    location.reload(); // Atualiza a página
                 }
             })
             .catch(error => {
                 console.error('Erro ao apagar o chamado:', error);
-                alert("Erro ao tentar apagar o chamado.");
+                alert("Erro de conexão com o servidor.");
             });
-        } else {
+        } else if (!idChamado) {
             console.error('ID do chamado inválido para exclusão');
+            alert("ID do chamado inválido.");
         }
     }
 </script>

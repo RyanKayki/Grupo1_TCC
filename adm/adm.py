@@ -958,30 +958,37 @@ def filtrarChamados(filtro, valor):
         return redirect("/login")
 
 
-@adm_blueprint.route("/excluir/<int:idChamado>")
+@adm_blueprint.route("/excluir/<int:idChamado>", methods=['DELETE', 'GET'])
 def excluir(idChamado):
-    # Rota para excluir um chamado
+    # Rota para excluir um chamado\
     if verifica_sessao():
         conexao = conecta_database()
         cursor = conexao.cursor(dictionary=True)
+        # Verifica o status do chamado no banco de dados
+        query = """
+        SELECT idStatus FROM chamado WHERE idChamado = %s
+        """
+        cursor.execute(query, (idChamado,))
+        status = cursor.fetchone()
+        if (status == 1):
+            # Buscando a imagem associada ao chamado
+            cursor.execute('SELECT imgChamado FROM chamado WHERE idChamado = %s', (idChamado,))
+            chamado = cursor.fetchone()
 
-        # Buscando a imagem associada ao chamado
-        cursor.execute('SELECT imgChamado FROM chamado WHERE idChamado = %s', (idChamado,))
-        chamado = cursor.fetchone()
+            # Excluindo a imagem do chamado do diretório de imagens
+            if chamado and chamado['imgChamado']:
+                try:
+                    os.remove(os.path.join("src/img/chamados", chamado['imgChamado']))
+                except FileNotFoundError:
+                    pass  # Se o arquivo não for encontrado, continuamos sem falhar
 
-        # Excluindo a imagem do chamado do diretório de imagens
-        if chamado and chamado['imgChamado']:
-            try:
-                os.remove(os.path.join("src/img/chamados", chamado['imgChamado']))
-            except FileNotFoundError:
-                pass  # Se o arquivo não for encontrado, continuamos sem falhar
-
-        # Excluindo o chamado do banco de dados
-        cursor.execute('DELETE FROM chamado WHERE idChamado = %s', (idChamado,))
-        conexao.commit()
-        conexao.close()
-
-        return redirect('/adm')
+            # Excluindo o chamado do banco de dados
+            cursor.execute('DELETE FROM chamado WHERE idChamado = %s', (idChamado,))
+            conexao.commit()
+            conexao.close()
+            return jsonify({"message": "Chamado apagado com sucesso."}), 200
+        else:
+            return jsonify({"message": "Esse chamado já foi respondido, então não será possível apagá-lo."}), 500
     else:
         return redirect("/login")
 
@@ -1090,7 +1097,7 @@ def pesquisa():
     
     return render_template("chamadosItens.html", title="Lista de salas", itens=itens, login=True)
 
-
+#### Foto do usuário ####
 #Salvar foto do Usuario
 @adm_blueprint.route('/img/usuarios/<path:filename>')
 def serve_imageUser(filename):
