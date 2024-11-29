@@ -1,26 +1,38 @@
-{% extends 'modelAdm.html' %}
+{% extends 'modelFunc.html' %}
 {% block conteudo %}
 
+<div class="loader-container">
+    <div class="loader"></div>
+    <div class="loader-text">Carregando...</div>
+  </div>
+
 <main>
-    <div class="container">
-        {% set placeholder_image = url_for('func.serve_imageUser', filename='ImagemIcon.png') %}
-        <div class="profile-picture">
+    <div class="container mx-4" style="display: none;">
+        {% set placeholder_image = url_for('func.serve_imageUser', filename='UserPlaceHolder.png') %}
+        <div class="profile-picture" style="cursor: pointer;">
             <h2>Perfil</h2>
-            <form action="{{ url_for('func.perfil_func') }}" method="POST" enctype="multipart/form-data">
-                {% if usuario.imgUsuario %}
-                    <img
-                        src="{{ url_for('func.serve_imageUser', filename=usuario.imgUsuario) }}" 
-                        class="chamado-imagem"
-                        onerror="this.onerror=null; this.src='{{ placeholder_image }}';">
-                {% else %}
-                    <img src="{{ placeholder_image }}" alt="Imagem placeholder" class="chamado-imagem">
-                {% endif %}
-                
-                <!-- Input para selecionar a imagem -->
-                <label class="btn" style="cursor: pointer;">
-                    <i class="bi bi-camera"></i>
-                    <input type="file" name="imagem" accept="image/*" style="display: none;" onchange="this.form.submit()">
-                </label>
+            {% if usuario.imgUsuario %}
+                <img
+                    src="{{ url_for('func.serve_imageUser', filename=usuario.imgUsuario) }}" 
+                    class="chamado-imagem"
+                    onclick="document.getElementById('fotoPerfil').click()"
+                    onerror="this.onerror=null; this.src='{{ placeholder_image }}';">
+            {% else %}
+                <img 
+                    src="{{ placeholder_image }}" 
+                    alt="Imagem placeholder" 
+                    class="chamado-imagem"
+                    onclick="document.getElementById('fotoPerfil').click()">
+            {% endif %}
+
+            <!-- Formulário invisível para atualizar a imagem -->
+            <form id="perfilForm" action="/Perfil_funcionario" method="POST" enctype="multipart/form-data" style="display: none;">
+                <input 
+                    type="file" 
+                    id="fotoPerfil" 
+                    name="fotoPerfil" 
+                    accept="image/*" 
+                    onchange="document.getElementById('perfilForm').submit();">
             </form>
         </div>
 
@@ -37,7 +49,11 @@
 
             <div class="profile-field col-md-6">
                 <label>Senha</label>
-                <p>{{ usuario.senhaUsuario }}</p>
+                <div class="password-wrapper d-flex justify-content-between">
+                    
+                    <p id="senhaDisplay">{{ usuario.senhaUsuario }}</p>
+                    <span id="eyeIcon" onclick="togglePasswordVisibility();" style="cursor: pointer;">🙈</span>
+                </div>
             </div>
 
             <div class="profile-field col-md-6">
@@ -124,9 +140,34 @@
             width: 100%; /* Ajusta para uma coluna em telas menores */
         }
         .profile-picture img {
-            width: 100px;
-            height: 100px;
+            width: 150px;
+            height: 150px;
         }
     }
 </style>
+<script>
+        // Função para alternar a visibilidade da senha
+        function togglePasswordVisibility() {
+            var senhaDisplay = document.getElementById("senhaDisplay");
+            var eyeIcon = document.getElementById("eyeIcon");
+    
+            // Verifica se a senha está oculta e a alterna
+            if (senhaDisplay.textContent.includes('*')) {
+                senhaDisplay.textContent = "{{ usuario.senhaUsuario }}";  // Mostrar a senha
+                eyeIcon.textContent = "🙉";  // Troca o ícone para "olho fechado"
+            } else {
+                senhaDisplay.textContent = '*'.repeat(senhaDisplay.textContent.length);  // Substitui por asteriscos
+                eyeIcon.textContent = "🙈";  // Troca o ícone para "olho aberto"
+            }
+        }
+    
+        // Inicialização para ocultar a senha ao carregar a página
+        window.onload = function() {
+            var senhaDisplay = document.getElementById("senhaDisplay");
+            var eyeIcon = document.getElementById("eyeIcon");
+    
+            senhaDisplay.textContent = '*'.repeat("{{ usuario.senhaUsuario }}".length);  // Senha oculta inicialmente
+            eyeIcon.textContent = "🙈";  // Ícone de "olho aberto"
+        }
+    </script>
 {% endblock %}
