@@ -39,7 +39,7 @@
                     <!-- Botões Editar e Apagar, visíveis apenas se o status for "Não Respondido" -->
                     {% if chamado.nomeStatus == 'Não Respondido' %}
                     <div class="ms-auto">
-                        <button class="btn me-2 fs-4" onclick="editarChamado('{{ chamado.idChamado }}')">
+                        <button class="btn me-2 fs-4" onclick="editarChamadoFunc('{{ chamado.idChamado }}')">
                             <i class="bi bi-pencil-square"></i>
                         </button>
                         <button class="btn fs-4" onclick="apagarChamado('{{ chamado.idChamado }}')">
@@ -190,10 +190,10 @@
 </style>
 
 <script>
-    function editarChamado(idChamado) {
+    function editarChamadoFunc(idChamado) {
         // Verifica se o idChamado é um número válido
         if (idChamado) {
-            window.location.href = `/editarChamado/${idChamado}`;
+            window.location.href = `/editarChamadoFunc/${idChamado}`;
         } else {
             console.error('ID do chamado inválido para edição');
         }

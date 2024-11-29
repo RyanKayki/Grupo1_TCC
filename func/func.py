@@ -103,7 +103,7 @@ def apagar_chamado(idChamado):
         return jsonify({"message": "Usuário não autenticado."}), 401
 
 # Rota para exibir o formulário de edição de um chamado
-@func_blueprint.route('/editarChamado/<int:idChamado>', methods=['GET', 'POST'])
+@func_blueprint.route('/editarChamadoFunc/<int:idChamado>', methods=['GET', 'POST'])
 def editar_chamado(idChamado):
     if verifica_sessao():
         try:

@@ -571,7 +571,7 @@ def filtrarItemedicao():
 
     # Renderiza o template e passa a lista de salas
     title = "Filtrar Item Edição"
-    return render_template("filtrarItemedicao.html", title=title, salas=salas)
+    return render_template("filtrarItemedicao.html", title=title, salas=salas, login=True)
 
 
 # Rota para editar um item específico
