@@ -88,13 +88,31 @@ def apagar_chamado(idChamado):
     if verifica_sessao():
         try:
             conexao = conecta_database()
-            cursor = conexao.cursor()
-            
-            # Executa a exclusão do chamado pelo idChamado
-            cursor.execute("DELETE FROM chamado WHERE idChamado = %s", (idChamado,))
-            conexao.commit()
-            
-            return jsonify({"message": "Chamado apagado com sucesso."}), 200
+            cursor = conexao.cursor(dictionary=True)
+
+            # Verifica o status do chamado no banco de dados
+            query = """
+            SELECT idStatus FROM chamado WHERE idChamado = %s
+            """
+            cursor.execute(query, (idChamado,))
+            status = cursor.fetchone()
+            if status == 1:
+                # Buscando a imagem associada ao chamado
+                cursor.execute('SELECT imgChamado FROM chamado WHERE idChamado = %s', (idChamado,))
+                chamado = cursor.fetchone()
+
+                # Excluindo a imagem do chamado do diretório de imagens
+                if chamado and chamado['imgChamado']:
+                    try:
+                        os.remove(os.path.join("src/img/chamados", chamado['imgChamado']))
+                    except FileNotFoundError:
+                        pass  # Se o arquivo não for encontrado, continuamos sem falhar
+                # Executa a exclusão do chamado pelo idChamado
+                cursor.execute("DELETE FROM chamado WHERE idChamado = %s", (idChamado,))
+                conexao.commit()
+                return jsonify({"message": "Chamado apagado com sucesso."}), 200
+            else: 
+                return jsonify({"message": "Esse chamado já foi respondido, então não será possível apagá-lo."}), 501
         except Exception as e:
             return jsonify({"message": "Erro ao apagar o chamado.", "error": str(e)}), 500
         finally:
@@ -116,32 +134,42 @@ def editar_chamado(idChamado):
             """, (idChamado,))
             chamado = cursor.fetchone()
 
-            # Carregar dados adicionais, como areas, locais e itens
+            # Carregar dados adicionais, como locais e itens
             cursor.execute("SELECT * FROM `local`")
             locais = cursor.fetchall()
 
             cursor.execute("SELECT * FROM item")
             itens = cursor.fetchall()
 
-            if request.method == 'POST':
-                # Atualizar os dados do chamado com os novos valores
-                novo_desc = request.form.get('descChamado')
-                novo_local = request.form.get('local')
-                novo_item = request.form.get('item')
+            # Verifica o status do chamado no banco de dados
+            query = """
+            SELECT idStatus FROM chamado WHERE idChamado = %s
+            """
+            cursor.execute(query, (idChamado,))
+            status = cursor.fetchone()
 
-                # Atualizar os dados do chamado
-                cursor.execute("""
-                    UPDATE chamado
-                    SET descChamado = %s, idItem = %s, idLocal = %s
-                    WHERE idChamado = %s
-                """, (novo_desc, novo_item, novo_local, idChamado))
+            if status['idStatus'] == 1:
+                if request.method == 'POST':
+                    # Atualizar os dados do chamado com os novos valores
+                    novo_desc = request.form.get('descChamado')
+                    novo_local = request.form.get('local')
+                    novo_item = request.form.get('item')
 
-                conexao.commit()
-                flash('Chamado atualizado com sucesso!', 'success')
+                    # Atualizar os dados do chamado
+                    cursor.execute("""
+                        UPDATE chamado
+                        SET descChamado = %s, idItem = %s, idLocal = %s
+                        WHERE idChamado = %s
+                    """, (novo_desc, novo_item, novo_local, idChamado))
+
+                    conexao.commit()
+                    flash('Chamado atualizado com sucesso!', 'success')
+                    return redirect(url_for('func.func_home'))
+
+                return render_template('editarCham.html', chamado=chamado, title='Editar chamado', locais=locais, itens=itens, login=True)
+            else:
+                flash('Esse chamado já foi respondido, então não será possível apagá-lo.')
                 return redirect(url_for('func.func_home'))
-
-            return render_template('editarCham.html', chamado=chamado, title='Editar chamado', locais=locais, itens=itens, login=True)
-
         finally:
             conexao.close()
     else:

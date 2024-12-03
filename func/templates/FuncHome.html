@@ -3,7 +3,7 @@
 <div class="container mt-3">
     <a class="btn btn-primary w-100 py-2 fs-4 rounded my-3" aria-current="page" href="/novoChamado" style="background-color: #225656; border: none;">Abrir um chamado</a>
     {% if chamados %}
-    <ul class="list-group list-group-flush" style="font-family: Poppins">
+    <ul class="list-group list-group-flush">
         {% for chamado in chamados %}
             <li class="list-group-item ps-3 rounded m-2 pt-1">
                 {% set placeholder_image = url_for('func.serve_imageApp', filename='ImagemIcon.png') %}
@@ -207,10 +207,10 @@
             .then(response => {
                 if (response.ok) {
                     alert("Chamado apagado com sucesso.");
-                    location.reload(); // Atualiza a página para refletir a mudança
                 } else {
                     alert("Erro ao apagar o chamado.");
                 }
+                location.reload() // Atualiza a página para refletir a mudança
             })
             .catch(error => {
                 console.error('Erro ao apagar o chamado:', error);
