@@ -56,11 +56,12 @@ def detalhe_chamado(idChamado):
                 conexao = conecta_database()  # Agora chama a função aqui, no momento apropriado
                 cursor = conexao.cursor(dictionary=True)
                 query = """
-                    SELECT c.descChamado, c.concChamado, c.imgChamado, l.nomeLocal, i.nomeItem, s.nomeStatus
+                    SELECT c.descChamado, c.concChamado, c.imgChamado, c.dataChamado, l.nomeLocal, i.nomeItem, s.nomeStatus, u.nomeUsuario
                     FROM chamado c
                     JOIN local l ON c.idLocal = l.idLocal
                     JOIN item i ON c.idItem = i.idItem
                     JOIN status s ON c.idStatus = s.idStatus
+                    JOIN usuario u ON c.idUsuario = u.idUsuario
                     WHERE c.idChamado = %s
                 """
                 cursor.execute(query, (idChamado,))

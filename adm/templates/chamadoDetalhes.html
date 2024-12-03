@@ -20,6 +20,10 @@
        {% endif %}
 
         <h3 class="chamado-item mt-2 fs-4">{{ chamado.nomeItem }}</h3>
+        <div class="d-flex justify-content-between w-75">
+            <p><strong>{{ chamado.nomeUsuario }}</strong></p>
+            <p><strong>{{ chamado.dataChamado | funcData }}</strong></p>
+        </div>
         <div class="text-start">
             <p class="local-chamado fs-6 mb-1">{{ chamado.nomeLocal }}</p>
             <p class="descricao-chamado mb-2">{{ chamado.descChamado }}</p>
@@ -29,7 +33,7 @@
         <h4 class="titulo-resposta">Resposta:</h4>
         {% if respostas %}
         {% for resposta in respostas %}
-        <div class="response-box my-2 mb-2">
+        <div class="response-box my-2">
             <div class="row d-flex justify-content-between" style="color: #225656">
                 <p class="col-6"><strong>{{ resposta['nomeUsuario'] }}</strong></p>
                 <p class="col-6 text-end"><strong>{{ resposta.dataResposta | funcData }}</strong></p>

@@ -20,6 +20,10 @@
                 {% endif %}
             </div>
             <h2 class="text-bold">{{ chamado['nomeItem'] }}</h2>
+            <div class="w-75 d-flex justify-content-between">
+                <p style="color: #225656;"><strong>{{ chamado['nomeUsuario'] }}</strong></p>
+                <p style="color: #225656;"><strong>{{ chamado.dataChamado | funcData }}</strong></p>
+            </div>
             <div class="w-75">
                 <p class="location">{{ chamado['nomeLocal'] }}</p>
                 <p class="description">{{ chamado['descChamado'] }}</p>
