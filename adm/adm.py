@@ -163,31 +163,40 @@ def editar_chamado(idChamado):
             cursor.execute("SELECT * FROM chamado WHERE idChamado = %s", (idChamado,))
             chamado = cursor.fetchone()
 
-            # Carregar dados adicionais, como áreas, locais e itens
+            # Carregar dados adicionais, como locais e itens
             cursor.execute("SELECT * FROM local")
             locais = cursor.fetchall()
 
             cursor.execute("SELECT * FROM item")
             itens = cursor.fetchall()
+            
+            # Verifica o status do chamado no banco de dados
+            query = """
+            SELECT idStatus FROM chamado WHERE idChamado = %s
+            """
+            cursor.execute(query, (idChamado,))
+            status = cursor.fetchone()
+            
+            if status['idStatus'] == 1:
+                if request.method == 'POST':
+                    novo_desc = request.form.get('descricao')
+                    novo_local = request.form.get('local')
+                    novo_item = request.form.get('item')
 
-            if request.method == 'POST':
-                novo_desc = request.form.get('descricao')
-                novo_local = request.form.get('local')
-                novo_item = request.form.get('item')
+                    # Atualizar os dados do chamado
+                    cursor.execute("""
+                        UPDATE chamado
+                        SET descChamado = %s, idItem = %s, idLocal = %s
+                        WHERE idChamado = %s
+                    """, (novo_desc, novo_item, novo_local, idChamado))
 
-                # Atualizar os dados do chamado
-                cursor.execute("""
-                    UPDATE chamado
-                    SET descChamado = %s, idItem = %s, idLocal = %s
-                    WHERE idChamado = %s
-                """, (novo_desc, novo_item, novo_local, idChamado))
-
-                conexao.commit()
-                flash('Chamado atualizado com sucesso!', 'success')
+                    conexao.commit()
+                    flash('Chamado atualizado com sucesso!', 'success')
+                    return redirect(url_for('adm.adm'))
+                return render_template('editarChamados.html', chamado=chamado, locais=locais, itens=itens)
+            else:
+                flash('Esse chamado já foi respondido, então não será possível apagá-lo.')
                 return redirect(url_for('adm.adm'))
-
-            return render_template('editarChamados.html', chamado=chamado, locais=locais, itens=itens)
-
         finally:
             conexao.close()
     else:
@@ -958,9 +967,9 @@ def filtrarChamados(filtro, valor):
         return redirect("/login")
 
 
+# Rota para excluir um chamado
 @adm_blueprint.route("/excluir/<int:idChamado>", methods=['DELETE', 'GET'])
 def excluir(idChamado):
-    # Rota para excluir um chamado\
     if verifica_sessao():
         conexao = conecta_database()
         cursor = conexao.cursor(dictionary=True)
@@ -970,7 +979,7 @@ def excluir(idChamado):
         """
         cursor.execute(query, (idChamado,))
         status = cursor.fetchone()
-        if (status == 1):
+        if status == 1:
             # Buscando a imagem associada ao chamado
             cursor.execute('SELECT imgChamado FROM chamado WHERE idChamado = %s', (idChamado,))
             chamado = cursor.fetchone()
