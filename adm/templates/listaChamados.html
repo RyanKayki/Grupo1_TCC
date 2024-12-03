@@ -1,0 +1,140 @@
+{% extends 'modelAdm.html' %}
+{% block conteudo %}
+
+<button id="toggleButton" class="btn" style="margin: 0; padding: 0;">
+    <ion-icon name="menu-outline"></ion-icon>
+</button>
+
+<div class="container">
+    <h1>{{ title }}</h1>
+
+    <!-- Mensagem de flash para o caso de não haver chamados -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="alert-container">
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    {% for ano, data_dict in chamados_por_ano.items() %}
+        <h2>{{ ano }}</h2>
+        {% for data, chamados in data_dict.items() %}
+            <div class="title-row">
+                <span class="date-title">{{ data }}</span>
+                <div class="line"></div>
+            </div>
+
+            <div class="row">
+                {% for chamado in chamados %}
+                <a href="/chamadoDetalhes/{{chamado['idChamado']}}" class="text-decoration-none d-flex col-12 col-md-3 mx-2 my-3 align-items-center justify-content-between" style="color: #225656">
+                    <div class="d-flex flex-column w-100 rounded p-2 justify-content-center align-items-end" style="box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);">
+                        <div class="d-flex">
+                            {% set placeholder_image = url_for('adm.serve_imageApp', filename='ImagemIcon.png') %}
+                            {% if chamado.imgChamado %}
+                                <img
+                                    src="{{ url_for('adm.serve_image', filename=chamado.imgChamado) }}" 
+                                    class="col-4 rounded" style="background-color: #e1e1e1;"
+                                    onerror="this.onerror=null; this.src='{{ placeholder_image }}';">
+                            {% else %}
+                                <img src="{{ placeholder_image }}" alt="Imagem placeholder" class="col-4 rounded" style="background-color: #e1e1e1;">
+                            {% endif %}
+                            <div class="col-8 ms-2 fs-6">{{ chamado['nomeItem'] }}<br><small>{{ chamado['nomeLocal'] }}</small></div>
+                        </div>
+                        <span class="badge 
+                                    {% if chamado.nomeStatus == 'Não Respondido' %} bg-danger
+                                    {% elif chamado.nomeStatus == 'Respondido' %} bg-success
+                                    {% else %} bg-primary
+                                    {% endif %} 
+                                    py-1" style="font-size: 12px;">
+                                    {{ chamado.nomeStatus }}
+                        </span>
+                    </div>
+                </a>
+                {% endfor %}
+            </div>
+        {% endfor %}
+    {% endfor %}
+</div>
+
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        font-family: Arial, sans-serif;
+        padding: 20px;
+    }
+
+    h1 {
+        text-align: center;
+        color: #225656;
+        margin-top: 40px;
+        margin-bottom: 30px;
+    }
+
+    h2 {
+        color: #225656;
+        font-size: 24px;
+        margin-bottom: 20px;
+    }
+
+    .container {
+        max-width: 1150px;
+        margin: 0 auto;
+    }
+
+    .title-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+
+    .box-details {
+        display: flex;
+        align-items: center;
+    }
+
+    .box-status {
+        font-size: 14px;
+    }
+
+    .box-status.concluido {
+        color: green;
+    }
+
+    .box-status.nao-respondido {
+        color: red;
+    }
+
+    .box-status.respondido {
+        color: #225656;
+    }
+
+    .row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 20px;
+    }
+
+    .line {
+        flex-grow: 1;
+        height: 1px;
+        background-color: #ccc;
+        margin-left: 10px;
+        margin-right: 10px;
+    }
+
+    .date-title {
+        font-weight: bold;
+        margin-right: 10px;
+    }
+</style>
+
+{% endblock %}

@@ -1,117 +1,149 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="shortcut icon" href="/static/img/logo1.ico" type="image/x-icon">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.min.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-  <title>Tio Carlos :: {{title}}</title>
-  <title>Manutenção</title>
+{% extends 'modelTec.html' %}
 
-  <!-- CSS embutido diretamente no HTML -->
-  <style>
-    * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-    }
+{% block conteudo %}
 
+<div class="container">
+    <h1 style="font-family: Poppins; font-weight: 700;">Manutenções</h1>
 
-    body {
-        font-family: Arial, sans-serif;
-        background-color: #22565621;
-        padding: 20px;
-    }
-
-    .container {
-        max-width: 450px;
-        max-height: 80px;
-        margin: auto;
-    }
-
-    h1 {
-        text-align: center;
-        font-size: 33px;
-        color: #225656;
-        margin-bottom: 20px;
-    }
-
-    .card {
-        display: flex;
-        align-items: center;
-        background-color: white;
-        border-radius: 10px;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        margin-bottom: 15px;
-        padding: 10px;
-    }
-
-    .card-img {
-        width: 70px;
-        height: 70px;
-        border-radius: 10px;
-        margin-right: 20px;
-        object-fit: cover;
-
-    }
-
-    .card-content {
-        flex: 1;
-    }
-
-    .card-content h2 {
-        font-size: 18px;
-        margin-bottom: 5px;
-        color: #2c4537;
-    }
-
-    .card-content p {
-        font-size: 14px;
-        color: #0000006f;
-    }
-
-    .footer {
-        display: flex;
-        justify-content: space-around;
-        padding: 10px;
-        position: fixed;
-        bottom: 0;
-        width: 100%;
-        background-color: #22565600;
-    }
-
-    .action-btn {
-        background: none;
-        border: none;
-        cursor: pointer;
-    }
-
-    .action-btn img {
-        width: 40px;
-        height: 40px;
-    }
-</style>
-</head>
-<body>
-    <div class="container">
-        <h1>Manutenção</h1>
-        <div>
-            <div class="card">
-                <img src="" alt="Lâmpada Queimada" class="card-img">
-                <div class="card-content">
-                    <h1>Lâmpada Queimada</h1>
-                    <h3><strong>Professor Rafael</strong></h3>
-                    <p>Local: Sala do SENAI (DS)</p>
-                </div>
-            </div>
+    <!-- Verifica se existem chamados -->
+    {% if chamados %}
+        <div class="card-body">
+            {% set placeholder_image = url_for('tec.serve_imageApp', filename='ImagemIcon.png') %}
+            <ul class="list-group list-group-flush" style="font-family: Poppins">
+                {% for chamado in chamados %}
+                <li class="list-group-item ps-3 rounded m-2 pt-1">
+                    <div class="chamado-card d-flex align-items-center">
+                        {% if chamado.imgChamado %}
+                            <img
+                                src="{{ url_for('tec.serve_image', filename=chamado.imgChamado) }}" 
+                                class="chamado-imagem"
+                                onerror="this.onerror=null; this.src='{{ placeholder_image }}';">
+                        {% else %}
+                            <img src="{{ placeholder_image }}" alt="Imagem placeholder" class="chamado-imagem">
+                        {% endif %}
+                        <!-- Link para a página de detalhes do chamado -->
+                        <a href="{{ url_for('tec.tec_more', idChamado=chamado.idChamado) }}" class="verMais">
+                            <div class="chamado-conteudo ms-3"> <!-- Adiciona margem esquerda -->
+                                <span class="item fw-bold">{{ chamado.nomeItem }}</span>
+                                <br>
+                                <p class="nome fw-bold">{{ chamado.nomeUsuario }} ({{ chamado.nomeCargo }})</p>
+                                <small class="text-muted fs-6">
+                                    Local: {{ chamado.nomeLocal }}
+                                </small>
+                                <span class="badge 
+                                    {% if chamado.nomeStatus == 'Não Respondido' %} bg-danger
+                                    {% elif chamado.nomeStatus == 'Respondido' %} bg-success
+                                    {% else %} bg-primary
+                                    {% endif %} 
+                                    float-end mb-1">
+                                    {{ chamado.nomeStatus }}
+                                </span>
+                            </div>
+                        </a>
+                    </div>
+                </li>
+                {% endfor %}
+            </ul>
         </div>
-    </div>
-    <div class="footer">
-        <button class="action-btn"><i class="bi bi-clipboard2-check"></i></button>
-        <button class="action-btn"><i class="bi bi-clipboard2-x"></i></button>
-    </div>
-</body>
-</html>
+    {% else %}
+        <div class="alert alert-info" role="alert">
+            Nenhum chamado encontrado.
+        </div>
+    {% endif %}
+</div>
+
+<style>
+  body {
+      margin: 0; /* Remove a margem padrão do body */
+      padding: 0; /* Remove o padding padrão do body */
+      height: 100vh; /* Define a altura do body para 100% da altura da tela */
+      overflow: hidden; /* Remove a barra de rolagem global do body */
+  }
+
+  .container {
+      max-width: 400px;
+      margin: auto;
+      margin-top: 0;
+      padding: 20px;
+  }
+
+  h1 {
+      font-size: 42px;
+      color: #225656;
+      margin-bottom: 20px;
+  }
+
+  .item {
+      font-size: 26px;
+      color: #225656;
+      margin-bottom: 2px;
+  }
+
+  .verMais {
+      text-decoration: none;
+  }
+
+  .nome {
+      font-size: 17px;
+      color: #225656;
+      margin-bottom: 0;
+  }
+
+  .list-group-item {
+      background-color: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      transition: background-color 0.3s;
+  }
+
+  .badge {
+      margin-top: 24px;
+      font-size: 15px;
+  }
+  
+  .card-body {
+      height: calc(100vh - 260px); /* Ajuste a altura conforme necessário */
+      overflow-y: auto; /* Permite rolagem vertical quando necessário */
+  }
+
+  /* Estilização opcional para a barra de rolagem */
+  .card-body::-webkit-scrollbar {
+      width: 8px;
+  }
+
+  .card-body::-webkit-scrollbar-thumb {
+      background-color: #225656; /* Cor da barra de rolagem */
+      border-radius: 10px;
+  }
+  
+  .chamado-imagem {
+      width: 160px; /* A largura será definida de acordo com o texto */
+      height: 110px; /* Define uma altura fixa para manter a proporção */
+      background-color: #E0E0E0;
+      border-radius: 8px;
+      margin-right: 15px; /* Espaço entre imagem e texto */
+  }
+
+  .chamado-card {
+      display: flex; /* Mantém a imagem e o texto alinhados */
+      align-items: center; /* Centraliza verticalmente */
+  }
+</style>
+
+<script>
+    function verificarNovosChamados() {
+        fetch('/tecHome/novosChamados')
+            .then(response => response.json())
+            .then(data => {
+                if (data.novosChamados) {
+                    location.reload(); // Atualiza a página se houver novos chamados
+                }
+            })
+            .catch(error => console.error('Erro ao verificar novos chamados:', error));
+    }
+
+    // Verifica novos chamados a cada 30 segundos
+    setInterval(verificarNovosChamados, 30000);
+</script>
+
+{% endblock %}

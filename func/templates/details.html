@@ -1,0 +1,39 @@
+{% extends 'modelFunc.html' %}
+{% block conteudo %}
+    
+    <div class="container d-flex flex-column align-items-center content">
+        <div class="d-flex flex-column align-items-center mt-3">
+            {% set placeholder_image = url_for('func.serve_imageApp', filename='ImagemIcon.png') %}
+            <div class="d-flex justify-content-center rounded shadow-sm mb-2 w-75 p-5">
+                {% if chamado.imgChamado %}
+                    <img src="{{ url_for('func.serve_image', filename=chamado.imgChamado) }}" 
+                         alt="{{ chamado['nomeItem'] }}" 
+                         class="w-100 rounded" 
+                         onerror="this.onerror=null; this.src='{{ placeholder_image }}';">
+                {% else %}
+                    <img src="{{ placeholder_image }}" alt="Imagem placeholder" class="w-100 rounded">
+                {% endif %}
+            </div>
+            <h2 class="text-bold">{{ chamado['nomeItem'] }}</h2>
+            <div class="w-75">
+                <p class="location">{{ chamado['nomeLocal'] }}</p>
+                <p class="description">{{ chamado['descChamado'] }}</p>
+            </div>
+        </div>
+
+        <h3 class="mt-5" style="color: #225656">Respostas</h3>
+        {% if respostas and respostas | length > 0 %}
+            {% for resposta in respostas %}
+            <div class="response-box my-2 mb-2">
+                <div class="row d-flex justify-content-between" style="color: #225656">
+                    <p class="col-6"><strong>{{ resposta['nomeUsuario'] }}</strong></p>
+                    <p class="col-6 text-end"><strong>{{ resposta.dataResposta | funcData }}</strong></p>
+                    <p class="col-6 mt-2">{{ resposta.descResposta }}</p>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <p class="mt-3" style="color: gray;">Não há respostas para este chamado.</p>
+        {% endif %}
+    </div>
+{% endblock %}

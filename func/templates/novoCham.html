@@ -1,0 +1,231 @@
+{% extends 'modelFunc.html' %}
+
+{% block conteudo %}
+
+    <div class="container">
+
+        <div class="form-container">
+            <a href="{{ url_for('func.func_home') }}" class="back-button">
+                <img src="{{ url_for('func.serve_imageApp', filename='ButtonBack.png') }}" alt="Voltar" class="button-image">
+            </a>
+            <div class="new-chamado">
+                <h1>Novo Chamado</h1>
+            </div>
+            
+            <form action="/novoChamado" method="POST" enctype="multipart/form-data">
+                <div class="photo-upload">
+    <label for="imagem" class="photo-label">
+        {% set placeholder_image = url_for('func.serve_imageApp', filename='ImagemIcon.png') %}
+        <img
+            id="chamadoImagem"
+            src="{{ placeholder_image }}"
+            class="chamado-imagem"
+            onerror="this.onerror=null; this.src='{{ placeholder_image }}';">
+    </label>
+    <input type="file" id="imagem" name="imagem" class="imagem" accept="image/*" onchange="previewImage(event)"> <!-- Chama a função ao selecionar arquivo -->
+</div>
+
+                <select class="input-field" id="area" name="area" required onchange="filtrarLocais()">
+                    <option disabled selected>Filtrar Área...</option>
+                    {% for area in areas %}
+                        <option value="{{ area.idArea }}">{{ area.nomeArea }}</option>
+                    {% endfor %}
+                </select>
+
+                <select class="input-field" id="local" name="local" required onchange="filtrarItens()">
+                    <option disabled selected>Local do Problema</option>
+                    <!-- Opções preenchidas dinamicamente -->
+                </select>
+
+                <select class="input-field" id="item" name="item" required>
+                    <option disabled selected>Item</option>
+                    <!-- Opções preenchidas dinamicamente -->
+                </select>
+
+                <textarea class="input-field" name="descricao" placeholder="Descrição..." required></textarea>
+
+                <button type="submit" class="submit-button">Enviar Chamado</button>
+            </form>
+        </div>
+    </div>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #fff;
+            color: #000;
+        }
+
+        .container {
+            width: 100vw;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .back-button {
+            position: absolute;
+            left: 15px;
+            font-size: 26px;
+            color: #225656;
+            text-decoration: none;
+        }
+
+        .title-container {
+            flex-grow: 1;
+            display: flex;
+            justify-content: center;
+        }
+
+        .main-title {
+            color: #fff;
+            font-size: 28px;
+            text-align: center;
+            margin-left: -43px;
+        }
+
+        .logo {
+            max-height: 50px;
+            max-width: 50px;
+        }
+
+        .form-container {
+            width: 90%;
+            max-width: 90%;
+            height: 92%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 20px;
+        }
+        
+        .photo-upload {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .button-image {
+            width: 40px;
+            height: auto;
+            cursor: pointer;
+        }
+
+        .photo-label {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background-color: #E8F1F2;
+            padding: 20px;
+            width: 150px;
+            height: 150px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+        }
+
+        .photo-label img {
+            width: 130%;
+            height: 130%;
+        }
+
+        .imagem {
+            display: none;
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 23px;
+            margin: 10px 0;
+            border-radius: 8px;
+            border: 2px solid #22565600;
+            background-color: #22565621;
+            font-size: 16px;
+            color: #000;
+        }
+
+        .submit-button {
+            width: 100%;
+            padding: 15px;
+            background-color: #22564a;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-bottom: 40px;
+        }
+
+        .submit-button:hover {
+            background-color: #1a4242;
+        }
+
+        .new-chamado {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .new-chamado h1 {
+            font-size: 24px;
+            color: #225656;
+            margin-bottom: 10px;
+            margin-top: 10px;
+        }
+    </style>
+
+    <script>
+        function previewImage(event) {
+            const image = document.getElementById('chamadoImagem');
+            const file = event.target.files[0];
+
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    image.src = e.target.result; // Atualiza a imagem para a imagem selecionada
+                }
+                reader.readAsDataURL(file); // Lê o arquivo como URL de dados
+            } else {
+                image.src = '{{ placeholder_image }}'; // Reseta para o placeholder se nenhum arquivo for selecionado
+            }
+        }
+
+        function filtrarLocais() {
+            const areaId = document.getElementById('area').value;
+            if (areaId) {
+                fetch(`/filtrarLocais/${areaId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        const localSelect = document.getElementById('local');
+                        localSelect.innerHTML = '<option disabled selected>Local do Problema</option>'; // Reseta as opções
+                        data.forEach(local => {
+                            localSelect.innerHTML += `<option value="${local.idLocal}">${local.nomeLocal}</option>`;
+                        });
+                    });
+            }
+        }
+
+        function filtrarItens() {
+            const localId = document.getElementById('local').value;
+            if (localId) {
+                fetch(`/filtrarItens/${localId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        const itemSelect = document.getElementById('item');
+                        itemSelect.innerHTML = '<option disabled selected>Item</option>'; // Reseta as opções
+                        data.forEach(item => {
+                            itemSelect.innerHTML += `<option value="${item.idItem}">${item.nomeItem}</option>`;
+                        });
+                    });
+            }
+        }
+    </script>
+
+{% endblock %}

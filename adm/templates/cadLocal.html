@@ -1,0 +1,117 @@
+{% extends 'modelAdm.html' %}
+{% block conteudo %}
+
+<button id="toggleButton" class="btn">
+  <ion-icon name="menu-outline"></ion-icon>
+</button>
+
+  <style>
+    main {
+      background-color: #F7FCFC;
+      font-family: 'Open Sans', sans-serif;
+    }
+    .card {
+      border: none;
+      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+    }
+    .btn-success {
+      background-color: #225656;
+      border: none;
+    }
+    .form-control, .form-select {
+      background-color: #d3dddd;
+    }
+  </style>
+
+<main>
+    <div class="container">
+        <p class="fw-bold text-center p-5 fs-5" style="color: #225656;">Cadastro de Local</p>
+
+        <!-- Mensagens de feedback -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        <div class="alert alert-dismissible fade show" role="alert">
+            {% for category, message in messages %}
+            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        {% endwith %}
+
+        <!-- Formulário de Cadastro de Local -->
+        <div class="card mx-auto" style="max-width: 600px; background-color: #fff; margin-bottom: 40px;">
+            <div class="card-body">
+                <form action="/cadLocal" method="post">
+                    <div class="mb-3">
+                        <label for="nomeLocal" class="form-label">Nome do Local:</label>
+                        <input type="text" class="form-control" id="nomeLocal" name="nome_local" required>
+                    </div>
+                    <div class="row">
+                      <div class="mb-3 col-md-6">
+                        <label for="area" class="form-label">Área:</label>
+                        <select class="form-select" id="area" name="area" required>
+                          <option disabled selected>Escolha...</option>
+                          {% for area in areas %}
+                          <option value="{{ area.idArea }}">{{ area.nomeArea }}</option>
+                          {% endfor %}
+                      </select>
+                      </div>
+
+                      <div class="mb-3 col-md-6">
+                        <label for="categoria" class="form-label">Categoria:</label>
+                        <select class="form-select" id="categoria" name="categoria" required>
+                          <option disabled selected>Escolha...</option>
+                          {% for categoria in categorias %}
+                          <option value="{{ categoria.idCategoria }}">{{ categoria.nomeCategoria }}</option>
+                          {% endfor %}
+                      </select>
+                      </div>
+                    </div>
+                    <div class="text-center pt-3">
+                        <button type="submit" class="btn btn-success" style="width: 12rem; height: 2rem;">Cadastrar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+
+  <script>
+    function toggleForm() {
+      var selectedSetor = document.getElementById('setores').value;
+      var formEquipamento = document.getElementById('formEquipamento');
+      var formFuncionario = document.getElementById('formFuncionario');
+      var formSalas = document.getElementById('formSalas');
+      
+      formEquipamento.style.display = 'none';
+      formFuncionario.style.display = 'none';
+      formSalas.style.display = 'none';
+
+      if (selectedSetor === 'equipamento') {
+        formEquipamento.style.display = 'block';
+      } else if (selectedSetor === 'funcionario') {
+        formFuncionario.style.display = 'block';
+      } else if (selectedSetor === 'salas') {
+        formSalas.style.display = 'block';
+      }
+    }
+
+    window.onload = function() {
+      var formType = sessionStorage.getItem('formType');
+      if (formType) {
+        document.getElementById('setores').value = formType;
+        toggleForm();
+        sessionStorage.removeItem('formType'); 
+      } else {
+        toggleForm(); 
+      }
+    };
+  </script>
+
+{% endblock %}

@@ -1,7 +1,4 @@
-import subprocess
-import sys
 from flask import Flask
-import os
 
 from adm.adm import adm_blueprint
 from connection.connection import connection_blueprint
@@ -19,5 +16,5 @@ app.register_blueprint(func_blueprint)
 app.register_blueprint(tec_blueprint)
 app.register_blueprint(session_blueprint)
 
-if __name__ == "__main__":
-    app.run(debug=True)
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5000, debug=True)

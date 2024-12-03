@@ -1,17 +1,17 @@
 {% extends 'modelSession.html' %}
 {% block conteudo %}
 <main class="container-fluid">
-  <div class="row justify-content-center align-items-center" style="height: 100vh;">
+  <div class="row justify-content-center align-items-center" style="padding-top: 30px;">
     
     <div class="col-12 col-md-6 col-lg-4 text-center d-flex align-items-center flex-column">
       <h1 style="color: #FFFFFF; margin-top: 35px;">Tio Carlos Conserta</h1>
       <div style="display: flex; justify-content: center; padding-top: 20px;">
-        <img src="../static/img/logo.png" alt="Tio Carlos Conserta Logo" class="img-fluid" style="max-width: 150px; height: auto;">
+        <img src="/static/img/app/logo_branca.png" alt="Tio Carlos Conserta Logo" class="img-fluid" style="max-width: 150px; height: auto;">
       </div>
 
       <div class="login-box mt-4">
         <form action="/acesso" method="post" novalidate>
-          <p style="color: #1D4D4A;"><strong>LOGIN</strong></p>
+          <p style="color: #1D4D4a;"><strong>LOGIN</strong></p>
           
           {% with messages = get_flashed_messages(with_categories=true) %}
           {% if messages %}
@@ -49,7 +49,7 @@
             <label for="chkLembrar" class="form-check-label ms-3">
               Lembrar de mim
             </label>
-          </div>
+        </div>        
 
           <div class="mt-3">
             <a href="#" class="link-primary">Esqueci a senha...</a>

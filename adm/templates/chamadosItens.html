@@ -1,0 +1,86 @@
+{% extends 'modelAdm.html' %}
+{% block conteudo %}
+    <button id="toggleButton" class="btn" style="margin: 0; padding: 0;">
+        <ion-icon name="menu-outline"></ion-icon>
+    </button>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        h1 {
+            color: #225656;
+            margin-bottom: 100px;
+        }
+
+        .search {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 20px;
+        }
+
+        .search input {
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+
+        .row-title {
+            width: 100%;
+            border-bottom: 1px solid #000;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .row-others {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+        }
+
+        .row-others div {
+            width: 33%;
+            text-align: center;
+        }
+
+    </style>
+    <main>
+        <div class="container my-5">
+            <div class="d-flex flex-row">
+                <h1 class="col-8 text-center mb-5 text-bold">Chamados por Item</h1>
+
+                <form class="d-flex justify-content-end mb-2 col-4" action="/pesquisaItem" method="post" role="search">
+                    <input style="height: 3em;" class="w-50 p-3 rounded-start-pill bg-light border border-end-0 border-dark-subtle" type="text" name="termo" placeholder="Buscar...">
+                    <button style="height: 3em;" class="rounded-end-pill bg-light p-2 border border-start-0 border-dark-subtle"><i class="bi bi-search"></i></button>
+                </form>
+            </div>
+            
+            <!-- Exibição das mensagens flash -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="container">
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }}">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+            {% endwith %}
+
+            <div class="d-flex justify-content-between flex-row w-100 flex-wrap">
+            {%for item in itens%}
+                <div class="col-3 mx-2 my-4"><a style="cursor: pointer; color:#265555" class="text-decoration-none fw-bold" href="/filtrarChamados/item/{{item.nomeItem}}">{{item.nomeItem}}</a></div>
+            {% endfor %}
+            </div>
+        </div>
+    </main>
+{% endblock %}

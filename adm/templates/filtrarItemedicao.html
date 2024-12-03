@@ -1,0 +1,104 @@
+{% extends 'modelAdm.html' %}
+{% block conteudo %}
+
+<button id="toggleButton" class="btn">
+    <ion-icon name="menu-outline"></ion-icon>
+</button>
+<main>
+    <div class="container">
+        <!-- Seção de Seleção de Setor -->
+        <h2 class="section-title pt-4 pb-2">Editar Item</h2>
+        <!-- Seletor de setor para "Sala/Equipamento" -->
+        <div class="d-flex justify-content-center mb-3">
+            <div class="d-flex align-items-end">
+                <div class="me-3">
+                    <label for="setorSelect" class="form-label" id="setorLabel">Filtrar Por:</label>
+                    <select class="form-select" id="setorSelect" name="setor" style="width: 200px;">
+                        <option value="" selected disabled>Categoria</option>
+                        <!-- Aqui as opções são carregadas dinamicamente com Jinja -->
+                        {% for sala in salas %}
+                            <option value="{{ sala.idLocal }}">{{ sala.nomeLocal }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <button type="button" class="btn btn-dark" onclick="buscarItens()"><i class="bi bi-search"></i></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Conteúdo dinâmico de itens -->
+    <div class="container text-center pt-4">
+        <div class="row" id="itensContainer">
+            <!-- aqui vai os itens via ajax -->
+        </div>
+    </div>
+</main>
+
+<style>
+    main {
+        background-color: #F7FCFC;
+        font-family: 'Open Sans', sans-serif;
+    }
+    .card {
+        border: none;
+        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+    }
+    
+    .section-title {
+        color: #225656;
+        font-size: 1.5rem;
+        margin-bottom: 1.5rem;
+        text-align: center;
+    }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    function buscarItens() {
+        const idLocal = document.getElementById('setorSelect').value;
+
+        if (!idLocal) {
+            alert("Selecione uma categoria para filtrar os itens.");
+            return;
+        }
+
+        fetch(`/filtrarItens/${idLocal}`)
+            .then(response => response.json())
+            .then(data => {
+                const itensContainer = document.getElementById('itensContainer');
+                itensContainer.innerHTML = '';
+
+                if (data.length === 0) {
+                    // Exibe a mensagem se não houver itens
+                    const noItemsMessage = document.createElement('p');
+                    noItemsMessage.textContent = 'Não há itens disponíveis nesta categoria.';
+                    noItemsMessage.style.fontSize = '1.2rem';
+                    noItemsMessage.style.fontWeight = 'bold';
+                    itensContainer.appendChild(noItemsMessage);
+                } else {
+                    // Adiciona os itens à página
+                    data.forEach(item => {
+                        if (item.idItem && item.nomeItem) {
+                            const itemDiv = document.createElement('div');
+                            itemDiv.classList.add('col-sm-12', 'col-md-4', 'mb-3');
+
+                            const itemLink = document.createElement('a');
+                            itemLink.href = `/edicaoItem/${item.idItem}`; // Enviar o ID correto na rota
+                            itemLink.textContent = item.nomeItem;
+                            itemLink.style.textDecoration = 'none';
+                            itemLink.style.color = '#225656';
+                            itemLink.style.fontWeight = 'bold';
+                            itemDiv.appendChild(itemLink);
+                            itensContainer.appendChild(itemDiv);
+                        } else {
+                            console.warn('Item incompleto:', item);
+                        }
+                    });
+                }
+            })
+            .catch(error => console.error('Erro ao buscar itens:', error));
+    }
+</script>
+
+{% endblock %}

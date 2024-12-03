@@ -1,160 +1,153 @@
 {% extends 'modelAdm.html' %}
 {% block conteudo %}
 
-<main>
-    <div class="container">
-        <!-- Seção de Seleção de Setor -->
-        <h2 class="section-title pt-4 pb-2">Setor</h2>
+<!-- Botão de menu -->
+<button id="toggleButton" class="btn">
+    <ion-icon name="menu-outline"></ion-icon>
+</button>
 
-        <!-- Seletor duplo para "Por" e "Sala/Equipamento" -->
-        <div class="d-flex justify-content-center mb-3">
-            <!-- Select para "Por" -->
-            <div class="me-3">
-                <label for="porSelect" class="form-label">Por:</label>
-                <select class="form-select" id="porSelect" name="por" onchange="updateSetorOptions()" style="width: 200px;">
-                    <option value="sala" selected>Sala</option>
-                    <option value="equipamento">Equipamento</option>
-                </select>
-            </div>
-
-            <!-- Select para "Sala" ou "Equipamento" que vai mudar dinamicamente -->
-            <div>
-                <label for="setorSelect" class="form-label" id="setorLabel">Sala:</label>
-                <select class="form-select" id="setorSelect" name="setor" style="width: 200px;">
-                    <!-- Aqui as opções serão carregadas via Django -->
-                    {% for sala in salas %}
-                        <option value="{{ sala.idLocal }}">{{ sala.nomeLocal }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-        </div>
-
-        <!-- Formulário de Chamados -->
-        <div class="card mx-auto" style="max-width: 600px; background-color: #fff;">
-            <div class="card-body">
-                <h5 class="section-title">Chamados</h5>
-
-                <!-- Select de Problemas Comuns -->
-                <div class="mb-3">
-                    <label for="problemasComuns" class="form-label">Problemas comuns</label>
-                    <select class="form-select" id="problemasComuns" name="problema_comum" onchange="checkProblemaComum()">
-                        <option selected>Escolha um problema...</option>
-                        <option value="internet">Problema de Internet</option>
-                        <option value="energia">Falta de Energia</option>
-                        <option value="equipamento">Problema com Equipamento</option>
-                        <option value="outros">Outros</option>
-                    </select>
-                </div>
-
-                <!-- Campo de descrição extra para "Outros" -->
-                <div class="mb-3 d-none" id="outrosProblemaContainer">
-                    <input type="text" class="form-control" id="outrosProblema" name="outros_problema" placeholder="Descreva o problema...">
-                </div>
-
-                <!-- Campo de Descrição -->
-                <div class="mb-3">
-                    <input type="text" class="form-control" id="descricaoProblema" name="descricao_problema" placeholder="Descrição...">
-                </div>
-
-                <!-- Upload de Foto -->
-                <div class="mb-3">
-                    <input type="file" class="file-input form-control" id="fotoProblema" name="foto_problema" accept="image/*">
-                </div>
-
-                <!-- Botão Concluído -->
-                <div class="text-center">
-                    <button type="submit" class="btn btn-success">Concluído</button>
-                </div>
-
-            </div>
-        </div>
-
-    </div>
-</main>
-
+<!-- Estilos -->
 <style>
     main {
         background-color: #F7FCFC;
         font-family: 'Open Sans', sans-serif;
     }
-
     .card {
         border: none;
         box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
     }
-
     .btn-success {
         background-color: #225656;
         border: none;
     }
-
-    .form-select,
-    .form-control {
-        background-color: #E0E5E5;
-        border: none;
-    }
-
-    .form-control::placeholder {
-        color: #7D8C8C;
-    }
-
-    .file-input {
-        border: none;
-        position: relative;
-        padding: 0.5rem;
-        background-color: #E0E5E5;
-        color: #7D8C8C;
-    }
-
-    .file-input::before {
-        content: '\f0c6'; /* Ícone de clip */
-        font-family: FontAwesome;
-        position: absolute;
-        right: 10px;
-        top: 50%;
-        transform: translateY(-50%);
-        font-size: 1.5rem;
-        color: #7D8C8C;
-    }
-
-    .section-title {
-        color: #225656;
-        font-size: 1.5rem;
-        margin-bottom: 1.5rem;
-        text-align: center;
+    .form-control, .form-select {
+        background-color: #22565665;
     }
 </style>
 
-<script>
-    // Função que altera as opções conforme o valor selecionado em "Por"
-    function updateSetorOptions() {
-        var porSelect = document.getElementById('porSelect').value;
-        var setorLabel = document.getElementById('setorLabel');
-        var setorSelect = document.getElementById('setorSelect');
-        var options = '';
+<!-- Conteúdo principal -->
+<main>
+    <div class="container">
+        <p class="fw-bold text-center p-5 fs-5" style="color: #225656;">Novo Chamado</p>
 
-        if (porSelect === 'sala') {
-            setorLabel.innerText = 'Sala:';
-            options = `{% for sala in salas %}<option value="{{ sala.idLocal }}">{{ sala.nomeLocal }}</option>{% endfor %}`;
-        } else {
-            setorLabel.innerText = 'Equipamento:';
-            options = `{% for equipamento in equipamentos %}<option value="{{ equipamento.idItem }}">{{ equipamento.nomeItem }}</option>{% endfor %}`;
+        <!-- Exibição de mensagens de feedback -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        <div class="alert alert-dismissible fade show" role="alert">
+            {% for category, message in messages %}
+            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        {% endwith %}
+
+        <!-- Formulário de Chamados -->
+        <div class="card mx-auto" id="formFuncionario" style="max-width: 600px; background-color: #fff; margin-bottom: 40px;">
+            <div class="card-body">
+                <form action="/cadchamados" method="POST" enctype="multipart/form-data">
+                    <!-- Seleção de Área e Local -->
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="area" class="form-label">Área:</label>
+                            <select class="form-select" id="area" name="area" required onchange="filtrarLocais()">
+                                <option disabled selected>Escolha...</option>
+                                {% for area in areas %}
+                                <option value="{{ area.idArea }}">{{ area.nomeArea }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>  
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="local" class="form-label">Local:</label>
+                            <select class="form-select" id="local" name="local" required onchange="filtrarItens()">
+                                <option disabled selected>Escolha...</option>
+                                <!-- Opções preenchidas dinamicamente -->
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <!-- Seleção de Item -->
+                    <div class="col-md-8 mb-3 w-100">
+                        <label for="item" class="form-label">Item:</label>
+                        <select class="form-select" id="item" name="item" required>
+                            <option disabled selected>Escolha...</option>
+                            <!-- Opções preenchidas dinamicamente -->
+                        </select>
+                    </div>
+                    
+                    <!-- Descrição -->
+                    <div class="col-md-8 mb-3 w-100">
+                        <label for="descricao" class="form-label">Descrição:</label>
+                        <textarea class="form-control" id="descricao" name="descricao" required></textarea>
+                    </div>
+
+                    <!-- Upload de Imagem -->
+                    <div class="col-md-8 mb-3 w-100">
+                        <label for="imagem" class="form-label">Imagem:</label>
+                        <input type="file" class="form-control" id="imagem" name="imagem" placeholder="Adicionar foto do problema (opcional)">
+                    </div>
+
+                    <!-- Botão de envio -->
+                    <div class="text-center pt-3 pb-3">
+                        <button type="submit" class="btn btn-success" style="width: 12rem; height: 2rem;">Concluído</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</main>
+
+<!-- Dependências do Bootstrap -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- JavaScript para filtragem dinâmica -->
+<script>
+    // Função para filtrar os locais com base na área selecionada
+    function filtrarLocais() {
+        var idArea = document.getElementById('area').value;
+        
+        if (idArea) {
+            fetch(`/filtrarLocais/` + idArea)
+                .then(response => response.json())
+                .then(data => {
+                    var localSelect = document.getElementById('local');
+                    localSelect.innerHTML = '<option disabled selected>Escolha...</option>';
+                    
+                    data.forEach(local => {
+                        var option = document.createElement('option');
+                        option.value = local.idLocal;
+                        option.textContent = local.nomeLocal;
+                        localSelect.appendChild(option);
+                    });
+                })
+                .catch(error => console.error('Erro ao carregar locais:', error));
         }
-        setorSelect.innerHTML = options;
     }
 
-    // Função para exibir campo extra ao selecionar "Outros"
-    function checkProblemaComum() {
-        var problemaComum = document.getElementById('problemasComuns').value;
-        var outrosContainer = document.getElementById('outrosProblemaContainer');
-        if (problemaComum === 'outros') {
-            outrosContainer.classList.remove('d-none');
-        } else {
-            outrosContainer.classList.add('d-none');
+    // Função para filtrar os itens com base no local selecionado
+    function filtrarItens() {
+        var idLocal = document.getElementById('local').value;
+        
+        if (idLocal) {
+            fetch(`/filtrarItens/` + idLocal)
+                .then(response => response.json())
+                .then(data => {
+                    var itemSelect = document.getElementById('item');
+                    itemSelect.innerHTML = '<option disabled selected>Escolha...</option>';
+                    
+                    data.forEach(item => {
+                        var option = document.createElement('option');
+                        option.value = item.idItem;
+                        option.textContent = item.nomeItem;
+                        itemSelect.appendChild(option);
+                    });
+                })
+                .catch(error => console.error('Erro ao carregar itens:', error));
         }
     }
 </script>
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
 {% endblock %}
