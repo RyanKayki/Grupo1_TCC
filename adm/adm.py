@@ -163,31 +163,40 @@ def editar_chamado(idChamado):
             cursor.execute("SELECT * FROM chamado WHERE idChamado = %s", (idChamado,))
             chamado = cursor.fetchone()
 
-            # Carregar dados adicionais, como áreas, locais e itens
+            # Carregar dados adicionais, como locais e itens
             cursor.execute("SELECT * FROM local")
             locais = cursor.fetchall()
 
             cursor.execute("SELECT * FROM item")
             itens = cursor.fetchall()
+            
+            # Verifica o status do chamado no banco de dados
+            query = """
+            SELECT idStatus FROM chamado WHERE idChamado = %s
+            """
+            cursor.execute(query, (idChamado,))
+            status = cursor.fetchone()
+            
+            if status['idStatus'] == 1:
+                if request.method == 'POST':
+                    novo_desc = request.form.get('descricao')
+                    novo_local = request.form.get('local')
+                    novo_item = request.form.get('item')
 
-            if request.method == 'POST':
-                novo_desc = request.form.get('descricao')
-                novo_local = request.form.get('local')
-                novo_item = request.form.get('item')
+                    # Atualizar os dados do chamado
+                    cursor.execute("""
+                        UPDATE chamado
+                        SET descChamado = %s, idItem = %s, idLocal = %s
+                        WHERE idChamado = %s
+                    """, (novo_desc, novo_item, novo_local, idChamado))
 
-                # Atualizar os dados do chamado
-                cursor.execute("""
-                    UPDATE chamado
-                    SET descChamado = %s, idItem = %s, idLocal = %s
-                    WHERE idChamado = %s
-                """, (novo_desc, novo_item, novo_local, idChamado))
-
-                conexao.commit()
-                flash('Chamado atualizado com sucesso!', 'success')
+                    conexao.commit()
+                    flash('Chamado atualizado com sucesso!', 'success')
+                    return redirect(url_for('adm.adm'))
+                return render_template('editarChamados.html', chamado=chamado, locais=locais, itens=itens)
+            else:
+                flash('Esse chamado já foi respondido, então não será possível apagá-lo.')
                 return redirect(url_for('adm.adm'))
-
-            return render_template('editarChamados.html', chamado=chamado, locais=locais, itens=itens)
-
         finally:
             conexao.close()
     else:
@@ -958,30 +967,37 @@ def filtrarChamados(filtro, valor):
         return redirect("/login")
 
 
-@adm_blueprint.route("/excluir/<int:idChamado>")
+# Rota para excluir um chamado
+@adm_blueprint.route("/excluir/<int:idChamado>", methods=['DELETE', 'GET'])
 def excluir(idChamado):
-    # Rota para excluir um chamado
     if verifica_sessao():
         conexao = conecta_database()
         cursor = conexao.cursor(dictionary=True)
+        # Verifica o status do chamado no banco de dados
+        query = """
+        SELECT idStatus FROM chamado WHERE idChamado = %s
+        """
+        cursor.execute(query, (idChamado,))
+        status = cursor.fetchone()
+        if status == 1:
+            # Buscando a imagem associada ao chamado
+            cursor.execute('SELECT imgChamado FROM chamado WHERE idChamado = %s', (idChamado,))
+            chamado = cursor.fetchone()
 
-        # Buscando a imagem associada ao chamado
-        cursor.execute('SELECT imgChamado FROM chamado WHERE idChamado = %s', (idChamado,))
-        chamado = cursor.fetchone()
+            # Excluindo a imagem do chamado do diretório de imagens
+            if chamado and chamado['imgChamado']:
+                try:
+                    os.remove(os.path.join("src/img/chamados", chamado['imgChamado']))
+                except FileNotFoundError:
+                    pass  # Se o arquivo não for encontrado, continuamos sem falhar
 
-        # Excluindo a imagem do chamado do diretório de imagens
-        if chamado and chamado['imgChamado']:
-            try:
-                os.remove(os.path.join("src/img/chamados", chamado['imgChamado']))
-            except FileNotFoundError:
-                pass  # Se o arquivo não for encontrado, continuamos sem falhar
-
-        # Excluindo o chamado do banco de dados
-        cursor.execute('DELETE FROM chamado WHERE idChamado = %s', (idChamado,))
-        conexao.commit()
-        conexao.close()
-
-        return redirect('/adm')
+            # Excluindo o chamado do banco de dados
+            cursor.execute('DELETE FROM chamado WHERE idChamado = %s', (idChamado,))
+            conexao.commit()
+            conexao.close()
+            return jsonify({"message": "Chamado apagado com sucesso."}), 200
+        else:
+            return jsonify({"message": "Esse chamado já foi respondido, então não será possível apagá-lo."}), 500
     else:
         return redirect("/login")
 
@@ -1090,7 +1106,7 @@ def pesquisa():
     
     return render_template("chamadosItens.html", title="Lista de salas", itens=itens, login=True)
 
-
+#### Foto do usuário ####
 #Salvar foto do Usuario
 @adm_blueprint.route('/img/usuarios/<path:filename>')
 def serve_imageUser(filename):
