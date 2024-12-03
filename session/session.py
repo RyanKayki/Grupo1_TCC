@@ -68,7 +68,7 @@ def login_page():
 
 @session_blueprint.route("/acesso", methods=['POST'])
 def acesso():
-    usuario_informado = request.form["usuario"]
+    email_informado = request.form["email"]
     senha_informada = request.form["senha"]
     lembrar = 'chklembrar' in request.form
 
@@ -76,11 +76,11 @@ def acesso():
     conexao = conecta_database()
     cursor = conexao.cursor(dictionary=True)
     
-    cursor.execute('SELECT * FROM usuario WHERE nomeUsuario = %s', (usuario_informado,))
-    usuario = cursor.fetchone()
+    cursor.execute('SELECT * FROM usuario WHERE emailUsuario = %s', (email_informado,))
+    email = cursor.fetchone()
 
-    if usuario is None:
-        flash("Usuário não cadastrado", "usuario")
+    if email is None:
+        flash("Email não cadastrado", "email")
         cursor.close()
         conexao.close()
         return redirect("/login")
@@ -91,19 +91,19 @@ def acesso():
         conexao.close()
         return redirect("/login")
 
-    if usuario['senhaUsuario'] != senha_informada:
+    if email['senhaUsuario'] != senha_informada:
         flash("Senha incorreta", "senha")
         cursor.close()
         conexao.close()
         return redirect("/login")
 
     session["login"] = True
-    session["usuario"] = usuario_informado
+    session["email"] = email_informado
 
     # Se "lembrar de mim" for marcado, define um cookie
     if lembrar:
         resp = redirect("/")
-        resp.set_cookie('usuario', usuario_informado, max_age=timedelta(days=30))  # O cookie dura 30 dias
+        resp.set_cookie('email', email_informado, max_age=timedelta(days=30))  # O cookie dura 30 dias
         return resp
 
     # Restante do código para carregar cargo do usuário
@@ -111,9 +111,9 @@ def acesso():
     SELECT c.nomeCargo, u.idUsuario
     FROM Cargo c
     JOIN usuario u ON c.idCargo = u.idCargo
-    WHERE u.nomeUsuario = %s
+    WHERE u.emailUsuario = %s
     """
-    cursor.execute(query, (usuario_informado,))
+    cursor.execute(query, (email_informado,))
     cargo_data = cursor.fetchone()
 
     if cargo_data:
@@ -131,26 +131,38 @@ def acesso():
         return redirect("/funcHome")
 
 
-# Rota para recuperação de senha
-@session_blueprint.route('/recupsenha')
-def recupsenha():
-    title = "Recuperar Senha"
-    login = verifica_sessao()
-    return render_template("RecupSenha.html", title=title, login=login)
 
-# Rota para código de recuperação de senha
-@session_blueprint.route('/codigosenha')
-def codigosenha():
-    title = "Recuperar Senha"
-    login = verifica_sessao()
-    return render_template("CodigoSenha.html", title=title, login=login)
 
 # Rota para exibir a senha recuperada
-@session_blueprint.route('/mostrasenha')
-def mostrasenha():
+@session_blueprint.route('/recuperarsenha', methods=['GET', 'POST'])
+def recuperarsenha():
+    if request.method == 'POST':
+        email = request.form.get('email')
+
+        # Conectando ao banco de dados e buscando a senha
+        conexao = conecta_database()
+        cursor = conexao.cursor(dictionary=True)
+        try:
+            query = "SELECT nomeUsuario, senhaUsuario FROM usuario WHERE emailUsuario = %s"
+            cursor.execute(query, (email,))
+            usuario = cursor.fetchone()
+        finally:
+            cursor.close()
+            conexao.close()
+
+        # Verificando se o e-mail foi encontrado
+        if usuario:
+            nome_usuario = usuario['nomeUsuario']
+            senha = usuario['senhaUsuario']
+            flash(f'Olá, {nome_usuario}. Sua senha é: {senha}', 'senha')  # Categoria "senha"
+        else:
+            flash('E-mail não encontrado.', 'senha')
+
+        return redirect(request.url)
+
     title = "Recuperar Senha"
-    login = verifica_sessao()
-    return render_template("MostraSenha.html", title=title, login=login)
+    return render_template("rememberPassword.html", title=title)
+
 
 
 @session_blueprint.route("/logout")
