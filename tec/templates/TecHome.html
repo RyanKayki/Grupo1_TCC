@@ -2,6 +2,10 @@
 
 {% block conteudo %}
 
+<button id="toggleButton" class="btn-menu my-1 mx-1">
+    <ion-icon name="menu-outline"></ion-icon>
+  </button>
+
 <div class="container">
     <h1 style="font-family: Poppins; font-weight: 700;">Manutenções</h1>
 
@@ -59,12 +63,11 @@
       height: 100vh; /* Define a altura do body para 100% da altura da tela */
       overflow: hidden; /* Remove a barra de rolagem global do body */
   }
-
   .container {
-      max-width: 400px;
-      margin: auto;
-      margin-top: 0;
-      padding: 20px;
+    max-width: 400px;
+    margin: auto;
+    margin-top: 0;
+    padding: 20px;
   }
 
   h1 {

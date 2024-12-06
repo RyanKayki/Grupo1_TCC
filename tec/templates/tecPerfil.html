@@ -1,0 +1,186 @@
+{% extends 'modeltec.html' %}
+{% block conteudo %}
+
+<div class="loader-container">
+    <div class="loader"></div>
+    <div class="loader-text">Carregando...</div>
+  </div>
+
+    <div class="container-wrapper mx-4 flex-column d-flex mb-5" style="display: none;">
+
+        <button id="toggleButton" class="btn-menu my-1 mx-1" style="display: none;">
+            <ion-icon name="menu-outline"></ion-icon>
+          </button>
+        <div class="box m-5 flex-column" style="display: none;">
+        {% set placeholder_image = url_for('tec.serve_imageUser', filename='UserPlaceHolder.png') %}
+        <div class="profile-picture" style="cursor: pointer;">
+            <h2>Perfil</h2>
+            {% if usuario.imgUsuario %}
+                <img
+                    src="{{ url_for('tec.serve_imageUser', filename=usuario.imgUsuario) }}" 
+                    class="chamado-imagem"
+                    onclick="document.getElementById('fotoPerfil').click()"
+                    onerror="this.onerror=null; this.src='{{ placeholder_image }}';">
+            {% else %}
+                <img 
+                    src="{{ placeholder_image }}" 
+                    alt="Imagem placeholder" 
+                    class="chamado-imagem"
+                    onclick="document.getElementById('fotoPerfil').click()">
+            {% endif %}
+
+            <!-- Formulário invisível para atualizar a imagem -->
+            <form id="perfilForm" action="/tecPerfil" method="POST" enctype="multipart/form-data" style="display: none;">
+                <input 
+                    type="file" 
+                    id="fotoPerfil" 
+                    name="fotoPerfil" 
+                    accept="image/*" 
+                    onchange="document.getElementById('perfilForm').submit();">
+            </form>
+        </div>
+
+        <div class="profile-info full-width">
+            <div class="profile-field col-md-6">
+                <label>Nome</label>
+                <p>{{ usuario.nomeUsuario }}</p>
+            </div>
+
+            <div class="profile-field col-md-6">
+                <label>E-mail</label>
+                <p>{{ usuario.emailUsuario }}</p>
+            </div>
+
+            <div class="profile-field col-md-6">
+                <label>Senha</label>
+                <div class="password-wrapper d-flex justify-content-between">
+                    
+                    <p id="senhaDisplay">{{ usuario.senhaUsuario }}</p>
+                    <span id="eyeIcon" onclick="togglePasswordVisibility();" style="cursor: pointer;">🙈</span>
+                </div>
+            </div>
+
+            <div class="profile-field col-md-6">
+                <label>Número de telefone</label>
+                <p>{{ usuario.numeroUsuario }}</p>
+            </div>
+
+            <div class="profile-field full-width">
+                <label>Cargo</label>
+                <p>{{ usuario.nomeCargo }}</p>
+            </div>
+        </div>
+    </div>
+    </div>
+
+
+<style>
+    * {
+        box-sizing: border-box;
+    }
+     .container-wrapper {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh; /* Altura mínima de 100% da altura da janela */
+    }
+    #toggleButton {
+        position: absolute;
+        top: 10px; /* Ajusta a posição vertical */
+        left: 10px; /* Ajusta a posição horizontal */
+        color: white; /* Cor do ícone */
+        border: none; /* Remove borda */
+        border-radius: 50%; /* Torna o botão circular */
+        padding: 10px; /* Ajusta o espaçamento interno */
+        cursor: pointer; /* Altera o cursor para indicar clicável */
+    }
+    .box {
+        background-color: #fff;
+        border-radius: 15px;
+        padding: 20px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        width: 100%;
+        max-width: 500px;
+    }
+    .profile-picture {
+        text-align: center;
+        margin-bottom: 20px;
+        position: relative;
+    }
+    .profile-picture img {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        border: 4px solid #e0edeb;
+    }
+    h2 {
+        color: #005c56;
+        text-align: center;
+        font-size: 24px;
+        margin: 0;
+        margin-bottom: 20px;
+    }
+    .profile-field {
+        background-color: #e0edeb;
+        border-radius: 10px;
+        padding: 10px;
+        margin-bottom: 10px;
+        font-size: 16px;
+        width: 48%; /* Ajusta a largura para 48% */
+    }
+    .profile-field label {
+        font-weight: bold;
+        display: block;
+        margin-bottom: 5px;
+        color: #333;
+    }
+    .profile-field p {
+        margin: 0;
+    }
+    .profile-info {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4%; /* Ajusta o espaço entre os elementos */
+    }
+    .profile-field.full-width {
+        width: 100%;
+    }
+    @media (max-width: 480px) {
+        .profile-field {
+            font-size: 14px;
+            width: 100%; /* Ajusta para uma coluna em telas menores */
+        }
+        .profile-picture img {
+            width: 150px;
+            height: 150px;
+        }
+    }
+</style>
+<script>
+        // Função para alternar a visibilidade da senha
+        function togglePasswordVisibility() {
+            var senhaDisplay = document.getElementById("senhaDisplay");
+            var eyeIcon = document.getElementById("eyeIcon");
+    
+            // Verifica se a senha está oculta e a alterna
+            if (senhaDisplay.textContent.includes('*')) {
+                senhaDisplay.textContent = "{{ usuario.senhaUsuario }}";  // Mostrar a senha
+                eyeIcon.textContent = "🙉";  // Troca o ícone para "olho fechado"
+            } else {
+                senhaDisplay.textContent = '*'.repeat(senhaDisplay.textContent.length);  // Substitui por asteriscos
+                eyeIcon.textContent = "🙈";  // Troca o ícone para "olho aberto"
+            }
+        }
+    
+        // Inicialização para ocultar a senha ao carregar a página
+        window.onload = function() {
+            var senhaDisplay = document.getElementById("senhaDisplay");
+            var eyeIcon = document.getElementById("eyeIcon");
+    
+            senhaDisplay.textContent = '*'.repeat("{{ usuario.senhaUsuario }}".length);  // Senha oculta inicialmente
+            eyeIcon.textContent = "🙈";  // Ícone de "olho aberto"
+        }
+
+        
+    </script>
+{% endblock %}

@@ -1,8 +1,9 @@
-from flask import render_template, Blueprint, redirect, send_from_directory, request, jsonify, session
+from flask import render_template, Blueprint, redirect, send_from_directory, request, jsonify, session, url_for, flash
 from session.session import verifica_sessao
 from connection.connection import conecta_database  # Importando corretamente
-import os
+import os, uuid
 from datetime import datetime
+from werkzeug.utils import secure_filename
 
 tec_blueprint = Blueprint("tec", __name__, template_folder="templates")
 
@@ -233,6 +234,53 @@ def detalhe(id):
 
     return render_template('chamado.html', chamado=chamado, respostas=respostas)
 
+# Rota do perfil do funcionário com GET e POST
+@tec_blueprint.route("/tecPerfil", methods=["GET", "POST"])
+def perfil_tec():
+    if verifica_sessao():
+        conexao = conecta_database()
+        cursor = conexao.cursor(dictionary=True)
+        id_usuario = session.get("idUsuario")
+
+        if request.method == "POST":
+            nova_foto = request.files.get("fotoPerfil")
+            if nova_foto and nova_foto.filename:
+                # Buscar a foto atual
+                cursor.execute("SELECT imgUsuario FROM usuario WHERE idUsuario = %s", (id_usuario,))
+                usuario = cursor.fetchone()
+
+                # Remover a foto antiga
+                if usuario and usuario["imgUsuario"]:
+                    try:
+                        os.remove(os.path.join("src/img/usuarios", usuario["imgUsuario"]))
+                    except FileNotFoundError:
+                        pass
+
+                # Salvar a nova foto
+                nome_foto = f"{id_usuario}_{secure_filename(nova_foto.filename)}"
+                caminho_foto = os.path.join("src/img/usuarios", nome_foto)
+                nova_foto.save(caminho_foto)
+
+                # Atualizar o banco
+                cursor.execute("UPDATE usuario SET imgUsuario = %s WHERE idUsuario = %s", (nome_foto, id_usuario))
+                conexao.commit()
+
+                flash("Foto de perfil atualizada com sucesso!", "success")
+            else:
+                flash("Nenhuma imagem foi selecionada.", "error")
+
+        if request.method == "GET":
+            # Buscar dados do perfil para exibir
+            cursor.execute('SELECT u.nomeUsuario, u.emailUsuario, u.numeroUsuario, u.imgUsuario, u.senhaUsuario, c.nomeCargo FROM usuario u LEFT JOIN cargo c ON u.idCargo = c.idCargo WHERE idUsuario = %s', (session['idUsuario'],))
+            usuario = cursor.fetchone()
+            conexao.close()
+            return render_template("tecPerfil.html", usuario=usuario, login=True)
+
+        conexao.close()
+        return redirect("/tecPerfil")
+    else:
+        return redirect(url_for("login"))
+    
 meses = {
     1: "Janeiro", 2: "Fevereiro", 3: "Março", 4: "Abril",
     5: "Maio", 6: "Junho", 7: "Julho", 8: "Agosto",
@@ -280,4 +328,13 @@ def serve_imageApp(filename):
     image_path = os.path.join(IMG_FOLDER, 'app', filename)
     if os.path.exists(image_path):
         return send_from_directory(os.path.join(IMG_FOLDER, 'app'), filename)
+    
+#Salvar foto do Usuario
+@tec_blueprint.route('/img/usuarios/<path:filename>')
+def serve_imageUser(filename):
+    image_path = os.path.join(IMG_FOLDER, 'usuarios', filename)
+    if os.path.exists(image_path):
+        return send_from_directory(os.path.join(IMG_FOLDER, 'usuarios'), filename)
+    else:
+        return send_from_directory(os.path.join(IMG_FOLDER, 'usuarios'), 'userPlaceHolder.png')
 
