@@ -34,7 +34,7 @@
 
             <div class="row">
                 {% for chamado in chamados %}
-                    <div class="d-flex flex-wrap col-12 col-md-3 rounded me-1 p-2 my-3 justify-content-between align-items-center" style="box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);">
+                    <div class="d-flex flex-wrap col-12 col-md-3 rounded mx-4 p-2 my-3 justify-content-between align-items-center" style="box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);">
                             <div class="d-flex justify-content-between">
                                 <a href="/chamadoDetalhes/{{chamado['idChamado']}}" style="text-decoration: none; color: #225656" class="col-9 d-flex">
                                     <div class="col-4 rounded" style="overflow:hidden; max-width: 100px; max-height: 100px;">
@@ -144,7 +144,6 @@
 
     .row {
         display: flex;
-        justify-content: space-between;
         margin-bottom: 20px;
     }
 
