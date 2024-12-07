@@ -172,7 +172,7 @@ def logout():
     session.pop("cargo", None)
     
     resp = redirect("/login")
-    resp.delete_cookie('usuario')  # Remove o cookie
+    resp.delete_cookie('email')  # Remove o cookie
     return resp
 
 # Registrando o blueprint no app
