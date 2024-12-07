@@ -1,7 +1,14 @@
 {% extends 'modelTec.html' %}
 
 {% block conteudo %}
+
+
+
 <div class="container">
+
+    <button id="toggleButton" class="btn-menu my-1 mx-1">
+        <ion-icon name="menu-outline"></ion-icon>
+      </button>
     <h1 class="titulo">Manutenções <span class="recuo">Finalizadas</span></h1>
 
     <!-- Verifica se há chamados finalizados -->
@@ -47,16 +54,17 @@
     {% endif %}
 </div>
 <style>
-    body {
-        margin: 0; /* Remove a margem padrão do body */
-        padding: 0; /* Remove o padding padrão do body */
-        height: 100vh; /* Define a altura do body para 100% da altura da tela */
-        display: flex; /* Usado para centralizar o conteúdo */
-        justify-content: center; /* Centraliza horizontalmente */
-        align-items: center; /* Centraliza verticalmente */
-        overflow: hidden;
-    }
 
+#toggleButton {
+        position: absolute;
+        top: 10px; /* Ajusta a posição vertical */
+        left: 10px; /* Ajusta a posição horizontal */
+        color: white; /* Cor do ícone */
+        border: none; /* Remove borda */
+        border-radius: 50%; /* Torna o botão circular */
+        padding: 10px; /* Ajusta o espaçamento interno */
+        cursor: pointer; /* Altera o cursor para indicar clicável */
+    }
     .container {
         max-width: 100%;
         width: 100%; /* Faz o contêiner ocupar toda a largura disponível */
