@@ -1,4 +1,4 @@
-from flask import render_template, session, redirect, request, Flask, Blueprint, flash
+from flask import render_template, session, redirect, request, Flask, Blueprint, flash, make_response
 import mysql.connector
 from datetime import timedelta
 
@@ -8,74 +8,74 @@ app.secret_key = "Rhzin"
 # Definindo o blueprint
 session_blueprint = Blueprint("session", __name__, template_folder="templates", static_folder='src')
 
-#DB CLOUD
+
+# Função para conectar ao banco de dados
 def conecta_database():
     conexao = mysql.connector.connect(
-        host='localhost',  # Host do Railway
-        user='root',                     # Usuário do banco de dados
-        password='senai',  # Senha do banco de dado
-        database='tcc',              # Nome do banco de dados fornecido pelo Railway
-        port='3306'                     # Porta do banco de dados no Railway
+        host='localhost',
+        user='root',
+        password='senai',
+        database='tcc',
+        port='3306'
     )
     return conexao
 
-def verifica_sessao():
-    # Verifica se a sessão de login está ativa
-    return "login" in session and session["login"]
 
+# Função para verificar sessão ou configurar a partir dos cookies
+def verifica_sessao():
+    if "login" in session and session["login"]:
+        return True
+
+    id_usuario = request.cookies.get('idUsuario')
+    cargo = request.cookies.get('cargo')
+
+    if id_usuario and cargo:
+        session["login"] = True
+        session["idUsuario"] = id_usuario
+        session["cargo"] = cargo
+        return True
+
+    return False
+
+
+# Rota inicial que redireciona com base no cargo do usuário
 @session_blueprint.route('/')
 def index():
-    # Rota inicial que redireciona baseado no cargo do usuário
-    conexao = conecta_database()
-    cursor = conexao.cursor(dictionary=True)
-    cursor.execute('SELECT * FROM usuario')
-    conexao.close()
-
-    login = verifica_sessao()
-    if login:
-        cargo = session['cargo']
+    if verifica_sessao():
+        cargo = session.get('cargo')
         if cargo == "Administração":
             return redirect("/adm")
         elif cargo == "Manutenção":
             return redirect("/tecHome")
         else:
             return redirect("/funcHome")
-    else:
-        return redirect("/login")
+    return redirect("/login")
 
+
+# Rota de login
 @session_blueprint.route('/login')
 def login_page():
-    # Página de login
-    conexao = conecta_database()
-    cursor = conexao.cursor(dictionary=True)
-    cursor.execute('SELECT * FROM usuario')
-    conexao.close()
-    title = "Login"
-    login = verifica_sessao()
-    if login:
-        cargo = session['cargo']
+    if verifica_sessao():
+        cargo = session.get('cargo')
         if cargo == "Administração":
             return redirect("/adm")
         elif cargo == "Manutenção":
             return redirect("/tecHome")
         else:
             return redirect("/funcHome")
-    else:
-        return render_template("login.html", title=title)
+    return render_template("login.html", title="Login")
 
 
-
-
+# Rota de acesso ao sistema
 @session_blueprint.route("/acesso", methods=['POST'])
 def acesso():
     email_informado = request.form["email"]
     senha_informada = request.form["senha"]
     lembrar = 'chklembrar' in request.form
 
-    # Conectando ao banco de dados
     conexao = conecta_database()
     cursor = conexao.cursor(dictionary=True)
-    
+
     cursor.execute('SELECT * FROM usuario WHERE emailUsuario = %s', (email_informado,))
     email = cursor.fetchone()
 
@@ -97,16 +97,6 @@ def acesso():
         conexao.close()
         return redirect("/login")
 
-    session["login"] = True
-    session["email"] = email_informado
-
-    # Se "lembrar de mim" for marcado, define um cookie
-    if lembrar:
-        resp = redirect("/")
-        resp.set_cookie('email', email_informado, max_age=timedelta(days=30))  # O cookie dura 30 dias
-        return resp
-
-    # Restante do código para carregar cargo do usuário
     query = """
     SELECT c.nomeCargo, u.idUsuario
     FROM Cargo c
@@ -116,30 +106,35 @@ def acesso():
     cursor.execute(query, (email_informado,))
     cargo_data = cursor.fetchone()
 
-    if cargo_data:
-        session["cargo"] = cargo_data["nomeCargo"]
-        session["idUsuario"] = cargo_data["idUsuario"]
-    
+    if not cargo_data:
+        flash("Erro ao recuperar cargo do usuário", "erro")
+        cursor.close()
+        conexao.close()
+        return redirect("/login")
+
+    session["login"] = True
+    session["email"] = email_informado
+    session["cargo"] = cargo_data["nomeCargo"]
+    session["idUsuario"] = cargo_data["idUsuario"]
+
+    resp = make_response(redirect("/"))
+
+    # Configurando cookies para "Lembrar-me"
+    if lembrar:
+        resp.set_cookie('idUsuario', str(cargo_data["idUsuario"]), max_age=timedelta(days=30))
+        resp.set_cookie('cargo', cargo_data["nomeCargo"], max_age=timedelta(days=30))
+
     cursor.close()
     conexao.close()
-
-    if session["cargo"] == "Administração":
-        return redirect("/adm")
-    elif session["cargo"] == "Manutenção":
-        return redirect("/tecHome")
-    else:
-        return redirect("/funcHome")
+    return resp
 
 
-
-
-# Rota para exibir a senha recuperada
+# Rota para recuperação de senha
 @session_blueprint.route('/recuperarsenha', methods=['GET', 'POST'])
 def recuperarsenha():
     if request.method == 'POST':
         email = request.form.get('email')
 
-        # Conectando ao banco de dados e buscando a senha
         conexao = conecta_database()
         cursor = conexao.cursor(dictionary=True)
         try:
@@ -150,30 +145,27 @@ def recuperarsenha():
             cursor.close()
             conexao.close()
 
-        # Verificando se o e-mail foi encontrado
         if usuario:
             nome_usuario = usuario['nomeUsuario']
             senha = usuario['senhaUsuario']
-            flash(f'Olá, {nome_usuario}. Sua senha é: {senha}', 'senha')  # Categoria "senha"
+            flash(f'Olá, {nome_usuario}. Sua senha é: {senha}', 'senha')
         else:
             flash('E-mail não encontrado.', 'senha')
 
         return redirect(request.url)
 
-    title = "Recuperar Senha"
-    return render_template("rememberPassword.html", title=title)
+    return render_template("rememberPassword.html", title="Recuperar Senha")
 
 
-
+# Rota para logout
 @session_blueprint.route("/logout")
 def logout():
-    session.pop("login", None)
-    session.pop("usuario", None)
-    session.pop("cargo", None)
-    
+    session.clear()
     resp = redirect("/login")
-    resp.delete_cookie('email')  # Remove o cookie
+    resp.delete_cookie('idUsuario')
+    resp.delete_cookie('cargo')
     return resp
+
 
 # Registrando o blueprint no app
 app.register_blueprint(session_blueprint)
