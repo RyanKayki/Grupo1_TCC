@@ -35,7 +35,7 @@
                         <div class="chamado-card">
                             <!-- Puxando a imagem do banco de dados -->
                             <img
-                                src="{{ url_for('tec.serve_image', filename=chamado.imgChamado) }}" 
+                                src="{{ url_for('tec.serve_image', filename=chamado.imgChamado or 'ImagemIcon.png') }}" 
                                 class="chamado-imagem"
                                 onerror="this.onerror=null; this.src='{{ placeholder_image }}';">
                             <a href="{{ url_for('tec.tec_more', idChamado=chamado.idChamado) }}" class="verMais">   

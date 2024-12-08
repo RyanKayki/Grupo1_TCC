@@ -318,11 +318,15 @@ def data_formatada(data):
 
 @tec_blueprint.route('/img/chamados/<path:filename>')
 def serve_image(filename):
+    if not filename:  # Caso o filename seja None ou vazio
+        filename = 'ImagemIcon.png'
+
     image_path = os.path.join(IMG_FOLDER, 'chamados', filename)
     if os.path.exists(image_path):
         return send_from_directory(os.path.join(IMG_FOLDER, 'chamados'), filename)
     else:
         return send_from_directory(os.path.join(IMG_FOLDER, 'chamados'), 'ImagemIcon.png')
+
     
 @tec_blueprint.route('/img/app/<path:filename>')
 def serve_imageApp(filename):
