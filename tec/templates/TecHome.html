@@ -2,6 +2,10 @@
 
 {% block conteudo %}
 
+<button id="toggleButton" class="btn-menu my-1 mx-1">
+    <ion-icon name="menu-outline"></ion-icon>
+  </button>
+
 <div class="container">
     <h1 style="font-family: Poppins; font-weight: 700;">Manutenções</h1>
 
@@ -16,13 +20,13 @@
                         {% if chamado.imgChamado %}
                             <img
                                 src="{{ url_for('tec.serve_image', filename=chamado.imgChamado) }}" 
-                                class="chamado-imagem"
+                                class="chamado-imagem col-5"
                                 onerror="this.onerror=null; this.src='{{ placeholder_image }}';">
                         {% else %}
-                            <img src="{{ placeholder_image }}" alt="Imagem placeholder" class="chamado-imagem">
+                            <img src="{{ placeholder_image }}" alt="Imagem placeholder" class="chamado-imagem col-5">
                         {% endif %}
                         <!-- Link para a página de detalhes do chamado -->
-                        <a href="{{ url_for('tec.tec_more', idChamado=chamado.idChamado) }}" class="verMais">
+                        <a href="{{ url_for('tec.tec_more', idChamado=chamado.idChamado) }}" class="verMais col-7">
                             <div class="chamado-conteudo ms-3"> <!-- Adiciona margem esquerda -->
                                 <span class="item fw-bold">{{ chamado.nomeItem }}</span>
                                 <br>
@@ -59,12 +63,11 @@
       height: 100vh; /* Define a altura do body para 100% da altura da tela */
       overflow: hidden; /* Remove a barra de rolagem global do body */
   }
-
   .container {
-      max-width: 400px;
-      margin: auto;
-      margin-top: 0;
-      padding: 20px;
+    max-width: 400px;
+    margin: auto;
+    margin-top: 0;
+    padding: 20px;
   }
 
   h1 {
@@ -117,11 +120,8 @@
   }
   
   .chamado-imagem {
-      width: 160px; /* A largura será definida de acordo com o texto */
-      height: 110px; /* Define uma altura fixa para manter a proporção */
       background-color: #E0E0E0;
       border-radius: 8px;
-      margin-right: 15px; /* Espaço entre imagem e texto */
   }
 
   .chamado-card {
