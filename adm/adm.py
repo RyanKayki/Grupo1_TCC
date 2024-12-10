@@ -176,7 +176,6 @@ def editar_chamado(idChamado):
             """
             cursor.execute(query, (idChamado,))
             status = cursor.fetchone()
-            
             if status['idStatus'] == 1:
                 if request.method == 'POST':
                     novo_desc = request.form.get('descricao')
@@ -979,7 +978,7 @@ def excluir(idChamado):
         """
         cursor.execute(query, (idChamado,))
         status = cursor.fetchone()
-        if status == 1:
+        if status['idStatus'] == 1:
             # Buscando a imagem associada ao chamado
             cursor.execute('SELECT imgChamado FROM chamado WHERE idChamado = %s', (idChamado,))
             chamado = cursor.fetchone()
