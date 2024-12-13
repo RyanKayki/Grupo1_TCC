@@ -220,19 +220,12 @@ def filtrarLocais(idArea):
     return jsonify(locais)
 
 
-@adm_blueprint.route("/filtrarItens/<int:idLocal>", methods=['GET'])
-def filtrarItens(idLocal):
+@adm_blueprint.route("/filtrarItens/<int:idCategoria>", methods=['GET'])
+def filtrarItens(idCategoria):
     conexao = conecta_database()
     cursor = conexao.cursor(dictionary=True)
 
-    # Primeiro, obtém a categoria do local selecionado
-    query_categoria = "SELECT idCategoria FROM local WHERE idLocal = %s"
-    cursor.execute(query_categoria, (idLocal,))
-    categoria = cursor.fetchone()
-
-    if categoria:
-        idCategoria = categoria['idCategoria']
-
+    if idCategoria:
         # Filtrar itens relacionados à categoria do local
         query_itens = """
         SELECT i.idItem, i.nomeItem
@@ -569,9 +562,9 @@ def filtrarItemedicao():
 
     try:
         # Consulta para obter todas as salas
-        query_salas = "SELECT idLocal, nomeLocal FROM local"
+        query_salas = "SELECT idCategoria, nomeCategoria FROM categoria"
         cursor.execute(query_salas)
-        salas = cursor.fetchall()
+        categorias = cursor.fetchall()
 
     finally:
         # Fecha a conexão com o banco de dados
@@ -579,7 +572,7 @@ def filtrarItemedicao():
 
     # Renderiza o template e passa a lista de salas
     title = "Filtrar Item Edição"
-    return render_template("filtrarItemedicao.html", title=title, salas=salas, login=True)
+    return render_template("filtrarItemedicao.html", title=title, categorias=categorias, login=True)
 
 
 # Rota para editar um item específico

@@ -16,8 +16,8 @@
                     <select class="form-select" id="setorSelect" name="setor" style="width: 200px;">
                         <option value="" selected disabled>Categoria</option>
                         <!-- Aqui as opções são carregadas dinamicamente com Jinja -->
-                        {% for sala in salas %}
-                            <option value="{{ sala.idLocal }}">{{ sala.nomeLocal }}</option>
+                        {% for categoria in categorias %}
+                            <option value="{{ categoria.idCategoria }}">{{ categoria.nomeCategoria }}</option>
                         {% endfor %}
                     </select>
                 </div>
